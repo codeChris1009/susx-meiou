@@ -100,7 +100,7 @@ function Hero() {
           Selected work · {year}
         </p>
 
-        <h1 className="display-cjk mt-7 max-w-4xl text-5xl font-semibold text-balance sm:text-6xl lg:text-7xl">
+        <h1 className="display-cjk mt-7 max-w-4xl origin-left cursor-default text-5xl font-semibold text-balance transition-[scale,letter-spacing] duration-500 ease-(--ease-spring) select-none active:scale-[0.985] active:tracking-wide sm:text-6xl lg:text-7xl">
           <span className="animate-rise block [--rise-delay:90ms]">
             每一個作品，
           </span>
