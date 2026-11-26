@@ -1,4 +1,4 @@
-import { ArrowLeft, ArrowRight, ArrowUpRight, Lock } from "lucide-react"
+import { ArrowLeft, ArrowRight, ArrowUpRight, Expand } from "lucide-react"
 
 import { Roll, actionVariants } from "@/components/action"
 import { useMagnetic } from "@/hooks/use-magnetic"
@@ -33,6 +33,8 @@ interface GalleryPlaqueProps {
   touched: boolean
   step: (delta: number) => void
   go: (index: number) => void
+  /** Opens a piece with no public site in the viewer */
+  view: (index: number) => void
 }
 
 export function GalleryPlaque({
@@ -41,6 +43,7 @@ export function GalleryPlaque({
   touched,
   step,
   go,
+  view,
 }: GalleryPlaqueProps) {
   const open = useMagnetic<HTMLAnchorElement>()
   const piece = pieces[current]
@@ -53,7 +56,7 @@ export function GalleryPlaque({
           {piece.title} {piece.name} {piece.caption}
         </p>
         <div key={piece.id} aria-hidden className="plaque-swap">
-          <p className="text-[0.62rem] tracking-[0.32em] text-muted-foreground tabular-nums">
+          <p className="text-[0.6875rem] tracking-[0.32em] text-muted-foreground tabular-nums">
             {pad(current + 1)} / {pad(count)}
           </p>
           <h3
@@ -74,7 +77,7 @@ export function GalleryPlaque({
             aria-label="上一件"
             className={actionVariants({ tone: "icon" })}
           >
-            <ArrowLeft className="size-4 transition-transform duration-500 ease-(--ease-spring) group-hover/action:-translate-x-0.5" />
+            <ArrowLeft className="size-4 transition-transform duration-500 ease-(--ease-settle) group-hover/action:-translate-x-0.5" />
           </button>
           {piece.href ? (
             <a
@@ -86,16 +89,21 @@ export function GalleryPlaque({
               className={actionVariants({ tone: "solid" })}
             >
               <Roll>Open project</Roll>
-              <ArrowUpRight className="size-3.5 transition-transform duration-500 ease-(--ease-spring) group-hover/action:translate-x-0.5 group-hover/action:-translate-y-0.5" />
+              <ArrowUpRight className="size-3.5 transition-transform duration-500 ease-(--ease-settle) group-hover/action:translate-x-0.5 group-hover/action:-translate-y-0.5" />
             </a>
           ) : (
-            <span
+            <button
+              type="button"
               lang="en"
-              className="inline-flex h-11 cursor-default items-center gap-2.5 rounded-lg px-6 text-[0.7rem] font-medium tracking-[0.22em] text-muted-foreground uppercase shadow-[inset_0_0_0_1px_color-mix(in_oklch,var(--foreground)_10%,transparent)]"
+              onClick={() => view(current)}
+              className={actionVariants({ tone: "solid" })}
             >
-              <Lock aria-hidden className="size-3.5" />
-              Private
-            </span>
+              <Roll>View piece</Roll>
+              <Expand
+                aria-hidden
+                className="size-3.5 transition-transform duration-500 ease-(--ease-settle) group-hover/action:scale-110"
+              />
+            </button>
           )}
           <button
             type="button"
@@ -103,7 +111,7 @@ export function GalleryPlaque({
             aria-label="下一件"
             className={actionVariants({ tone: "icon" })}
           >
-            <ArrowRight className="size-4 transition-transform duration-500 ease-(--ease-spring) group-hover/action:translate-x-0.5" />
+            <ArrowRight className="size-4 transition-transform duration-500 ease-(--ease-settle) group-hover/action:translate-x-0.5" />
           </button>
         </div>
 
@@ -126,7 +134,7 @@ export function GalleryPlaque({
         <p
           data-hidden={touched || undefined}
           lang="en"
-          className="gallery-hint mt-3 hidden text-[0.6rem] tracking-[0.28em] text-muted-foreground/70 uppercase sm:block"
+          className="gallery-hint mt-3 hidden text-[0.6875rem] tracking-[0.28em] text-muted-foreground uppercase sm:block"
         >
           Drag or use the arrow keys <span className="mx-2 opacity-40">/</span>{" "}
           Click the front piece to open

@@ -83,7 +83,7 @@ shadcn `radix-nova`；圓角一律 `--radius: 0.35rem`（直角帶一點圓，�
 **精選展間**（[src/features/gallery](src/features/gallery)）：three.js 環形畫廊，九件作品圍著鏡頭、石材地面反射。作品上方是花體字標題，
 下方是英文專案名稱與一行中文描述。three.js 獨立成 chunk，展間接近畫面才下載；只在看得到時算圖。要換展品：把 1200×800 的 WebP 放進
 `src/assets/gallery/`，再改 [pieces.ts](src/features/gallery/pieces.ts) 的 `HANG`（`repo` 對應作品清單，連結跟著每週同步走；
-`repo: null` 是不公開的作品，只展示不連結）。沒有 WebGL 時改用同一組按鈕切換的平面畫框。
+`repo: null` 是不公開的作品，按 VIEW PIECE 在站內檢視窗打開，不附連結）。沒有 WebGL 時改用同一組按鈕切換的平面畫框。
 
 **標題與按鈕**：標題英文大、中文小，不加標點；按鈕一律英文大寫，共用 [action.tsx](src/components/action.tsx)：hover 時字從下方換上、
 底色由下往上填滿，按下回沉。頁面錨點集中在 [sections.ts](src/sections.ts)。系統設定「減少動態效果」時所有動態關閉。

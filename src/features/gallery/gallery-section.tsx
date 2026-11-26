@@ -12,6 +12,7 @@ import { pad } from "@/lib/format"
 import { SECTION } from "@/sections"
 
 import { GalleryPlaque, GallerySignature } from "./gallery-plaque"
+import { PieceViewer } from "./piece-viewer"
 import type { GalleryPiece } from "./pieces"
 import type { GalleryScene } from "./scene"
 
@@ -57,10 +58,16 @@ export function GallerySection({ pieces, numeral }: GallerySectionProps) {
   const count = pieces.length
   const piece = pieces[current]
 
+  /** The piece open in the viewer (one with no public site), or null */
+  const [viewing, setViewing] = useState<GalleryPiece | null>(null)
+
+  // Every piece opens: a public one in its own tab, a private one in the viewer
   const open = useCallback(
     (i: number) => {
-      const href = pieces[i]?.href
-      if (href) window.open(href, "_blank", "noopener")
+      const target = pieces[i]
+      if (!target) return
+      if (target.href) window.open(target.href, "_blank", "noopener")
+      else setViewing(target)
     },
     [pieces]
   )
@@ -194,7 +201,7 @@ export function GallerySection({ pieces, numeral }: GallerySectionProps) {
         ? "View"
         : pieces[hovered]?.href
           ? "Open"
-          : "Private"
+          : "View"
 
   const onKey = (e: KeyboardEvent) => {
     setTouched(true)
@@ -271,7 +278,7 @@ export function GallerySection({ pieces, numeral }: GallerySectionProps) {
             />
           </div>
           {mode === "loading" && (
-            <p className="metal-shine mt-4 text-center text-[0.65rem] tracking-[0.3em] uppercase">
+            <p className="metal-shine mt-4 text-center text-[0.6875rem] tracking-[0.3em] uppercase">
               Hanging the gallery
             </p>
           )}
@@ -299,10 +306,12 @@ export function GallerySection({ pieces, numeral }: GallerySectionProps) {
           touched={touched}
           step={step}
           go={go}
+          view={open}
         />
       </div>
       {/* Room for the vitrine to fade back into the page (on paper) below the plaque */}
       <div aria-hidden className="h-16" />
+      <PieceViewer piece={viewing} onClose={() => setViewing(null)} />
     </section>
   )
 }

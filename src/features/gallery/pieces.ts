@@ -6,7 +6,7 @@ import { isWebUrl } from "@/lib/url"
  * not the weekly screenshots: a gallery shows each work at its best moment, which is rarely its first screen.
  *
  * Links come from the synced project list, so a site that moves or goes offline is followed (or unlinked) by the
- * weekly sync rather than by editing this file. `repo: null` is a piece with no public site: shown, never linked.
+ * weekly sync rather than by editing this file. `repo: null` is a piece with no public site: it opens in the viewer (piece-viewer.tsx), never as a link.
  */
 export interface GallerySpec {
   /** Image file name in src/assets/gallery, without extension */
