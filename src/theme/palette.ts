@@ -5,7 +5,7 @@
  *   enough to read as white and black, high enough that paper, ink and metal look like one family instead of grey
  *   sitting next to gold. No step is pure white (#fff) or pure black (#000): paper is 0.985 lightness at most, ink 0.178
  *   at least.
- * - Metal: PhaNo's three-step gradient plus its brightest face (photon). Dark mode shows the lit face, champagne to
+ * - Metal: the brand mark's three-step gradient plus its brightest face (photon). Dark mode shows the lit face, champagne to
  *   warm grey; light mode the shadowed face of the same metal, because the lit face vanishes on paper.
  *
  * src/index.css declares these same hex values as custom properties (palette.test.ts keeps the two in step). Import

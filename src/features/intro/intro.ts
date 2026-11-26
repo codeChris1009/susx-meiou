@@ -2,7 +2,7 @@
  * Entry loader controller. The markup is static in index.html (it paints with the first frame, before this bundle has
  * even parsed); this drives it: --intro-fill (0..1) for the rising metal, the counter, the sparks, and the exit.
  *
- * Sequence: fill (PhaNo's mark and the script wordmark fill from below, sparks thrown off the fill line) → 100%, a burst
+ * Sequence: fill (the ANTHOLOGY mark and the script wordmark fill from below, sparks thrown off the fill line) → 100%, a burst
  * → a short hold so the full mark is seen → the curtain lifts and the hero's own entrance plays.
  */
 import { METAL, type MetalSteps } from "@/theme/palette"

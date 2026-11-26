@@ -1,6 +1,6 @@
 /*
  * Entry loader. The markup is static in index.html, so it paints with the first frame; intro.ts drives --intro-fill
- * (0..1) and data-state. PhaNo's prepare mark (a hairline outline and a metal fill rising from below) over the gallery's
+ * (0..1) and data-state. the ANTHOLOGY prepare mark (a hairline outline and a metal fill rising from below) over the gallery's
  * script face, Stalemate, filling in step; sparks come from a canvas (sparks.ts).
  *
  * Shown only while <html data-intro> (set by public/theme-init.js, so never without JS). If the bundle fails to load

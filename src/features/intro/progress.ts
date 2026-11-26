@@ -1,5 +1,5 @@
 /**
- * Entry loader progress: two numbers, after PhaNo's prepare screen.
+ * Entry loader progress: two numbers, after the ANTHOLOGY prepare screen.
  *
  * - target is honest. Time alone pushes it to READY_CAP; only the real ready signal (fonts and first render) takes it
  *   to 100. So a fast visit still sees the fill play, and a slow one never sits at a fake 100%.
