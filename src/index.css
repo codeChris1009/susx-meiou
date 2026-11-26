@@ -9,6 +9,9 @@
 @import "@fontsource-variable/geist";
 @import "@fontsource-variable/geist-mono";
 @import "@fontsource-variable/noto-sans-tc";
+/* Latin only: the script face sets one word, the loader's wordmark */
+@import "@fontsource/stalemate/latin-400.css";
+@import "./features/intro/intro.css";
 
 @custom-variant dark (&:is(.dark *));
 

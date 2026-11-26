@@ -26,6 +26,26 @@
     <script src="/theme-init.js"></script>
   </head>
   <body>
+    <!-- Entry loader: static so it paints before the bundle runs; driven by src/features/intro/intro.ts -->
+    <div id="intro" class="intro" role="status" aria-label="載入中">
+      <canvas class="intro-sparks" aria-hidden="true"></canvas>
+      <div class="intro-glow" aria-hidden="true"></div>
+      <div class="intro-stage" aria-hidden="true">
+        <div class="intro-mark">
+          <span class="intro-mark-outline"></span>
+          <span class="intro-mark-fill"></span>
+          <span class="intro-mark-edge"></span>
+        </div>
+        <div class="intro-word">
+          <span class="intro-word-base">susx.meiou</span>
+          <span class="intro-word-fill">susx.meiou</span>
+        </div>
+        <p class="intro-count">
+          Loading<span class="intro-count-rule"></span
+          ><span class="intro-count-value">000</span>
+        </p>
+      </div>
+    </div>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

@@ -1,0 +1,191 @@
+/*
+ * Entry loader. The markup is static in index.html, so it paints with the first frame; intro.ts drives --intro-fill
+ * (0..1) and data-state. PhaNo's prepare mark (a hairline outline and a metal fill rising from below) over the gallery's
+ * script face, Stalemate, filling in step; sparks come from a canvas (sparks.ts).
+ *
+ * Shown only while <html data-intro> (set by public/theme-init.js, so never without JS). If the bundle fails to load
+ * the failsafe animation still lifts the curtain after eight seconds: a loader must never be the reason a page is lost.
+ */
+.intro {
+  display: none;
+}
+html[data-intro] .intro,
+.intro[data-state="exit"] {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background: var(--background);
+  animation: intro-failsafe 600ms 8s forwards;
+  transition: opacity 760ms var(--ease-out-expo) 240ms;
+}
+@keyframes intro-failsafe {
+  to {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+html.intro-lock {
+  overflow: hidden;
+}
+/* The hero waits behind the curtain: its entrance plays as the curtain lifts, not unseen beneath it */
+html[data-intro] .animate-rise {
+  animation-play-state: paused;
+}
+
+.intro-sparks {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.intro-glow {
+  position: absolute;
+  width: min(80vw, 46rem);
+  aspect-ratio: 2 / 1;
+  border-radius: 50%;
+  background: radial-gradient(
+    closest-side,
+    color-mix(in oklch, var(--metal-hi) 16%, transparent),
+    transparent
+  );
+  filter: blur(28px);
+  opacity: calc(0.35 + var(--intro-fill, 0) * 0.65);
+  animation: intro-breath 2.4s ease-in-out infinite;
+}
+@keyframes intro-breath {
+  50% {
+    scale: 1.08;
+  }
+}
+
+.intro-stage {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  transition:
+    transform 1000ms var(--ease-out-expo),
+    filter 800ms var(--ease-out-expo),
+    opacity 700ms var(--ease-out-expo);
+}
+
+/* ---- The mark: outline at rest, metal rising inside it ---- */
+.intro-mark {
+  position: relative;
+  width: clamp(5rem, 10vw, 7.5rem);
+  aspect-ratio: 1024 / 1292;
+  filter: drop-shadow(
+    0 0 1.6rem color-mix(in oklch, var(--metal-mid) 22%, transparent)
+  );
+}
+.intro-mark > span {
+  position: absolute;
+  inset: 0;
+  mask: url("/mark.svg") center / 100% 100% no-repeat;
+}
+/* Two copies of the mark, the inner one 91%: excluding one from the other leaves a hairline outline */
+.intro-mark-outline {
+  background: color-mix(in oklch, var(--foreground) 26%, var(--background));
+  opacity: 0.8;
+  mask:
+    url("/mark.svg") center / 100% 100% no-repeat,
+    url("/mark.svg") center / 91% 91% no-repeat;
+  mask-composite: exclude;
+}
+.intro-mark-fill,
+.intro-word-fill {
+  background-image: linear-gradient(
+    180deg,
+    var(--metal-photon) 0%,
+    var(--metal-hi) 30%,
+    var(--metal-mid) 64%,
+    var(--metal-lo) 100%
+  );
+  clip-path: inset(calc((1 - var(--intro-fill, 0)) * 100%) 0 0);
+}
+/* The molten edge: a thin bright band riding the top of the fill */
+.intro-mark-edge {
+  background: linear-gradient(
+    180deg,
+    var(--metal-photon),
+    color-mix(in oklch, var(--metal-photon) 0%, transparent)
+  );
+  clip-path: inset(
+    calc((1 - var(--intro-fill, 0)) * 100%) 0
+      max(0%, calc(var(--intro-fill, 0) * 100% - 5%))
+  );
+  opacity: calc(min(var(--intro-fill, 0), 1 - var(--intro-fill, 0)) * 24);
+}
+
+/* ---- The word: Stalemate, the gallery's script face, filling with the same metal ---- */
+.intro-word {
+  position: relative;
+  margin-top: 1.1rem;
+  padding-inline: 0.35em;
+  font-family: "Stalemate", cursive;
+  font-size: clamp(3.6rem, 10vw, 7rem);
+  line-height: 1.3;
+  white-space: nowrap;
+  opacity: 0;
+  transform: translateY(8px);
+  transition:
+    opacity 600ms var(--ease-out-expo),
+    transform 900ms var(--ease-out-expo);
+}
+.intro[data-word="ready"] .intro-word {
+  opacity: 1;
+  transform: none;
+}
+.intro-word-base {
+  color: color-mix(in oklch, var(--foreground) 14%, var(--background));
+}
+.intro-word-fill {
+  position: absolute;
+  inset: 0;
+  padding-inline: 0.35em;
+  background-clip: text;
+  color: transparent;
+}
+
+.intro-count {
+  margin-top: 0.4rem;
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+  font-variant-numeric: tabular-nums;
+}
+.intro-count-rule {
+  width: 2.5rem;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--metal-mid));
+}
+
+/* ---- Exit: the stage swells, softens and fades; the ground follows a beat later ---- */
+.intro[data-state="exit"] {
+  opacity: 0;
+  pointer-events: none;
+}
+.intro[data-state="exit"] .intro-stage {
+  transform: scale(1.07);
+  filter: blur(10px);
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .intro-glow {
+    animation: none;
+  }
+  .intro[data-state="exit"] .intro-stage {
+    transform: none;
+    filter: none;
+  }
+}

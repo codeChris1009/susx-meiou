@@ -4,6 +4,7 @@ import { createRoot } from "react-dom/client"
 import "./index.css"
 import App from "./App.tsx"
 import { ThemeProvider } from "@/components/theme-provider.tsx"
+import { pageReady, startIntro } from "@/features/intro/intro"
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
@@ -13,3 +14,5 @@ createRoot(document.getElementById("root")!).render(
     </ThemeProvider>
   </StrictMode>
 )
+
+startIntro(pageReady())
