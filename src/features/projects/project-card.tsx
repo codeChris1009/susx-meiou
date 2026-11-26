@@ -52,8 +52,8 @@ export function ProjectCard({
       style={{ "--reveal-delay": `${delayMs}ms` } as React.CSSProperties}
       className={cn(
         "reveal group/project relative flex flex-col overflow-hidden rounded-xl bg-card text-card-foreground ring-1 ring-foreground/8",
-        "shadow-[0_1px_2px_rgb(0_0_0/0.04)] transition-[translate,scale,box-shadow,--tw-ring-color] duration-700 ease-(--ease-out-expo)",
-        "hover:-translate-y-1.5 hover:shadow-[0_28px_60px_-24px_rgb(0_0_0/0.35)] hover:ring-metal/45",
+        "shadow-[0_1px_2px_color-mix(in_oklch,var(--shade)_5%,transparent)] transition-[translate,scale,box-shadow,--tw-ring-color] duration-700 ease-(--ease-out-expo)",
+        "hover:-translate-y-1.5 hover:shadow-[0_28px_60px_-24px_color-mix(in_oklch,var(--shade)_35%,transparent)] hover:ring-metal/45",
         "focus-within:ring-2 focus-within:ring-metal/70",
         "active:translate-y-0 active:scale-[0.988] active:duration-150",
         feature && "sm:col-span-2 lg:grid lg:grid-cols-[1.55fr_1fr]"

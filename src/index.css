@@ -57,6 +57,7 @@
   --color-foreground: var(--foreground);
   --color-background: var(--background);
   --color-live: var(--live);
+  --color-shade: var(--shade);
   --color-metal: var(--metal-mid);
   --color-metal-hi: var(--metal-hi);
   --color-metal-lo: var(--metal-lo);
@@ -71,39 +72,58 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
+/*
+ * The palette (src/theme/palette.ts holds the same hex for three.js; palette.test.ts keeps them in step).
+ * Neutral 50-950: ivory paper to ink on the metal's own hue (oklch 86°), never #fff or #000. Light mode is ink on
+ * paper (100 / 900), dark mode paper on ink (950 / 100): the same two materials swapped, not two palettes.
+ */
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
+  --meiou-50: #fbfaf7;
+  --meiou-100: #f6f4ef;
+  --meiou-200: #ebe8e2;
+  --meiou-300: #e0ddd6;
+  --meiou-400: #a8a49c;
+  --meiou-500: #737068;
+  --meiou-600: #55524c;
+  --meiou-700: #35332e;
+  --meiou-800: #23211d;
+  --meiou-900: #1c1a17;
+  --meiou-950: #12110f;
+
+  --background: var(--meiou-100);
+  --foreground: var(--meiou-900);
+  --card: var(--meiou-50);
+  --card-foreground: var(--meiou-900);
+  --popover: var(--meiou-50);
+  --popover-foreground: var(--meiou-900);
+  --primary: var(--meiou-800);
+  --primary-foreground: var(--meiou-100);
+  --secondary: var(--meiou-200);
+  --secondary-foreground: var(--meiou-800);
+  --muted: var(--meiou-200);
+  --muted-foreground: var(--meiou-500);
+  --accent: var(--meiou-200);
+  --accent-foreground: var(--meiou-800);
+  --destructive: oklch(0.577 0.2 27);
+  --border: var(--meiou-300);
+  --input: var(--meiou-300);
+  --ring: var(--meiou-400);
+  --chart-1: var(--meiou-300);
+  --chart-2: var(--meiou-400);
+  --chart-3: var(--meiou-500);
+  --chart-4: var(--meiou-600);
+  --chart-5: var(--meiou-700);
   --radius: 0.35rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  --sidebar: var(--meiou-50);
+  --sidebar-foreground: var(--meiou-900);
+  --sidebar-primary: var(--meiou-800);
+  --sidebar-primary-foreground: var(--meiou-100);
+  --sidebar-accent: var(--meiou-200);
+  --sidebar-accent-foreground: var(--meiou-800);
+  --sidebar-border: var(--meiou-300);
+  --sidebar-ring: var(--meiou-400);
+  /* Shadows are ink, not black: a warm shade of the page's own darkest step */
+  --shade: var(--meiou-950);
   /* The one hue on the page: the "online" dot */
   --live: oklch(0.52 0.13 150);
   /* Metal steps, same values as the brand mark: the shadowed face of the metal on paper */
@@ -114,37 +134,33 @@
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  --background: var(--meiou-950);
+  --foreground: var(--meiou-100);
+  --card: var(--meiou-900);
+  --card-foreground: var(--meiou-100);
+  --popover: var(--meiou-900);
+  --popover-foreground: var(--meiou-100);
+  --primary: var(--meiou-200);
+  --primary-foreground: var(--meiou-900);
+  --secondary: var(--meiou-800);
+  --secondary-foreground: var(--meiou-100);
+  --muted: var(--meiou-800);
+  --muted-foreground: var(--meiou-400);
+  --accent: var(--meiou-800);
+  --accent-foreground: var(--meiou-100);
+  --destructive: oklch(0.704 0.17 22);
+  --border: color-mix(in oklch, var(--meiou-100) 10%, transparent);
+  --input: color-mix(in oklch, var(--meiou-100) 15%, transparent);
+  --ring: var(--meiou-500);
+  --sidebar: var(--meiou-900);
+  --sidebar-foreground: var(--meiou-100);
+  --sidebar-primary: var(--meiou-200);
+  --sidebar-primary-foreground: var(--meiou-900);
+  --sidebar-accent: var(--meiou-800);
+  --sidebar-accent-foreground: var(--meiou-100);
+  --sidebar-border: color-mix(in oklch, var(--meiou-100) 10%, transparent);
+  --sidebar-ring: var(--meiou-500);
+  --shade: #070605;
   --live: oklch(0.72 0.15 150);
   /* Champagne to warm grey: the lit face */
   --metal-hi: #f5f0de;

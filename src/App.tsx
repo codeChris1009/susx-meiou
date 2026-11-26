@@ -120,7 +120,7 @@ function Hero() {
         <div className="animate-rise mt-10 flex flex-wrap items-center gap-3 [--rise-delay:380ms]">
           <a
             href="#works"
-            className="pressable group/cta inline-flex h-11 items-center gap-2 rounded-full bg-foreground px-6 text-sm font-medium text-background hover:shadow-[0_12px_30px_-12px_rgb(0_0_0/0.5)]"
+            className="pressable group/cta inline-flex h-11 items-center gap-2 rounded-full bg-foreground px-6 text-sm font-medium text-background hover:shadow-[0_12px_30px_-12px_color-mix(in_oklch,var(--shade)_50%,transparent)]"
           >
             瀏覽作品
             <ArrowDown className="size-4 transition-transform duration-500 ease-(--ease-spring) group-hover/cta:translate-y-0.5" />
