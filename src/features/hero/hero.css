@@ -124,6 +124,14 @@ html[data-intro] .hello-word {
   animation-play-state: paused;
 }
 
+/*
+ * Poster scale, sized so the longest greeting (Bonjour le monde, 7.64em in Geist at this tracking, plus the clip
+ * padding) still fits the container on every width: (100vw - gutters) / 7.75 ≈ 12vw - 0.5rem
+ */
+.hero-title {
+  font-size: clamp(2.25rem, calc(12vw - 0.5rem), 9.75rem);
+}
+
 /* "Alan Su Here": the metal, as the headline always was, with a slow light crossing it */
 .hero-name {
   padding-bottom: 0.08em;

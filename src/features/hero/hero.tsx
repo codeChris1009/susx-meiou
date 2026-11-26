@@ -47,7 +47,7 @@ export function Hero() {
         <span className="hero-mark absolute inset-0" />
       </div>
 
-      <div className="hero-content container-wide relative flex min-h-[calc(100svh-4rem)] flex-col justify-between gap-16 pt-8 pb-12">
+      <div className="hero-content container-wide relative flex min-h-[calc(88svh-4rem)] flex-col justify-between gap-16 pt-8 pb-12 sm:min-h-[calc(100svh-4rem)]">
         <p className="animate-rise grid grid-cols-2 gap-4 border-b border-foreground/10 pb-4 text-[0.66rem] tracking-[0.24em] text-muted-foreground uppercase sm:grid-cols-4">
           <span>{site.brand}</span>
           <span>{site.role}</span>
@@ -60,7 +60,7 @@ export function Hero() {
         <div>
           <h1
             id="hero-title"
-            className="heading-display group/headline origin-left cursor-default text-[clamp(2.25rem,8.2vw,8rem)] select-none"
+            className="heading-display hero-title group/headline origin-left cursor-default select-none"
           >
             <span className="sr-only">Hello world {site.name} Here</span>
             <span aria-hidden className="animate-rise block">
@@ -74,7 +74,7 @@ export function Hero() {
             </span>
           </h1>
 
-          <div className="mt-12 grid gap-10 lg:grid-cols-12 lg:items-end">
+          <div className="mt-12 grid gap-10 border-t border-foreground/10 pt-8 lg:grid-cols-12 lg:items-end">
             <div className="animate-rise [--rise-delay:260ms] lg:col-span-5">
               <p className="text-lg font-medium tracking-[0.12em] sm:text-xl">
                 每一個作品都能直接打開

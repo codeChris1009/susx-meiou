@@ -4,13 +4,8 @@ import { Roll, actionVariants } from "@/components/action"
 import { GithubMark } from "@/components/github-mark"
 import { useTheme } from "@/components/theme-provider"
 import { useActiveSection } from "@/hooks/use-active-section"
+import { NAV } from "@/nav"
 import { site } from "@/site"
-
-const NAV = [
-  { id: "gallery", label: "Gallery" },
-  { id: "works", label: "Works" },
-  { id: "practice", label: "Practice" },
-] as const
 
 const iconButton = actionVariants({
   tone: "quiet",

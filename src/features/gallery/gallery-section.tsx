@@ -215,7 +215,7 @@ export function GallerySection({ pieces, numeral }: GallerySectionProps) {
       aria-labelledby="gallery"
       className="gallery-room dark relative"
     >
-      <div className="container-wide pt-24">
+      <div className="container-wide pt-28 lg:pt-36">
         <SectionHeading
           id="gallery"
           index={numeral}

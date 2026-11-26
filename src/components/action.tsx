@@ -1,10 +1,12 @@
 import { cva, type VariantProps } from "class-variance-authority"
 
+import { cn } from "@/lib/utils"
+
 /**
  * The page's buttons, and links dressed as buttons: uppercase Geist, the 0.35rem corner, and one shared feel. Hover
  * rolls the label (its twin rises from below) and floods the plate from the bottom; a press sinks it (.pressable).
  */
-export const actionVariants = cva(
+const variants = cva(
   [
     "pressable group/action relative isolate inline-flex shrink-0 cursor-pointer items-center justify-center gap-2.5 overflow-hidden rounded-lg",
     "text-[0.7rem] font-medium tracking-[0.22em] whitespace-nowrap uppercase select-none",
@@ -32,9 +34,14 @@ export const actionVariants = cva(
   }
 )
 
-export type ActionTone = NonNullable<
-  VariantProps<typeof actionVariants>["tone"]
->
+export type ActionTone = NonNullable<VariantProps<typeof variants>["tone"]>
+
+/**
+ * Class names for an action. A className passed in is merged, not appended: an override such as `hidden` or `h-9`
+ * replaces the base utility it conflicts with instead of racing it in the stylesheet.
+ */
+export const actionVariants = (props?: Parameters<typeof variants>[0]) =>
+  cn(variants(props))
 
 /**
  * The rolling label: the word, and its twin waiting below (see .roll in index.css). The twin is a hidden element, not

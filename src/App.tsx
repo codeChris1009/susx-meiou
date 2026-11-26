@@ -21,7 +21,10 @@ export function App() {
 
         <GallerySection pieces={gallery} numeral="01" />
 
-        <section className="container-wide py-24" aria-labelledby="works">
+        <section
+          className="container-wide py-28 lg:py-36"
+          aria-labelledby="works"
+        >
           <SectionHeading
             id="works"
             index="02"
@@ -38,7 +41,10 @@ export function App() {
         </section>
 
         {practice.length > 0 && (
-          <section className="container-wide pb-24" aria-labelledby="practice">
+          <section
+            className="container-wide pb-28 lg:pb-36"
+            aria-labelledby="practice"
+          >
             <SectionHeading
               id="practice"
               index="03"
