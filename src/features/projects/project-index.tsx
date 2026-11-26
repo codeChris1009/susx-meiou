@@ -3,7 +3,7 @@ import { useRef, useState, type PointerEvent } from "react"
 
 import { stackOf, yearOf, type Entry, type Group } from "./collection"
 import { GroupLabel } from "./group-label"
-import { pad } from "./format"
+import { pad } from "@/lib/format"
 
 /**
  * LIST: the index. Names set large, one to a line, like the contents page of a monograph; hovering one dims the rest

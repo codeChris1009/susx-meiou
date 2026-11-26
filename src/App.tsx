@@ -3,14 +3,14 @@ import { SiteFooter } from "@/components/site-footer"
 import { SiteHeader } from "@/components/site-header"
 import { featured, gallery, practice } from "@/content"
 import { GallerySection } from "@/features/gallery/gallery-section"
-import { HERO_ID, Hero } from "@/features/hero/hero"
+import { Hero } from "@/features/hero/hero"
 import { ProjectCollection } from "@/features/projects/project-collection"
 import { useScrollEffects } from "@/hooks/use-scroll-effects"
-
-const pad = (n: number) => String(n).padStart(2, "0")
+import { pad } from "@/lib/format"
+import { SECTION } from "@/sections"
 
 export function App() {
-  useScrollEffects(HERO_ID)
+  useScrollEffects(SECTION.hero)
 
   return (
     <div className="flex min-h-svh flex-col">
@@ -23,17 +23,17 @@ export function App() {
 
         <section
           className="container-wide py-28 lg:py-36"
-          aria-labelledby="works"
+          aria-labelledby={SECTION.works}
         >
           <SectionHeading
-            id="works"
+            id={SECTION.works}
             index="02"
             title="Works"
             subtitle="作品"
             note={`${pad(featured.length)} projects`}
           />
           <ProjectCollection
-            id="works"
+            id={SECTION.works}
             projects={featured}
             noun="works"
             density="feature"
@@ -43,17 +43,17 @@ export function App() {
         {practice.length > 0 && (
           <section
             className="container-wide pb-28 lg:pb-36"
-            aria-labelledby="practice"
+            aria-labelledby={SECTION.practice}
           >
             <SectionHeading
-              id="practice"
+              id={SECTION.practice}
               index="03"
               title="Practice"
               subtitle="早期練習"
               note={`${pad(practice.length)} studies`}
             />
             <ProjectCollection
-              id="practice"
+              id={SECTION.practice}
               projects={practice}
               noun="studies"
               density="compact"

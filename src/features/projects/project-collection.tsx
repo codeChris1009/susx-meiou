@@ -18,6 +18,34 @@ import { ProjectIndex } from "./project-index"
 import { ProjectTable } from "./project-table"
 import type { Project } from "./types"
 
+/** What a filter that leaves nothing shows: say so, and offer the way back */
+function EmptyResult({ onReset }: { onReset: () => void }) {
+  return (
+    <div
+      lang="en"
+      className="grid place-items-center gap-5 rounded-lg py-20 text-center ring-1 ring-foreground/8 ring-inset"
+    >
+      <p className="text-[0.7rem] tracking-[0.24em] text-muted-foreground uppercase">
+        Nothing matches
+      </p>
+      <button
+        type="button"
+        onClick={onReset}
+        className={actionVariants({
+          tone: "outline",
+          className: "group/reset",
+        })}
+      >
+        <RotateCcw
+          aria-hidden
+          className="size-3.5 transition-transform duration-500 ease-(--ease-spring) group-hover/reset:-rotate-45"
+        />
+        <Roll>Reset</Roll>
+      </button>
+    </div>
+  )
+}
+
 interface ProjectCollectionProps {
   /** Prefix for ids, unique on the page */
   id: string
@@ -84,25 +112,7 @@ export function ProjectCollection({
         className="collection-view mt-8"
       >
         {count === 0 ? (
-          <div className="grid place-items-center gap-5 rounded-lg py-20 text-center ring-1 ring-foreground/8 ring-inset">
-            <p className="text-[0.7rem] tracking-[0.24em] text-muted-foreground uppercase">
-              Nothing matches
-            </p>
-            <button
-              type="button"
-              onClick={reset}
-              className={actionVariants({
-                tone: "outline",
-                className: "group/reset",
-              })}
-            >
-              <RotateCcw
-                aria-hidden
-                className="size-3.5 transition-transform duration-500 ease-(--ease-spring) group-hover/reset:-rotate-45"
-              />
-              <Roll>Reset</Roll>
-            </button>
-          </div>
+          <EmptyResult onReset={reset} />
         ) : presentation.view === "grid" ? (
           <ProjectGrid
             groups={groups}

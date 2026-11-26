@@ -4,10 +4,9 @@ import type { ReactNode } from "react"
 import { Roll, actionVariants } from "@/components/action"
 import { GithubMark } from "@/components/github-mark"
 import { syncedOn, year } from "@/content"
-import { HERO_ID } from "@/features/hero/hero"
 import { useReveal } from "@/hooks/use-reveal"
 import { cn } from "@/lib/utils"
-import { NAV } from "@/nav"
+import { NAV, SECTION, href } from "@/sections"
 import { site } from "@/site"
 
 function Column({ title, children }: { title: string; children: ReactNode }) {
@@ -32,10 +31,10 @@ export function SiteFooter() {
   return (
     <footer className="relative mt-12 overflow-hidden border-t">
       <div ref={reveal} className="reveal container-wide pt-20 pb-12">
-        <div className="grid gap-12 sm:grid-cols-3">
+        <div lang="en" className="grid gap-12 sm:grid-cols-3">
           <Column title="Index">
             {NAV.map((item) => (
-              <a key={item.id} href={`#${item.id}`} className={quiet}>
+              <a key={item.id} href={href(item.id)} className={quiet}>
                 <Roll>{item.label}</Roll>
               </a>
             ))}
@@ -76,7 +75,10 @@ export function SiteFooter() {
           </p>
         </div>
         <div className="hairline-metal mt-8" />
-        <div className="mt-5 flex flex-col gap-3 text-[0.66rem] tracking-[0.2em] text-muted-foreground uppercase sm:flex-row sm:items-center sm:justify-between">
+        <div
+          lang="en"
+          className="mt-5 flex flex-col gap-3 text-[0.66rem] tracking-[0.2em] text-muted-foreground uppercase sm:flex-row sm:items-center sm:justify-between"
+        >
           <p className="tabular-nums">
             © {year} {site.name}
             <span aria-hidden className="mx-3 opacity-40">
@@ -85,7 +87,7 @@ export function SiteFooter() {
             Synced {syncedOn}
           </p>
           <a
-            href={`#${HERO_ID}`}
+            href={href(SECTION.hero)}
             className={cn(quiet, "self-start sm:self-auto")}
           >
             <Roll>Back to top</Roll>

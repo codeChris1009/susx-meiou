@@ -1,4 +1,3 @@
-import { ArrowLeft, ArrowRight, ArrowUpRight, Lock } from "lucide-react"
 import {
   type KeyboardEvent,
   type PointerEvent,
@@ -8,9 +7,11 @@ import {
   useState,
 } from "react"
 
-import { Roll, actionVariants } from "@/components/action"
 import { SectionHeading } from "@/components/section-heading"
+import { pad } from "@/lib/format"
+import { SECTION } from "@/sections"
 
+import { GalleryPlaque, GallerySignature } from "./gallery-plaque"
 import type { GalleryPiece } from "./pieces"
 import type { GalleryScene } from "./scene"
 
@@ -18,8 +19,6 @@ import type { GalleryScene } from "./scene"
 const PRELOAD_MARGIN = "800px 0px"
 
 type Mode = "idle" | "loading" | "3d" | "flat"
-
-const pad = (n: number) => String(n).padStart(2, "0")
 
 /** Probes for WebGL 2, then hands the context back: browsers cap live contexts, and a probe should not hold one */
 function supportsWebGL() {
@@ -212,12 +211,12 @@ export function GallerySection({ pieces, numeral }: GallerySectionProps) {
   return (
     <section
       ref={section}
-      aria-labelledby="gallery"
+      aria-labelledby={SECTION.gallery}
       className="gallery-room dark relative"
     >
       <div className="container-wide pt-28 lg:pt-36">
         <SectionHeading
-          id="gallery"
+          id={SECTION.gallery}
           index={numeral}
           title="Gallery"
           subtitle="精選展間"
@@ -230,7 +229,7 @@ export function GallerySection({ pieces, numeral }: GallerySectionProps) {
         ref={stage}
         role="group"
         aria-roledescription="carousel"
-        aria-label="Gallery, use the arrow keys to turn"
+        aria-label="精選作品展間，用左右方向鍵切換"
         tabIndex={0}
         onKeyDown={onKey}
         className="gallery-stage relative mt-6 h-[clamp(38rem,94svh,60rem)]"
@@ -283,18 +282,7 @@ export function GallerySection({ pieces, numeral }: GallerySectionProps) {
           className="gallery-vignette pointer-events-none absolute inset-0"
         />
 
-        {/* The signature: the piece's title in the script face, hung above it like a name on the wall */}
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-x-0 top-[3.5%] flex justify-center"
-        >
-          <p
-            key={piece.id}
-            className="plaque-swap gallery-title metal-shine px-[0.3em] text-[clamp(2.4rem,5vw,4.25rem)] leading-[1.3]"
-          >
-            {piece.title}
-          </p>
-        </div>
+        <GallerySignature piece={piece} />
 
         <div
           ref={cursor}
@@ -305,84 +293,13 @@ export function GallerySection({ pieces, numeral }: GallerySectionProps) {
           <span>{cursorLabel}</span>
         </div>
 
-        <div className="gallery-plaque pointer-events-none absolute inset-x-0 bottom-0 pt-24 pb-8 sm:pb-10">
-          <div className="container-wide flex flex-col items-center text-center">
-            <p aria-live="polite" className="sr-only">
-              {piece.title} {piece.name} {piece.caption}
-            </p>
-            <div key={piece.id} aria-hidden className="plaque-swap">
-              <p className="text-[0.62rem] tracking-[0.32em] text-muted-foreground tabular-nums">
-                {pad(current + 1)} / {pad(count)}
-              </p>
-              <h3 className="mt-2.5 text-base font-medium tracking-[0.04em] sm:text-lg">
-                {piece.name}
-              </h3>
-              <p className="mt-1 text-sm tracking-[0.14em] text-balance text-muted-foreground">
-                {piece.caption}
-              </p>
-            </div>
-
-            <div className="pointer-events-auto mt-6 flex items-center gap-3">
-              <button
-                type="button"
-                onClick={() => step(-1)}
-                aria-label="Previous piece"
-                className={actionVariants({ tone: "icon" })}
-              >
-                <ArrowLeft className="size-4 transition-transform duration-500 ease-(--ease-spring) group-hover/action:-translate-x-0.5" />
-              </button>
-              {piece.href ? (
-                <a
-                  href={piece.href}
-                  target="_blank"
-                  rel="noopener"
-                  className={actionVariants({ tone: "solid" })}
-                >
-                  <Roll>Open project</Roll>
-                  <ArrowUpRight className="size-3.5 transition-transform duration-500 ease-(--ease-spring) group-hover/action:translate-x-0.5 group-hover/action:-translate-y-0.5" />
-                </a>
-              ) : (
-                <span className="inline-flex h-11 cursor-default items-center gap-2.5 rounded-lg px-6 text-[0.7rem] font-medium tracking-[0.22em] text-muted-foreground uppercase shadow-[inset_0_0_0_1px_color-mix(in_oklch,var(--foreground)_10%,transparent)]">
-                  <Lock aria-hidden className="size-3.5" />
-                  Private
-                </span>
-              )}
-              <button
-                type="button"
-                onClick={() => step(1)}
-                aria-label="Next piece"
-                className={actionVariants({ tone: "icon" })}
-              >
-                <ArrowRight className="size-4 transition-transform duration-500 ease-(--ease-spring) group-hover/action:translate-x-0.5" />
-              </button>
-            </div>
-
-            {/* One tick per piece: where the ring is, and a way to jump straight to any piece */}
-            <div className="pointer-events-auto mt-5 flex items-center">
-              {pieces.map((p, i) => (
-                <button
-                  key={p.id}
-                  type="button"
-                  onClick={() => go(i)}
-                  aria-label={`${pad(i + 1)} ${p.name}`}
-                  aria-current={i === current || undefined}
-                  className="group/tick px-1 py-2.5"
-                >
-                  <span className="gallery-tick block h-px" />
-                </button>
-              ))}
-            </div>
-
-            <p
-              data-hidden={touched || undefined}
-              className="gallery-hint mt-3 hidden text-[0.6rem] tracking-[0.28em] text-muted-foreground/70 uppercase sm:block"
-            >
-              Drag or use the arrow keys{" "}
-              <span className="mx-2 opacity-40">/</span> Click the front piece
-              to open
-            </p>
-          </div>
-        </div>
+        <GalleryPlaque
+          pieces={pieces}
+          current={current}
+          touched={touched}
+          step={step}
+          go={go}
+        />
       </div>
       {/* Room for the vitrine to fade back into the page (on paper) below the plaque */}
       <div aria-hidden className="h-16" />

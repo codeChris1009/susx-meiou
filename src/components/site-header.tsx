@@ -4,7 +4,7 @@ import { Roll, actionVariants } from "@/components/action"
 import { GithubMark } from "@/components/github-mark"
 import { useTheme } from "@/components/theme-provider"
 import { useActiveSection } from "@/hooks/use-active-section"
-import { NAV } from "@/nav"
+import { NAV, SECTION, href } from "@/sections"
 import { site } from "@/site"
 
 const iconButton = actionVariants({
@@ -50,7 +50,7 @@ export function SiteHeader() {
     <header className="site-header sticky top-0 z-50">
       <div className="intro-veil container-wide flex h-full items-center justify-between">
         <a
-          href="#top"
+          href={href(SECTION.hero)}
           className="pressable group/logo inline-flex items-center gap-2.5 rounded-md text-sm font-semibold tracking-tight"
         >
           {/* The artwork is portrait (1024 x 1292), so the width is 0.79 of the height */}
@@ -67,8 +67,9 @@ export function SiteHeader() {
           {NAV.map((item) => (
             <a
               key={item.id}
-              href={`#${item.id}`}
+              href={href(item.id)}
               aria-current={active === item.id || undefined}
+              lang="en"
               className={actionVariants({
                 tone: "quiet",
                 className: "nav-link hidden sm:inline-flex",

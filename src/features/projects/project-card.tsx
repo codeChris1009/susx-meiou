@@ -5,7 +5,7 @@ import { GithubMark } from "@/components/github-mark"
 import { useReveal } from "@/hooks/use-reveal"
 import { cn } from "@/lib/utils"
 import { HOST_LABEL, type Entry } from "./collection"
-import { displayUrl, pad } from "./format"
+import { displayUrl, pad } from "@/lib/format"
 
 export type CardVariant = "feature" | "default" | "compact"
 
@@ -90,7 +90,10 @@ export function ProjectCard({
         )}
       >
         <div className="flex items-center justify-between gap-3">
-          <span className="text-metal text-[0.7rem] tracking-[0.2em] uppercase tabular-nums">
+          <span
+            lang="en"
+            className="text-metal text-[0.7rem] tracking-[0.2em] uppercase tabular-nums"
+          >
             No. {pad(project.no)}
           </span>
           <span
@@ -135,6 +138,7 @@ export function ProjectCard({
           // The whole card is the link (the stretched title); this only says so, in the space a short description leaves
           <span
             aria-hidden
+            lang="en"
             className="mt-2 inline-flex items-center gap-2 self-start text-xs tracking-[0.18em] text-foreground uppercase"
           >
             <span className="hairline-metal w-6 transition-[width] duration-700 ease-(--ease-out-expo) group-hover/project:w-12" />

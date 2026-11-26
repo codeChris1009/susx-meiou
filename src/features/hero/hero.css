@@ -137,7 +137,41 @@ html[data-intro] .hello-word {
   padding-bottom: 0.08em;
 }
 
+/*
+ * The mark, large and engraved at the hero's right: the loader's outline staying behind as a watermark. It drifts up a
+ * little slower than the copy as the hero scrolls away.
+ */
+.hero-mark {
+  background-image: linear-gradient(
+    160deg,
+    var(--metal-hi),
+    var(--metal-mid) 55%,
+    transparent
+  );
+  mask:
+    url("/mark.svg") center / 100% 100% no-repeat,
+    url("/mark.svg") center / 97% 97% no-repeat;
+  mask-composite: exclude;
+  opacity: 0.55;
+  transform: translateY(calc(var(--hero-progress, 0) * -48px));
+}
+/* Shadowed metal on paper carries more contrast than the lit face on ink: engrave it lighter there */
+html:not(.dark) .hero-mark {
+  opacity: 0.4;
+}
+.hero-mark-fill {
+  background-image: linear-gradient(
+    180deg,
+    color-mix(in oklch, var(--metal-hi) 10%, transparent),
+    transparent 70%
+  );
+  mask: url("/mark.svg") center / 100% 100% no-repeat;
+}
+
 @media (prefers-reduced-motion: reduce) {
+  .hero-mark {
+    transform: none;
+  }
   .hero-content,
   .hero-rules {
     opacity: 1;

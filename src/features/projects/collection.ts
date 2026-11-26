@@ -71,8 +71,10 @@ export function number(projects: readonly Project[]): Entry[] {
 /** The stacks present, most used first, for the filter's choices */
 export function stacksOf(projects: readonly Project[]): string[] {
   const counts = new Map<string, number>()
-  for (const p of projects)
-    counts.set(stackOf(p), (counts.get(stackOf(p)) ?? 0) + 1)
+  for (const p of projects) {
+    const stack = stackOf(p)
+    counts.set(stack, (counts.get(stack) ?? 0) + 1)
+  }
   return [...counts]
     .sort(([a, x], [b, y]) => y - x || a.localeCompare(b))
     .map(([stack]) => stack)
@@ -149,7 +151,9 @@ export function groupEntries(entries: readonly Entry[], by: GroupBy): Group[] {
   const groups = new Map<string, Entry[]>()
   for (const e of entries) {
     const key = keyOf(e)
-    groups.set(key, [...(groups.get(key) ?? []), e])
+    const list = groups.get(key)
+    if (list) list.push(e)
+    else groups.set(key, [e])
   }
   return [...groups]
     .map(([key, list]) => ({ key, entries: list }))

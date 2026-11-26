@@ -1,5 +1,6 @@
-/** Small display helpers shared by the three views */
+/** Display helpers shared across the page */
 
+/** 7 → "07": counts and numbers in the catalogue's two-digit style */
 export const pad = (n: number) => String(n).padStart(2, "0")
 
 /** The address as a visitor would type it: no scheme, no trailing slash */

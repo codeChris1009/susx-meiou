@@ -1,8 +1,9 @@
 import { LayoutGrid, List, RotateCcw, Search, Table2 } from "lucide-react"
-import type { Ref } from "react"
+import { useMemo, type Ref } from "react"
 
 import { Roll, actionVariants } from "@/components/action"
 import { Segmented, type SegmentOption } from "@/components/segmented"
+import { pad } from "@/lib/format"
 
 import {
   defaultPresentation,
@@ -47,8 +48,6 @@ interface CollectionToolbarProps {
   total: number
 }
 
-const pad = (n: number) => String(n).padStart(2, "0")
-
 /**
  * The control ring above a collection: the count, a filter field, the stack filter, grouping, the view switch and
  * RESET. Sorting lives in the table's column headers, the one place it can be read and changed at once.
@@ -64,13 +63,16 @@ export function CollectionToolbar({
   total,
 }: CollectionToolbarProps) {
   const set = (patch: Partial<Presentation>) => onChange({ ...p, ...patch })
-  const stackOptions: SegmentOption<string>[] = [
-    { value: ALL, label: "All" },
-    ...stacks.map((s) => ({ value: s, label: s })),
-  ]
+  const stackOptions = useMemo<SegmentOption<string>[]>(
+    () => [
+      { value: ALL, label: "All" },
+      ...stacks.map((s) => ({ value: s, label: s })),
+    ],
+    [stacks]
+  )
 
   return (
-    <div ref={ref} className="collection-toolbar">
+    <div ref={ref} lang="en" className="collection-toolbar">
       <div className="flex flex-wrap items-center gap-2">
         <p
           aria-live="polite"

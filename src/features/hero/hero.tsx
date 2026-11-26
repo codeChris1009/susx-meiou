@@ -3,13 +3,11 @@ import { ArrowDown } from "lucide-react"
 import { Roll, actionVariants } from "@/components/action"
 import { GithubMark } from "@/components/github-mark"
 import { featured, platforms, practice, year } from "@/content"
+import { pad } from "@/lib/format"
+import { SECTION, href } from "@/sections"
 import { site } from "@/site"
 
 import { Hello } from "./hello"
-
-export const HERO_ID = "top"
-
-const pad = (n: number) => String(n).padStart(2, "0")
 
 function Stat({ value, label }: { value: number; label: string }) {
   return (
@@ -31,7 +29,7 @@ function Stat({ value, label }: { value: number; label: string }) {
 export function Hero() {
   return (
     <section
-      id={HERO_ID}
+      id={SECTION.hero}
       aria-labelledby="hero-title"
       className="intro-veil relative -mt-16 overflow-hidden pt-16"
     >
@@ -48,7 +46,10 @@ export function Hero() {
       </div>
 
       <div className="hero-content container-wide relative flex min-h-[calc(88svh-4rem)] flex-col justify-between gap-16 pt-8 pb-12 sm:min-h-[calc(100svh-4rem)]">
-        <p className="animate-rise grid grid-cols-2 gap-4 border-b border-foreground/10 pb-4 text-[0.66rem] tracking-[0.24em] text-muted-foreground uppercase sm:grid-cols-4">
+        <p
+          lang="en"
+          className="animate-rise grid grid-cols-2 gap-4 border-b border-foreground/10 pb-4 text-[0.66rem] tracking-[0.24em] text-muted-foreground uppercase sm:grid-cols-4"
+        >
           <span>{site.brand}</span>
           <span>{site.role}</span>
           <span className="hidden sm:block">Selected work {year}</span>
@@ -60,6 +61,7 @@ export function Hero() {
         <div>
           <h1
             id="hero-title"
+            lang="en"
             className="heading-display hero-title group/headline origin-left cursor-default select-none"
           >
             <span className="sr-only">Hello world {site.name} Here</span>
@@ -84,8 +86,14 @@ export function Hero() {
               </p>
             </div>
 
-            <div className="animate-rise flex flex-wrap gap-3 [--rise-delay:360ms] lg:col-span-4 lg:col-start-6">
-              <a href="#gallery" className={actionVariants({ tone: "solid" })}>
+            <div
+              lang="en"
+              className="animate-rise flex flex-wrap gap-3 [--rise-delay:360ms] lg:col-span-4 lg:col-start-6"
+            >
+              <a
+                href={href(SECTION.gallery)}
+                className={actionVariants({ tone: "solid" })}
+              >
                 <Roll>Explore works</Roll>
                 <ArrowDown className="size-3.5 transition-transform duration-500 ease-(--ease-spring) group-hover/action:translate-y-0.5" />
               </a>
@@ -103,7 +111,10 @@ export function Hero() {
               </a>
             </div>
 
-            <dl className="animate-rise grid grid-cols-3 gap-6 [--rise-delay:460ms] lg:col-span-3">
+            <dl
+              lang="en"
+              className="animate-rise grid grid-cols-3 gap-6 [--rise-delay:460ms] lg:col-span-3"
+            >
               <Stat value={featured.length} label="Works" />
               <Stat value={practice.length} label="Practice" />
               <Stat value={platforms} label="Platforms" />

@@ -219,6 +219,7 @@ export function startIntro(
   const go = () => {
     if (phase !== "ready") return
     phase = "entering"
+    wake()
     root.removeEventListener("click", go)
     window.removeEventListener("keydown", onKey)
     root.setAttribute("data-state", "enter")
@@ -243,6 +244,14 @@ export function startIntro(
 
   const start = performance.now()
   let last = start
+  /** The loop stops while the gate waits with nothing in the air; ENTER starts it again for the burst and the exit */
+  let sleeping = false
+  const wake = () => {
+    if (!sleeping) return
+    sleeping = false
+    last = performance.now()
+    requestAnimationFrame(frame)
+  }
   let shown = 0
   let completedAt = 0
 
@@ -271,6 +280,11 @@ export function startIntro(
       window.removeEventListener("resize", onResize)
       sparks?.clear()
       root.remove()
+      return
+    }
+    // Waiting at the gate, no sparks left to draw: stop asking for frames (the ring turns in CSS on its own)
+    if (phase === "ready" && !sparks?.live) {
+      sleeping = true
       return
     }
     requestAnimationFrame(frame)

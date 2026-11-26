@@ -20,6 +20,15 @@ interface SegmentedProps<T extends string> {
   className?: string
 }
 
+/** Moves the plate under the pressed choice; hides it when nothing is pressed */
+function placeThumb(group: HTMLElement) {
+  const pressed = group.querySelector<HTMLElement>("[aria-pressed='true']")
+  if (!pressed) return group.removeAttribute("data-placed")
+  group.style.setProperty("--thumb-x", `${pressed.offsetLeft}px`)
+  group.style.setProperty("--thumb-w", `${pressed.offsetWidth}px`)
+  group.setAttribute("data-placed", "")
+}
+
 /**
  * A row of mutually exclusive choices with a plate that slides to the chosen one. The plate's place and width are
  * measured from the pressed button and written as custom properties through the CSSOM (no style attributes under the
@@ -35,22 +44,19 @@ export function Segmented<T extends string>({
 }: SegmentedProps<T>) {
   const group = useRef<HTMLDivElement>(null)
 
+  // A new choice, or a different set of choices: move the plate before paint
+  useLayoutEffect(() => {
+    if (group.current) placeThumb(group.current)
+  }, [value, options])
+
+  // Labels change width as the font arrives or the layout wraps: one observer for the life of the control
   useLayoutEffect(() => {
     const el = group.current
     if (!el) return
-    const place = () => {
-      const pressed = el.querySelector<HTMLElement>("[aria-pressed='true']")
-      if (!pressed) return el.removeAttribute("data-placed")
-      el.style.setProperty("--thumb-x", `${pressed.offsetLeft}px`)
-      el.style.setProperty("--thumb-w", `${pressed.offsetWidth}px`)
-      el.setAttribute("data-placed", "")
-    }
-    place()
-    // Labels change width as the font arrives or the layout wraps
-    const ro = new ResizeObserver(place)
+    const ro = new ResizeObserver(() => placeThumb(el))
     ro.observe(el)
     return () => ro.disconnect()
-  }, [value, options])
+  }, [])
 
   return (
     <div

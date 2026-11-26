@@ -21,7 +21,7 @@ export function ProjectGrid({ groups, density, lead }: ProjectGridProps) {
   const perRow = compact ? 4 : 2
   return (
     <div className="space-y-14">
-      {groups.map((group) => (
+      {groups.map((group, g) => (
         <div key={group.key}>
           {group.key && (
             <GroupLabel name={group.key} count={group.entries.length} />
@@ -42,7 +42,8 @@ export function ProjectGrid({ groups, density, lead }: ProjectGridProps) {
                   delayMs={
                     leads ? 0 : stagger(lead && !compact ? i - 1 : i, perRow)
                   }
-                  eager={i < 3}
+                  // Only the first screen of cards loads eagerly, not the first three of every group
+                  eager={g === 0 && i < 3}
                 />
               )
             })}

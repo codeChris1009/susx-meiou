@@ -44,14 +44,20 @@ export function SectionHeading({
           id={id}
           className="group/heading cursor-default transition-transform duration-500 ease-(--ease-spring) select-none active:scale-[0.985]"
         >
-          <span className="heading-display block text-[clamp(3rem,8.5vw,7.5rem)] transition-[letter-spacing] duration-700 ease-(--ease-out-expo) group-hover/heading:tracking-[-0.03em]">
+          <span
+            lang="en"
+            className="heading-display block text-[clamp(3rem,8.5vw,7.5rem)] transition-[letter-spacing] duration-700 ease-(--ease-out-expo) group-hover/heading:tracking-[-0.03em]"
+          >
             {title}
           </span>
           <span className="mt-3 block text-base font-medium tracking-[0.18em] text-muted-foreground sm:text-lg">
             {subtitle}
           </span>
         </h2>
-        <p className="col-span-2 text-[0.7rem] tracking-[0.22em] text-muted-foreground uppercase tabular-nums sm:col-span-1 sm:pb-2">
+        <p
+          lang="en"
+          className="col-span-2 text-[0.7rem] tracking-[0.22em] text-muted-foreground uppercase tabular-nums sm:col-span-1 sm:pb-2"
+        >
           {note}
         </p>
       </div>

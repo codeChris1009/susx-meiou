@@ -1,4 +1,4 @@
-import { pad } from "./format"
+import { pad } from "@/lib/format"
 
 /** The rubric over a group: its name, its count, and a hairline running out to the edge */
 export function GroupLabel({ name, count }: { name: string; count: number }) {
