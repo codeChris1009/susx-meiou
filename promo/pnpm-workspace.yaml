@@ -1,0 +1,3 @@
+# Its own workspace root, so the trailer toolchain (Remotion, its bundled ffmpeg) stays out of the site's lockfile and CI
+allowBuilds:
+  esbuild: true
