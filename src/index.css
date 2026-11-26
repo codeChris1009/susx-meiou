@@ -483,3 +483,34 @@ html[data-scrolled] .site-header {
     animation: none;
   }
 }
+
+/* Footer wordmark: still metal at rest; on hover a band of light crosses it and the letters breathe apart */
+.wordmark {
+  background-image: linear-gradient(
+    110deg,
+    var(--metal-lo) 0%,
+    var(--metal-mid) 40%,
+    var(--metal-photon) 50%,
+    var(--metal-mid) 60%,
+    var(--metal-lo) 100%
+  );
+  background-size: 300% 100%;
+  background-position: 100% 0;
+  background-clip: text;
+  color: transparent;
+  transition:
+    background-position 1600ms var(--ease-out-expo),
+    letter-spacing 900ms var(--ease-out-expo),
+    scale 300ms var(--ease-spring);
+}
+.wordmark:hover {
+  background-position: 0% 0;
+  letter-spacing: -0.02em;
+}
+.wordmark:active {
+  scale: 0.985;
+}
+/* The hero's metal line quickens under the pointer */
+.metal-shine:hover {
+  animation-duration: 2.4s;
+}

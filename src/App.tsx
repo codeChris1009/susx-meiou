@@ -46,10 +46,13 @@ function SectionHeading({ id, index, title, note }: SectionHeadingProps) {
         ref={reveal}
         className="reveal flex items-end justify-between gap-6 pb-5"
       >
-        <h2 id={id} className="flex items-baseline gap-4">
+        <h2
+          id={id}
+          className="group/heading flex cursor-default items-baseline gap-4 transition-transform duration-500 ease-(--ease-spring) active:scale-[0.98]"
+        >
           <span
             aria-hidden
-            className="text-metal font-mono text-5xl leading-none font-light tracking-tighter sm:text-6xl"
+            className="text-metal font-mono text-5xl leading-none font-light tracking-tighter transition-[translate,filter] duration-700 ease-(--ease-out-expo) group-hover/heading:-translate-x-1 group-hover/heading:brightness-125 sm:text-6xl"
           >
             {index}
           </span>
@@ -68,11 +71,11 @@ function SectionHeading({ id, index, title, note }: SectionHeadingProps) {
 
 function Stat({ value, label }: { value: number; label: string }) {
   return (
-    <div className="group/stat cursor-default">
+    <div className="group/stat cursor-default transition-transform duration-300 ease-(--ease-spring) select-none active:scale-95">
       <dt className="font-mono text-[0.7rem] tracking-[0.2em] text-muted-foreground uppercase">
         {label}
       </dt>
-      <dd className="mt-1 text-metal font-mono text-4xl font-light tabular-nums transition-transform duration-500 ease-(--ease-spring) group-hover/stat:-translate-y-0.5">
+      <dd className="mt-1 text-metal font-mono text-4xl font-light tabular-nums transition-[translate,filter] duration-500 ease-(--ease-spring) group-hover/stat:-translate-y-1 group-hover/stat:brightness-125">
         {String(value).padStart(2, "0")}
       </dd>
     </div>
@@ -160,7 +163,7 @@ function Footer() {
       <div ref={reveal} className="reveal container-wide py-16">
         <p
           aria-hidden
-          className="text-metal font-mono text-5xl font-semibold tracking-tighter select-none sm:text-7xl lg:text-8xl"
+          className="wordmark inline-block cursor-default font-mono text-5xl font-semibold tracking-tighter select-none sm:text-7xl lg:text-8xl"
         >
           {site.brand}
         </p>
