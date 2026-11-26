@@ -26,12 +26,10 @@
     <script src="/theme-init.js"></script>
   </head>
   <body>
-    <!-- Entry loader: static so it paints before the bundle runs; driven by src/features/intro/intro.ts. It fills,
-         waits for the visitor to press ENTER, then flies them through a ring of the works into the page -->
+    <!-- Entry loader: static so it paints before the bundle runs; driven by src/features/intro/intro.ts. The mark
+         fills, throwing sparks; it waits for the visitor to press ENTER, then an aperture opens on the page -->
     <div id="intro" class="intro">
-      <div class="intro-ring" aria-hidden="true">
-        <div class="intro-ring-track"></div>
-      </div>
+      <div class="intro-curtain" aria-hidden="true"></div>
       <canvas class="intro-sparks" aria-hidden="true"></canvas>
       <div class="intro-glow" aria-hidden="true"></div>
       <div class="intro-stage">

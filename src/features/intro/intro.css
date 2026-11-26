@@ -2,14 +2,15 @@
  * Entry loader. The markup is static in index.html, so it paints with the first frame; intro.ts drives --intro-fill
  * (0..1) and data-state:
  *
- *   (none)  loading  the mark (a hairline outline, metal rising inside) and the script wordmark fill; the works appear
- *                    one by one on a ring orbiting the camera, each as the fill passes its share
- *   ready            the count gives way to ENTER; the ring keeps turning and the page waits for the visitor
- *   enter            the camera dives through the ring (the nearest frames sweep past it, out of focus) while the mark
- *                    swells and dissolves, and the page behind comes into focus
+ *   (none)  loading  the mark (a hairline outline, metal rising inside) and the script wordmark fill; sparks are drawn
+ *                    on the canvas above them
+ *   ready            the count gives way to ENTER; the page waits for the visitor
+ *   enter            ENTER bursts, the mark lifts away, and an aperture opens from the centre of the curtain on the page
+ *                    coming into focus behind it; the sparks drift on over the page and the whole loader fades last
  *
  * Shown only while <html data-intro> (set by public/theme-init.js, so never without JS). Until intro.ts arms it, a
  * failsafe lifts the curtain after eight seconds: if the bundle never runs, a loader must not be why the page is lost.
+ * Once armed, the failsafe must not fire: the gate waits for the visitor as long as they like.
  */
 .intro {
   display: none;
@@ -22,11 +23,9 @@ html[data-intro] .intro,
   display: grid;
   place-items: center;
   overflow: hidden;
-  background-color: var(--background);
-  animation: intro-failsafe 600ms 8s forwards;
 }
-.intro[data-armed] {
-  animation: none;
+html[data-intro] .intro:not([data-armed]) {
+  animation: intro-failsafe 600ms 8s forwards;
 }
 @keyframes intro-failsafe {
   to {
@@ -41,20 +40,37 @@ html.intro-lock {
 html[data-intro] .animate-rise {
   animation-play-state: paused;
 }
-/* …and it waits out of focus, a step too close, so entering reads as the eye settling on it */
+/* …and it waits out of focus, a step too close, so entering reads as the eye settling on it as the aperture opens */
 .intro-veil {
   transition:
-    scale 2000ms var(--ease-out-expo) 300ms,
-    filter 1800ms var(--ease-out-expo) 300ms;
+    scale 1900ms var(--ease-out-expo) 350ms,
+    filter 1600ms var(--ease-out-expo) 350ms;
 }
 html[data-intro] .intro-veil {
-  scale: 1.07;
-  filter: blur(14px) brightness(0.7);
+  scale: 1.04;
+  filter: blur(10px) brightness(0.75);
 }
 
+/*
+ * The curtain is its own layer, so the aperture can open in it while the sparks above it fly on over the page.
+ * --intro-iris is the aperture's radius; registered, so it can transition.
+ */
+@property --intro-iris {
+  syntax: "<length>";
+  inherits: false;
+  initial-value: 0px;
+}
+.intro-curtain {
+  position: absolute;
+  inset: 0;
+  background-color: var(--background);
+}
+
+/* Above the mark: the sparks leave it, they are not behind it */
 .intro-sparks {
   position: absolute;
   inset: 0;
+  z-index: 2;
   width: 100%;
   height: 100%;
   pointer-events: none;
@@ -81,142 +97,14 @@ html[data-intro] .intro-veil {
   }
 }
 
-/* ---- The ring: the works, orbiting the camera ---- */
-.intro-ring {
-  --card-w: clamp(8.5rem, 19vw, 19rem);
-  --ring-r: clamp(11rem, 36vw, 40rem);
-  --orbit: 54s;
-  position: absolute;
-  inset: 0;
-  perspective: 100vw;
-  perspective-origin: 50% 46%;
-  pointer-events: none;
-  opacity: 0.85;
-  transition: opacity 450ms ease 1050ms;
-}
-.intro-ring-track {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform-style: preserve-3d;
-  /* Seen from a little above: the near side of the ring passes under the mark, the far side over it */
-  transform: translateZ(0) rotateX(-13deg) rotateY(0deg);
-  /* In-out, not a pure ease-in: the dive has to be seen to start, then rush */
-  transition: transform 1500ms cubic-bezier(0.76, 0, 0.24, 1);
-}
-/*
- * Each card orbits on its own timeline, phase-shifted by its place on the ring, and turns back as it goes so it always
- * faces the camera. A second animation on the same timeline sets the depth of field: out of focus up close, sharp at
- * the sides, dim at the back.
- */
-.intro-card {
-  position: absolute;
-  width: var(--card-w);
-  aspect-ratio: 3 / 2;
-  padding: 2px;
-  border-radius: var(--radius);
-  background-image: linear-gradient(
-    145deg,
-    var(--metal-hi),
-    var(--metal-mid) 54%,
-    var(--metal-lo)
-  );
-  box-shadow: 0 2rem 4rem -2rem
-    color-mix(in oklch, var(--shade) 70%, transparent);
-  animation:
-    intro-orbit var(--orbit) linear infinite,
-    intro-depth var(--orbit) linear infinite;
-  animation-delay: calc(var(--i) * var(--orbit) / var(--n) * -1);
-}
-/* On paper the far side fades into the page instead of darkening, and the frames cast a lighter shadow */
-html:not(.dark) .intro-card {
-  box-shadow: 0 1.5rem 3rem -2rem
-    color-mix(in oklch, var(--shade) 30%, transparent);
-  animation-name: intro-orbit, intro-depth-paper;
-}
-@keyframes intro-depth-paper {
-  0%,
-  100% {
-    opacity: 0.3;
-    filter: blur(7px);
-  }
-  20%,
-  80% {
-    opacity: 0.85;
-    filter: blur(0);
-  }
-  50% {
-    opacity: 0.4;
-    filter: blur(1.5px) saturate(0.7);
-  }
-}
-.intro-card img {
-  display: block;
-  width: 100%;
-  height: 100%;
-  border-radius: 1px;
-  object-fit: cover;
-  /* Each work arrives as the fill passes its share of the ring */
-  opacity: clamp(0, calc(var(--intro-fill, 0) * var(--n) - var(--i)), 1);
-}
-.intro-card img:not([data-loaded]) {
-  visibility: hidden;
-}
-@keyframes intro-orbit {
-  from {
-    transform: translate(-50%, -50%) rotateY(0turn) translateZ(var(--ring-r))
-      rotateY(0turn);
-  }
-  to {
-    transform: translate(-50%, -50%) rotateY(-1turn) translateZ(var(--ring-r))
-      rotateY(1turn);
-  }
-}
-@keyframes intro-depth {
-  0%,
-  100% {
-    opacity: 0.22;
-    filter: blur(7px);
-  }
-  20%,
-  80% {
-    opacity: 0.7;
-    filter: blur(0);
-  }
-  50% {
-    opacity: 0.34;
-    filter: blur(1.5px) brightness(0.6);
-  }
-}
-/* Blur on nine moving layers is a desktop luxury: phones keep the depth in opacity alone */
-@media (max-width: 640px) {
-  .intro-card,
-  html:not(.dark) .intro-card {
-    animation-name: intro-orbit, intro-depth-light;
-  }
-}
-@keyframes intro-depth-light {
-  0%,
-  100% {
-    opacity: 0.18;
-  }
-  20%,
-  80% {
-    opacity: 0.6;
-  }
-  50% {
-    opacity: 0.3;
-  }
-}
-
 .intro-stage {
   position: relative;
   display: grid;
   justify-items: center;
   transition:
-    transform 1200ms cubic-bezier(0.62, 0, 0.84, 0.18),
-    filter 900ms var(--ease-out-expo),
-    opacity 700ms ease 250ms;
+    translate 1100ms var(--ease-out-expo),
+    filter 800ms var(--ease-out-expo),
+    opacity 700ms var(--ease-out-expo);
 }
 
 /* ---- The mark: outline at rest, metal rising inside it ---- */
@@ -443,37 +331,32 @@ html:not(.dark) .intro-enter:focus-visible {
   translate: none;
   transition-delay: 150ms, 150ms, 0s, 0s, 0s, 0s, 0s;
 }
-.intro[data-state="ready"] .intro-ring {
-  opacity: 1;
-}
 .intro[data-state="ready"] .intro-glow {
   opacity: 1;
 }
 
-/* ---- Enter: the dive. The curtain thins first, so the page focuses under the frames sweeping past ---- */
+/*
+ * ---- Enter: one gesture, unhurried. ENTER bursts and the mark lifts away; a beat later an aperture opens from the
+ * centre of the curtain, its edge soft, and the page focuses as it widens. The sparks drift on over the page, and the
+ * loader fades out last so they do not stop dead.
+ */
 .intro[data-state="enter"] {
-  background-color: transparent;
   opacity: 0;
   pointer-events: none;
-  transition:
-    background-color 1200ms cubic-bezier(0.65, 0, 0.35, 1) 300ms,
-    opacity 600ms ease 1300ms;
+  transition: opacity 500ms ease 1900ms;
 }
-.intro[data-state="enter"] .intro-ring-track {
-  /* The nearest frame stops just short of the camera: past it, browsers draw 3D layers unreliably */
-  transform: translateZ(calc(100vw * 0.9 - var(--ring-r))) rotateX(-3deg)
-    rotateY(-40deg);
-}
-.intro[data-state="enter"] .intro-ring {
-  opacity: 0;
-}
-/* Grey frames sweeping over paper read as smoke: on paper the ring clears sooner */
-html:not(.dark) .intro[data-state="enter"] .intro-ring {
-  transition-delay: 600ms;
+.intro[data-state="enter"] .intro-curtain {
+  --intro-iris: 82vmax;
+  mask-image: radial-gradient(
+    circle at 50% 50%,
+    transparent calc(var(--intro-iris) - 22vmax),
+    #000 var(--intro-iris)
+  );
+  transition: --intro-iris 1500ms cubic-bezier(0.65, 0, 0.35, 1) 250ms;
 }
 .intro[data-state="enter"] .intro-stage {
-  transform: scale(1.9);
-  filter: blur(16px);
+  translate: 0 -1.25rem;
+  filter: blur(6px);
   opacity: 0;
 }
 .intro[data-state="enter"] .intro-glow {
@@ -481,7 +364,7 @@ html:not(.dark) .intro[data-state="enter"] .intro-ring {
 }
 .intro[data-state="enter"] .intro-enter {
   opacity: 0;
-  scale: 1.1;
+  scale: 0.96;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -489,19 +372,15 @@ html:not(.dark) .intro[data-state="enter"] .intro-ring {
   .intro-enter::after {
     animation: none;
   }
-  /* The ring stands still, evenly hung, and entering is a plain cross-fade */
-  .intro-card {
-    animation: none;
-    opacity: 0.4;
-    /* Half a step round, so no frame stands dead centre behind ENTER */
-    transform: translate(-50%, -50%)
-      rotateY(calc((var(--i) + 0.5) * -1turn / var(--n)))
-      translateZ(var(--ring-r))
-      rotateY(calc((var(--i) + 0.5) * 1turn / var(--n)));
+  /* Entering is a plain cross-fade: no aperture, nothing moves */
+  .intro[data-state="enter"] {
+    transition: opacity 400ms ease;
   }
-  .intro[data-state="enter"] .intro-ring-track,
+  .intro[data-state="enter"] .intro-curtain {
+    mask-image: none;
+  }
   .intro[data-state="enter"] .intro-stage {
-    transform: none;
+    translate: none;
     filter: none;
   }
   html[data-intro] .intro-veil {

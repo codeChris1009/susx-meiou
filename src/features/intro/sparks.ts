@@ -1,50 +1,59 @@
 /**
- * Sparks for the entry loader, in two layers:
+ * Sparks for the entry loader, after the 3D gallery's intro (demo-3js-Gallery0): round embers of warm light, a bright
+ * core in a soft glow, that fly straight out from where they are thrown, slowing as they go, shrinking and fading. Two
+ * layers:
  *
- * - ParticlePool: the physics, with no DOM, so it is unit-tested. A fixed pool stored struct-of-arrays in one
- *   Float32Array: a burst allocates nothing and garbage collection never lands mid-animation. (The 3D gallery this
- *   borrows from made one DOM node per spark; at a hundred sparks that is a hundred layers to style and composite.)
- * - Sparks: draws the pool on a 2D canvas. Each spark is a short streak along its velocity, a thin bright core over a
- *   wide faint halo, which reads as a hot fleck of metal rather than a dot. Gravity and drag bend it into an arc.
+ * - ParticlePool: the motion, with no DOM, so it is unit-tested. A fixed pool stored struct-of-arrays in one
+ *   Float32Array, so a burst allocates nothing. A spark's place is a pure function of its age (origin + travel ×
+ *   flight(t)), as the gallery's CSS keyframes were: a dropped frame can never fling one.
+ * - Sparks: draws the pool on a 2D canvas from glow sprites rendered once per colour (the gallery made one DOM node with
+ *   a box-shadow per spark; at a hundred sparks that is a hundred layers to composite).
  */
-export const CAPACITY = 360
-const FIELDS = 7
-const [X, Y, VX, VY, AGE, LIFE, SIZE] = [0, 1, 2, 3, 4, 5, 6] as const
+export const CAPACITY = 420
+const FIELDS = 8
+const [X, Y, DX, DY, AGE, LIFE, SIZE, END] = [0, 1, 2, 3, 4, 5, 6, 7] as const
 
-/** px per ms², a gentle fall: sparks arc rather than drop */
-const GRAVITY = 0.00065
-/** Fraction of velocity kept per ms */
-const DRAG = 0.9985
-/** Streak length, in ms of travel behind the spark */
-const TRAIL_MS = 26
-/** Halo width and strength relative to the core */
-const HALO_WIDTH = 4
-const HALO_ALPHA = 0.16
+/** Where an edge spark starts, outside the box: the gallery's 6–18px */
+const EDGE_GAP: Range = [6, 18]
 
 type Range = readonly [number, number]
 
-/** How a spray leaves its source; where it leaves from is given per emit */
-export interface Spray {
-  /** Direction in radians (0 = right, -π/2 = up) and the spread around it */
-  angle: number
-  spread: number
-  /** px per ms */
-  speed: Range
-  /** ms */
-  life: Range
-  /** px */
-  size: Range
+/** A rectangle in viewport px */
+export interface Box {
+  left: number
+  top: number
+  width: number
+  height: number
 }
 
-export interface Source {
-  x: number
-  y: number
-  /** Horizontal jitter around x, in px */
-  width?: number
+/** How sparks leave a box */
+export interface Spray {
+  /** "area": from anywhere inside it, toward `angle`. "edge": from just outside one of its sides, straight out */
+  from: "area" | "edge"
+  /** Radians, 0 = right, -π/2 = up. Area sprays only */
+  angle?: number
+  /** Scatter around the direction, in radians (2π: all round) */
+  spread: number
+  /** px travelled over the whole life */
+  distance: Range
+  /** ms */
+  life: Range
+  /** Core diameter, px */
+  size: Range
+  /** Scale at the end of the flight */
+  end: number
+  /** A cool outer halo, as on the gallery's frame sparks */
+  halo?: boolean
 }
+
+/** The flight: CSS ease-out, near enough. Fast off the mark, slowing to a drift */
+export const flight = (t: number) => 1 - (1 - t) ** 2
+/** Brightness over the life: the flash, then a long fade */
+export const fade = (t: number) => (1 - t) ** 1.6
 
 export class ParticlePool {
   readonly state = new Float32Array(CAPACITY * FIELDS)
+  /** Index into the renderer's sprites: a colour, plus `tones` for its halo variant */
   readonly tone = new Uint8Array(CAPACITY)
   private live = 0
   private readonly tones: number
@@ -60,43 +69,65 @@ export class ParticlePool {
   }
 
   /** Adds up to n sparks; past CAPACITY the extra are dropped, never an old spark cut short */
-  emit(n: number, from: Source, spray: Spray) {
+  emit(n: number, box: Box, spray: Spray) {
     const rnd = this.random
     const between = ([min, max]: Range) => min + rnd() * (max - min)
     for (let k = 0; k < n && this.live < CAPACITY; k++) {
+      let x: number
+      let y: number
+      let angle: number
+      if (spray.from === "edge") {
+        const side = Math.min(3, Math.floor(rnd() * 4))
+        const gap = between(EDGE_GAP)
+        const along = rnd()
+        // top, right, bottom, left; each sends its sparks out along its normal
+        const normal = [-Math.PI / 2, 0, Math.PI / 2, Math.PI][side]!
+        x =
+          side === 1
+            ? box.left + box.width + gap
+            : side === 3
+              ? box.left - gap
+              : box.left + along * box.width
+        y =
+          side === 0
+            ? box.top - gap
+            : side === 2
+              ? box.top + box.height + gap
+              : box.top + along * box.height
+        angle = normal + (rnd() - 0.5) * spray.spread
+      } else {
+        x = box.left + rnd() * box.width
+        y = box.top + rnd() * box.height
+        angle = (spray.angle ?? 0) + (rnd() - 0.5) * spray.spread
+      }
+      const distance = between(spray.distance)
       const p = this.live++
       const i = p * FIELDS
-      const angle = spray.angle + (rnd() - 0.5) * spray.spread
-      const speed = between(spray.speed)
-      this.state[i + X] = from.x + (rnd() - 0.5) * (from.width ?? 0)
-      this.state[i + Y] = from.y
-      this.state[i + VX] = Math.cos(angle) * speed
-      this.state[i + VY] = Math.sin(angle) * speed
+      this.state[i + X] = x
+      this.state[i + Y] = y
+      this.state[i + DX] = Math.cos(angle) * distance
+      this.state[i + DY] = Math.sin(angle) * distance
       this.state[i + AGE] = 0
       this.state[i + LIFE] = between(spray.life)
       this.state[i + SIZE] = between(spray.size)
-      this.tone[p] = Math.min(this.tones - 1, Math.floor(rnd() * this.tones))
+      this.state[i + END] = spray.end
+      const colour = Math.min(this.tones - 1, Math.floor(rnd() * this.tones))
+      this.tone[p] = colour + (spray.halo ? this.tones : 0)
     }
   }
 
-  /** Advance by dt ms; expired sparks are swap-removed, so the live ones stay packed at the front */
+  /** Ages every spark by dt ms; expired ones are swap-removed, so the live ones stay packed at the front */
   step(dt: number) {
     const s = this.state
-    const keep = DRAG ** dt
     for (let p = 0; p < this.live;) {
       const i = p * FIELDS
-      s[i + AGE]! += dt
+      s[i + AGE]! += Math.max(0, dt)
       if (s[i + AGE]! >= s[i + LIFE]!) {
         const last = --this.live
         s.copyWithin(i, last * FIELDS, last * FIELDS + FIELDS)
         this.tone[p] = this.tone[last]!
         continue
       }
-      s[i + VY]! += GRAVITY * dt
-      s[i + VX]! *= keep
-      s[i + VY]! *= keep
-      s[i + X]! += s[i + VX]! * dt
-      s[i + Y]! += s[i + VY]! * dt
       p++
     }
   }
@@ -105,40 +136,93 @@ export class ParticlePool {
     this.live = 0
   }
 
-  /** One spark as an object, for tests and debugging; the renderer reads `state` directly and allocates nothing */
+  /** Spark p as drawn: where it is, how large and how bright */
   read(p: number) {
     const i = p * FIELDS
     const s = this.state
+    const t = s[i + AGE]! / s[i + LIFE]!
+    const f = flight(t)
     return {
-      x: s[i + X]!,
-      y: s[i + Y]!,
-      vx: s[i + VX]!,
-      vy: s[i + VY]!,
-      t: s[i + AGE]! / s[i + LIFE]!,
-      size: s[i + SIZE]!,
+      x: s[i + X]! + s[i + DX]! * f,
+      y: s[i + Y]! + s[i + DY]! * f,
+      /** Core diameter now, px */
+      size: s[i + SIZE]! * (1 + (s[i + END]! - 1) * f),
+      alpha: fade(t),
       tone: this.tone[p]!,
     }
   }
+}
+
+/** Sprite radius as a multiple of the core diameter: the glow reaches about three cores out */
+const GLOW = 3
+/** Halo sprites are drawn this much larger, the cool ring outside the warm glow */
+const HALO_SCALE = 1.45
+const SPRITE_PX = 64
+
+function rgba(hex: string, alpha: number) {
+  const h = hex.replace("#", "")
+  const [r, g, b] = [0, 2, 4].map((at) => parseInt(h.slice(at, at + 2), 16))
+  const own = h.length === 8 ? parseInt(h.slice(6, 8), 16) / 255 : 1
+  return `rgba(${r}, ${g}, ${b}, ${(alpha * own).toFixed(3)})`
+}
+
+/** One ember: a solid core and a glow falling away from it; on ink it glows wide, on paper it stays close */
+function sprite(colour: string, wide: boolean, halo: string | null) {
+  const canvas = document.createElement("canvas")
+  canvas.width = canvas.height = SPRITE_PX
+  const ctx = canvas.getContext("2d")
+  if (!ctx) return canvas
+  const r = SPRITE_PX / 2
+  // The warm part fills the whole sprite, or its inner share when a halo surrounds it
+  const reach = halo ? 1 / HALO_SCALE : 1
+  if (halo) {
+    const cool = ctx.createRadialGradient(r, r, 0, r, r, r)
+    // Faint: halos overlap and add up, and a hundred of them at full strength read as fog
+    cool.addColorStop(0, rgba(halo, 0.16))
+    cool.addColorStop(0.5, rgba(halo, 0.05))
+    cool.addColorStop(1, rgba(halo, 0))
+    ctx.fillStyle = cool
+    ctx.fillRect(0, 0, SPRITE_PX, SPRITE_PX)
+  }
+  const core = 0.5 / GLOW
+  const warm = ctx.createRadialGradient(r, r, 0, r, r, r * reach)
+  warm.addColorStop(0, rgba(colour, 1))
+  warm.addColorStop(core * 0.8, rgba(colour, 1))
+  warm.addColorStop(core * 1.25, rgba(colour, wide ? 0.55 : 0.4))
+  warm.addColorStop(0.45, rgba(colour, wide ? 0.16 : 0.06))
+  warm.addColorStop(1, rgba(colour, 0))
+  ctx.fillStyle = warm
+  ctx.fillRect(0, 0, SPRITE_PX, SPRITE_PX)
+  return canvas
 }
 
 export class Sparks {
   private readonly pool: ParticlePool
   private readonly canvas: HTMLCanvasElement
   private readonly ctx: CanvasRenderingContext2D | null
-  private readonly colours: readonly string[]
-  /** Additive light on a dark ground; on paper the sparks are dark metal dust and simply paint over */
+  private readonly sprites: HTMLCanvasElement[]
+  /** Additive light on ink; on paper the gilt simply paints over */
   private readonly additive: boolean
 
+  /**
+   * @param colours  the spark palette (EMBER.dark or EMBER.light)
+   * @param halo  colour of the cool halo some sprays carry, or null for none (paper)
+   */
   constructor(
     canvas: HTMLCanvasElement,
     colours: readonly string[],
+    halo: string | null,
     additive: boolean
   ) {
     this.canvas = canvas
     this.ctx = canvas.getContext("2d")
-    this.colours = colours
     this.additive = additive
     this.pool = new ParticlePool(colours.length)
+    const plain = colours.map((c) => sprite(c, additive, null))
+    this.sprites = [
+      ...plain,
+      ...(halo ? colours.map((c) => sprite(c, additive, halo)) : plain),
+    ]
     this.resize()
   }
 
@@ -154,8 +238,8 @@ export class Sparks {
     return this.pool.count
   }
 
-  emit(n: number, from: Source, spray: Spray) {
-    this.pool.emit(n, from, spray)
+  emit(n: number, box: Box, spray: Spray) {
+    this.pool.emit(n, box, spray)
   }
 
   /** Advance by dt ms and redraw */
@@ -174,29 +258,12 @@ export class Sparks {
     if (!ctx) return
     ctx.clearRect(0, 0, window.innerWidth, window.innerHeight)
     ctx.globalCompositeOperation = this.additive ? "lighter" : "source-over"
-    ctx.lineCap = "round"
-    const s = this.pool.state
+    const half = this.sprites.length / 2
     for (let p = 0; p < this.pool.count; p++) {
-      const i = p * FIELDS
-      const x = s[i + X]!
-      const y = s[i + Y]!
-      const vx = s[i + VX]!
-      const vy = s[i + VY]!
-      const t = s[i + AGE]! / s[i + LIFE]!
-      const size = s[i + SIZE]!
-      const tone = this.pool.tone[p]!
-      const fade = (1 - t) ** 1.6
-      const width = size * (1 - t * 0.6)
-      ctx.strokeStyle = this.colours[tone]!
-      ctx.beginPath()
-      ctx.moveTo(x - vx * TRAIL_MS, y - vy * TRAIL_MS)
-      ctx.lineTo(x, y)
-      ctx.globalAlpha = fade * HALO_ALPHA
-      ctx.lineWidth = width * HALO_WIDTH
-      ctx.stroke()
-      ctx.globalAlpha = fade
-      ctx.lineWidth = width
-      ctx.stroke()
+      const { x, y, size, alpha, tone } = this.pool.read(p)
+      const r = size * GLOW * (tone >= half ? HALO_SCALE : 1)
+      ctx.globalAlpha = alpha
+      ctx.drawImage(this.sprites[tone]!, x - r, y - r, r * 2, r * 2)
     }
     ctx.globalAlpha = 1
   }

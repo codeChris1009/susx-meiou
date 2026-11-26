@@ -1,36 +1,54 @@
 import { describe, expect, it } from "vitest"
 
-import { FULL, MAX_RATE, READY_CAP, chase, targetAt } from "./progress"
+import { FULL, HOLD_AT, MAX_STEP_MS, ease, progressAt, tick } from "./progress"
 
-describe("targetAt", () => {
-  it("follows time up to the cap while not ready", () => {
-    expect(targetAt(0, false, FULL)).toBe(0)
-    expect(targetAt(FULL.fillMs / 2, false, FULL)).toBeCloseTo(READY_CAP / 2)
-    expect(targetAt(FULL.fillMs * 10, false, FULL)).toBe(READY_CAP)
-  })
+/** Speed of the curve around t */
+const speed = (t: number) => (ease(t + 0.005) - ease(t - 0.005)) / 0.01
 
-  it("reaches 100 only once ready and the timeline has played", () => {
-    expect(targetAt(100, true, FULL)).toBeLessThan(READY_CAP)
-    expect(targetAt(FULL.fillMs, true, FULL)).toBe(100)
-  })
-
-  it("treats a clock that runs backwards as zero", () => {
-    expect(targetAt(-50, true, FULL)).toBe(0)
-  })
-})
-
-describe("chase", () => {
-  it("never passes the target", () => {
-    expect(chase(90, 92, 1000)).toBe(92)
-  })
-
-  it("never moves faster than MAX_RATE, so a stalled frame cannot jump", () => {
-    // The main thread was blocked for two seconds and the target leapt to 100
-    expect(chase(12, 100, 16)).toBeCloseTo(12 + 16 * MAX_RATE)
+describe("ease", () => {
+  it("runs from 0 to 1 and clamps outside", () => {
+    expect(ease(0)).toBe(0)
+    expect(ease(1)).toBe(1)
+    expect(ease(-1)).toBe(0)
+    expect(ease(2)).toBe(1)
   })
 
   it("never goes backwards", () => {
-    expect(chase(50, 40, 16)).toBe(50)
-    expect(chase(50, 60, -16)).toBe(50)
+    for (let t = 0; t < 1; t += 0.01)
+      expect(ease(t + 0.01)).toBeGreaterThanOrEqual(ease(t))
+  })
+
+  it("is slow, then medium, then fast, then slow", () => {
+    const start = speed(0.05)
+    const middle = speed(0.35)
+    const peak = speed(2 / 3)
+    const end = speed(0.98)
+    expect(start).toBeLessThan(middle)
+    expect(middle).toBeLessThan(peak)
+    expect(end).toBeLessThan(middle)
+    expect(start).toBeGreaterThan(0)
+  })
+})
+
+describe("tick", () => {
+  it("waits at HOLD_AT while the page is not ready", () => {
+    let clock = 0
+    for (let i = 0; i < 500; i++) clock = tick(clock, 16, false, FULL)
+    expect(clock).toBe(FULL.fillMs * HOLD_AT)
+    expect(progressAt(clock, FULL)).toBeLessThan(100)
+  })
+
+  it("plays the curve to the end once ready", () => {
+    let clock = 0
+    for (let i = 0; i < 500; i++) clock = tick(clock, 16, true, FULL)
+    expect(progressAt(clock, FULL)).toBe(100)
+  })
+
+  it("never steps more than MAX_STEP_MS, so a stalled frame cannot jump", () => {
+    expect(tick(100, 2000, true, FULL)).toBe(100 + MAX_STEP_MS)
+  })
+
+  it("never goes backwards", () => {
+    expect(tick(500, -16, true, FULL)).toBe(500)
   })
 })

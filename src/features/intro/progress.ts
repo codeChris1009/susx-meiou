@@ -1,41 +1,51 @@
 /**
- * Entry loader progress: two numbers, after the ANTHOLOGY prepare screen.
+ * Entry loader progress: a clock and a curve.
  *
- * - target is honest. Time alone pushes it to READY_CAP; only the real ready signal (fonts and first render) takes it
- *   to 100. So a fast visit still sees the fill play, and a slow one never sits at a fake 100%.
- * - shown chases target at a capped speed. The first frames are exactly when the main thread is busiest (bundle parse,
- *   font decode, React's first render), so a few frames go missing; a purely time-based counter would then leap from 12
- *   to 100 and the animation would simply not be seen. Capping the speed turns that leap into a quick run.
+ * - The curve is slow, then medium, then fast, then slow: its speed climbs to a peak two-thirds of the way through and
+ *   eases into 100, so the fill gathers itself, rushes, and settles instead of ticking up at one rate.
+ * - The clock is honest. It runs on frame time, but stops at HOLD_AT until the real ready signal (fonts and first render)
+ *   arrives, so a slow visit waits before the last, slow stretch rather than sitting at a fake 100%. Each frame adds at
+ *   most MAX_STEP_MS: the first frames are exactly when the main thread is busiest, and a stalled frame would otherwise
+ *   jump the fill from 12 to 90 and the animation would simply not be seen.
  */
 export interface IntroTiming {
-  /** Time for the timeline alone to reach READY_CAP */
+  /** Time for the curve to run from 0 to 100 when nothing holds it */
   fillMs: number
-  /** Pause at 100% before the curtain lifts, so the full mark is actually seen */
+  /** Pause at 100% before the gate opens, so the full mark is actually seen */
   settleMs: number
 }
 
 /** First entry in a session: the whole ceremony */
-export const FULL: IntroTiming = { fillMs: 1800, settleMs: 620 }
-/** A reload in the same session: the same sequence, brisk */
-export const QUICK: IntroTiming = { fillMs: 520, settleMs: 240 }
+export const FULL: IntroTiming = { fillMs: 3400, settleMs: 700 }
+/** A reload in the same session: the same curve, brisk */
+export const QUICK: IntroTiming = { fillMs: 1100, settleMs: 260 }
 
-export const READY_CAP = 92
-/** Fastest the shown value may move, in points per millisecond (100 points in 900ms) */
-export const MAX_RATE = 100 / 900
+/** Where the clock waits for the page, as a share of fillMs (the curve stands at about 82% there) */
+export const HOLD_AT = 0.8
+/** Longest step the clock takes in one frame */
+export const MAX_STEP_MS = 48
+/** A little constant speed under the curve, so its slow ends still move */
+const FLOOR = 0.15
 
-export function targetAt(
-  elapsedMs: number,
+/** 0..1 → 0..1. Speed: 0.15 at the start, about 1.66 at two-thirds, back to 0.15 at the end */
+export function ease(t: number) {
+  const x = Math.min(1, Math.max(0, t))
+  return FLOOR * x + (1 - FLOOR) * (4 * x ** 3 - 3 * x ** 4)
+}
+
+/** Advances the clock by one frame's time: capped, never backwards, and not past HOLD_AT until the page is ready */
+export function tick(
+  clock: number,
+  dtMs: number,
   ready: boolean,
   timing: IntroTiming
 ) {
-  const timed = Math.min(
-    READY_CAP,
-    (Math.max(0, elapsedMs) / timing.fillMs) * READY_CAP
-  )
-  return ready && timed >= READY_CAP ? 100 : timed
+  const stop = ready ? timing.fillMs : timing.fillMs * HOLD_AT
+  const next = clock + Math.min(MAX_STEP_MS, Math.max(0, dtMs))
+  return Math.max(clock, Math.min(stop, next))
 }
 
-export function chase(shown: number, target: number, dtMs: number) {
-  if (shown >= target) return shown
-  return Math.min(target, shown + Math.max(0, dtMs) * MAX_RATE)
+/** The fill, 0..100, at a clock reading */
+export function progressAt(clock: number, timing: IntroTiming) {
+  return 100 * ease(clock / timing.fillMs)
 }
