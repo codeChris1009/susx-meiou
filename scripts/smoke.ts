@@ -1,6 +1,7 @@
 /**
  * After a deploy: the live page answers, is this build (not a cached old one), and its script and stylesheet load.
- * Edge caches can take a moment to pick up a new version, so it retries before failing.
+ * Edge locations pick up a new version unevenly (seen: over 30 s for the page and its assets to agree), so it
+ * retries for about two minutes before failing.
  *
  *   pnpm smoke   # checks package.json "homepage" against the local dist/
  */
@@ -18,8 +19,8 @@ const entry = /src="(\/assets\/index-[^"]+\.js)"/.exec(built)?.[1]
 if (!entry)
   throw new Error("dist/index.html has no entry script; run the build first")
 
-const ATTEMPTS = 6
-const WAIT_MS = 5000
+const ATTEMPTS = 12
+const WAIT_MS = 10_000
 
 async function check(): Promise<string | null> {
   const page = await fetch(homepage, { cache: "no-store" })
