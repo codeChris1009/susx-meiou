@@ -31,7 +31,7 @@ export function SectionHeading({
         >
           <span
             aria-hidden
-            className="text-metal font-mono text-5xl leading-none font-light tracking-tighter transition-[translate,filter] duration-700 ease-(--ease-out-expo) group-hover/heading:-translate-x-1 group-hover/heading:brightness-125 sm:text-6xl"
+            className="text-metal text-5xl leading-none font-light tracking-tighter tabular-nums transition-[translate,filter] duration-700 ease-(--ease-out-expo) group-hover/heading:-translate-x-1 group-hover/heading:brightness-125 sm:text-6xl"
           >
             {index}
           </span>
@@ -39,7 +39,7 @@ export function SectionHeading({
             {title}
           </span>
         </h2>
-        <p className="pb-1 font-mono text-xs tracking-[0.18em] text-muted-foreground uppercase">
+        <p className="pb-1 text-xs tracking-[0.18em] text-muted-foreground uppercase">
           {note}
         </p>
       </div>

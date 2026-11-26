@@ -25,10 +25,10 @@ const HERO_ID = "top"
 function Stat({ value, label }: { value: number; label: string }) {
   return (
     <div className="group/stat cursor-default transition-transform duration-300 ease-(--ease-spring) select-none active:scale-95">
-      <dt className="font-mono text-[0.7rem] tracking-[0.2em] text-muted-foreground uppercase">
+      <dt className="text-[0.7rem] tracking-[0.2em] text-muted-foreground uppercase">
         {label}
       </dt>
-      <dd className="mt-1 text-metal font-mono text-4xl font-light tabular-nums transition-[translate,filter] duration-500 ease-(--ease-spring) group-hover/stat:-translate-y-1 group-hover/stat:brightness-125">
+      <dd className="mt-1 text-metal text-4xl font-light tabular-nums transition-[translate,filter] duration-500 ease-(--ease-spring) group-hover/stat:-translate-y-1 group-hover/stat:brightness-125">
         {String(value).padStart(2, "0")}
       </dd>
     </div>
@@ -55,7 +55,7 @@ function Hero() {
       </div>
 
       <div className="hero-content container-wide relative flex min-h-[calc(92svh-4rem)] flex-col justify-center py-24">
-        <p className="animate-rise flex items-center gap-3 font-mono text-[0.7rem] tracking-[0.28em] text-muted-foreground uppercase">
+        <p className="animate-rise flex items-center gap-3 text-[0.7rem] tracking-[0.28em] text-muted-foreground uppercase">
           <span aria-hidden className="hairline-metal w-10" />
           Selected work · {year}
         </p>
@@ -80,7 +80,7 @@ function Hero() {
         <div className="animate-rise mt-10 flex flex-wrap items-center gap-3 [--rise-delay:380ms]">
           <a
             href="#gallery"
-            className="pressable group/cta inline-flex h-11 items-center gap-2 rounded-full bg-foreground px-6 text-sm font-medium text-background hover:shadow-[0_12px_30px_-12px_color-mix(in_oklch,var(--shade)_50%,transparent)]"
+            className="pressable group/cta inline-flex h-11 items-center gap-2 rounded-lg bg-foreground px-6 text-sm font-medium text-background hover:shadow-[0_12px_30px_-12px_color-mix(in_oklch,var(--shade)_50%,transparent)]"
           >
             瀏覽作品
             <ArrowDown className="size-4 transition-transform duration-500 ease-(--ease-spring) group-hover/cta:translate-y-0.5" />
@@ -89,7 +89,7 @@ function Hero() {
             href={site.github}
             target="_blank"
             rel="noopener"
-            className="pressable group/cta inline-flex h-11 items-center gap-2 rounded-full px-6 text-sm font-medium ring-1 ring-foreground/15 hover:bg-accent hover:ring-metal/50"
+            className="pressable group/cta inline-flex h-11 items-center gap-2 rounded-lg px-6 text-sm font-medium ring-1 ring-foreground/15 hover:bg-accent hover:ring-metal/50"
           >
             <GithubMark
               aria-hidden
@@ -109,7 +109,7 @@ function Hero() {
       <a
         href="#gallery"
         aria-label="捲動到精選展間"
-        className="pressable group/cue absolute bottom-8 left-1/2 hidden -translate-x-1/2 flex-col items-center gap-3 font-mono text-[0.6rem] tracking-[0.3em] text-muted-foreground uppercase hover:text-foreground sm:flex"
+        className="pressable group/cue absolute bottom-8 left-1/2 hidden -translate-x-1/2 flex-col items-center gap-3 text-[0.6rem] tracking-[0.3em] text-muted-foreground uppercase hover:text-foreground sm:flex"
       >
         Scroll
         <span className="scroll-cue-line block h-12 w-px bg-foreground/15 transition-[height] duration-500 ease-(--ease-out-expo) group-hover/cue:h-16" />
@@ -136,7 +136,7 @@ function Footer() {
           </p>
         </div>
         <div className="hairline-metal mt-10" />
-        <div className="mt-6 flex flex-col gap-4 font-mono text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
+        <div className="mt-6 flex flex-col gap-4 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
           <p>
             © {year} {site.owner} · 清單更新於 {syncedOn}
           </p>

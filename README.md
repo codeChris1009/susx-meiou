@@ -64,8 +64,8 @@ Repository variable（同一頁的 Variables 分頁）：
 深色模式是香檳到暖灰，淺色模式是同一塊金屬的暗面。CSS 變數在 [index.css](src/index.css)，同一組 hex 由 palette.ts
 給 three.js 用，[palette.test.ts](scripts/palette.test.ts) 確保兩邊（含 404 頁）一致。
 
-shadcn `radix-nova`、`--radius: 0.35rem`；字體是 Geist、Noto Sans TC（自架、unicode-range 切片，只下載頁面用到的字）、
-Geist Mono，以及只用在進場字標與展間名牌的花體字 Stalemate（自架、只有 Latin）。
+shadcn `radix-nova`；圓角一律 `--radius: 0.35rem`（直角帶一點圓，只有狀態圓點是圓的）。字體分工：英文與數字一律 Geist，
+中文 Noto Sans TC（自架、unicode-range 切片，只下載頁面用到的字），花體字 Stalemate 只用在進場字標、展間名牌與頁尾簽名（自架、只有 Latin）。
 
 **進場動畫**（[src/features/intro](src/features/intro)）：標記寫死在 `index.html`，bundle 還沒執行就先畫出來。品牌標記與
 花體字標由下往上注入金屬，邊緣噴出火花（canvas + 固定大小的粒子池），100% 時爆一次再淡出。進度是誠實的：時間只推到 92%，

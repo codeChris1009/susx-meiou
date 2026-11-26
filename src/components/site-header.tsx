@@ -12,7 +12,7 @@ const NAV = [
 ] as const
 
 const iconButton =
-  "pressable group/icon grid size-9 place-items-center rounded-full text-muted-foreground hover:bg-accent hover:text-foreground"
+  "pressable group/icon grid size-9 place-items-center rounded-lg text-muted-foreground hover:bg-accent hover:text-foreground"
 
 function ThemeToggle() {
   const { setTheme } = useTheme()
@@ -53,7 +53,7 @@ export function SiteHeader() {
       <div className="container-wide flex h-full items-center justify-between">
         <a
           href="#top"
-          className="pressable group/logo inline-flex items-center gap-2.5 rounded-md font-mono text-sm font-semibold tracking-tight"
+          className="pressable group/logo inline-flex items-center gap-2.5 rounded-md text-sm font-semibold tracking-tight"
         >
           {/* The artwork is portrait (1024 x 1292), so the width is 0.79 of the height */}
           <span
