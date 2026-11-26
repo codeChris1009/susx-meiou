@@ -4,24 +4,13 @@ import type { CSSProperties } from "react"
 import { GithubMark } from "@/components/github-mark"
 import { useReveal } from "@/hooks/use-reveal"
 import { cn } from "@/lib/utils"
-import type { Host, Project } from "./types.ts"
-
-const HOST_LABEL: Record<Host, string> = {
-  cloudflare: "Cloudflare",
-  "github-pages": "GitHub Pages",
-  vercel: "Vercel",
-  other: "Web",
-}
-
-const displayUrl = (url: string) =>
-  url.replace(/^https?:\/\//, "").replace(/\/$/, "")
+import { HOST_LABEL, type Entry } from "./collection"
+import { displayUrl, pad } from "./format"
 
 export type CardVariant = "feature" | "default" | "compact"
 
 interface ProjectCardProps {
-  project: Project
-  /** Position in its section, shown as No. 01 */
-  index: number
+  project: Entry
   variant?: CardVariant
   /** Stagger for the scroll reveal */
   delayMs?: number
@@ -38,7 +27,6 @@ interface ProjectCardProps {
  */
 export function ProjectCard({
   project,
-  index,
   variant = "default",
   delayMs = 0,
   eager = false,
@@ -103,7 +91,7 @@ export function ProjectCard({
       >
         <div className="flex items-center justify-between gap-3">
           <span className="text-metal text-[0.7rem] tracking-[0.2em] uppercase tabular-nums">
-            No. {String(index + 1).padStart(2, "0")}
+            No. {pad(project.no)}
           </span>
           <span
             aria-hidden

@@ -13,6 +13,7 @@
 @import "@fontsource/stalemate/latin-400.css";
 @import "./features/intro/intro.css";
 @import "./features/hero/hero.css";
+@import "./features/projects/projects.css";
 @import "./features/gallery/gallery.css";
 
 @custom-variant dark (&:is(.dark *));

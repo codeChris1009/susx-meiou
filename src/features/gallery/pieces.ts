@@ -55,7 +55,7 @@ export const HANG: readonly GallerySpec[] = [
   {
     id: "yi-64",
     repo: "yi-64",
-    title: "YI·64",
+    title: "YI 64",
     caption: "易經六十四卦的互動閱讀",
   },
   {
@@ -67,7 +67,7 @@ export const HANG: readonly GallerySpec[] = [
   {
     id: "villain-orgs",
     repo: "pokemon-anti-org",
-    title: "Pokémon Anti-Org",
+    title: "Pokémon Anti Org",
     caption: "九個世代的反派組織",
   },
   {

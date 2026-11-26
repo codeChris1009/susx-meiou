@@ -1,0 +1,416 @@
+/*
+ * The works and practice collections: a control ring that freezes under the header, and three views of one selection.
+ * GRID is screens first, TABLE a sortable spec sheet whose header row freezes under the ring, LIST an index of names
+ * with a preview that trails the pointer.
+ */
+.collection {
+  /* Where frozen rows stop: under the header (3.5rem once the page has moved), and on wider screens the ring too */
+  --stick: 3.5rem;
+}
+@media (min-width: 768px) {
+  .collection {
+    --stick: calc(3.5rem + 0.75rem + var(--toolbar-h, 0px));
+  }
+}
+
+/* ---- The ring ---- */
+.collection-toolbar {
+  position: relative;
+  z-index: 30;
+  padding: 0.5rem;
+  border-radius: var(--radius);
+  background: color-mix(in oklch, var(--background) 82%, transparent);
+  box-shadow: inset 0 0 0 1px
+    color-mix(in oklch, var(--foreground) 10%, transparent);
+  backdrop-filter: blur(16px) saturate(1.3);
+  transition:
+    box-shadow 500ms var(--ease-out-expo),
+    background-color 500ms var(--ease-out-expo);
+}
+.collection-toolbar:focus-within {
+  box-shadow:
+    inset 0 0 0 1px color-mix(in oklch, var(--metal-mid) 45%, transparent),
+    0 18px 40px -28px color-mix(in oklch, var(--shade) 60%, transparent);
+}
+@media (min-width: 768px) {
+  .collection-toolbar {
+    position: sticky;
+    top: 4.25rem;
+  }
+}
+
+.collection-search {
+  display: flex;
+  flex: 1 1 14rem;
+  align-items: center;
+  gap: 0.6rem;
+  height: 2.25rem;
+  min-width: 12rem;
+  padding-inline: 0.75rem;
+  border-radius: calc(var(--radius) - 1px);
+  box-shadow: inset 0 0 0 1px
+    color-mix(in oklch, var(--foreground) 10%, transparent);
+  cursor: text;
+  transition:
+    box-shadow 400ms var(--ease-out-expo),
+    translate 400ms var(--ease-out-expo),
+    background-color 400ms var(--ease-out-expo);
+}
+.collection-search:hover {
+  background: color-mix(in oklch, var(--accent) 50%, transparent);
+}
+.collection-search:focus-within {
+  translate: 0 -1px;
+  background: var(--background);
+  box-shadow: inset 0 0 0 1px
+    color-mix(in oklch, var(--metal-mid) 65%, transparent);
+}
+/* The field's own focus ring would double the plate's */
+.collection-search input:focus-visible {
+  outline: none;
+}
+
+.toolbar-label {
+  padding-left: 0.5rem;
+  font-size: 0.62rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+}
+.toolbar-pitch {
+  animation: pitch-in 700ms var(--ease-out-expo) both;
+}
+@keyframes pitch-in {
+  from {
+    opacity: 0;
+    translate: 6px 0;
+  }
+}
+
+/* ---- Segmented: a plate slides to the pressed choice ---- */
+.segmented {
+  position: relative;
+  isolation: isolate;
+  display: inline-flex;
+  padding: 2px;
+  border-radius: calc(var(--radius) - 1px);
+  box-shadow: inset 0 0 0 1px
+    color-mix(in oklch, var(--foreground) 10%, transparent);
+  scrollbar-width: none;
+}
+.segmented-thumb {
+  position: absolute;
+  inset-block: 2px;
+  left: 0;
+  z-index: -1;
+  width: var(--thumb-w, 0);
+  translate: var(--thumb-x, 0) 0;
+  border-radius: calc(var(--radius) - 2px);
+  background: var(--foreground);
+  box-shadow: 0 6px 16px -8px color-mix(in oklch, var(--shade) 60%, transparent);
+  opacity: 0;
+  transition:
+    translate 550ms var(--ease-out-expo),
+    width 550ms var(--ease-out-expo),
+    opacity 300ms ease;
+}
+.segmented[data-placed] .segmented-thumb {
+  opacity: 1;
+}
+.segmented-item {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 0.45rem;
+  height: 2rem;
+  padding-inline: 0.75rem;
+  border-radius: calc(var(--radius) - 2px);
+  font-size: 0.64rem;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--muted-foreground);
+  cursor: pointer;
+}
+.segmented-item:hover {
+  color: var(--foreground);
+  background: color-mix(in oklch, var(--accent) 70%, transparent);
+}
+.segmented-item[aria-pressed="true"] {
+  color: var(--background);
+  background: transparent;
+}
+
+/* ---- Switching views: the new one rises into place ---- */
+/* backwards, not both: a fill that outlives the animation keeps a filter in effect, and an element with a filter is
+   the containing block for fixed descendants, which would pin the index plate to the view instead of the viewport */
+.collection-view {
+  animation: view-in 800ms var(--ease-out-expo) backwards;
+}
+@keyframes view-in {
+  from {
+    opacity: 0;
+    translate: 0 18px;
+    filter: blur(6px);
+  }
+}
+
+/* ---- TABLE ---- */
+.collection-table {
+  table-layout: fixed;
+}
+.collection-table th,
+.collection-table td {
+  padding: 0.9rem 0.75rem;
+  text-align: left;
+  vertical-align: middle;
+  border-bottom: 1px solid
+    color-mix(in oklch, var(--foreground) 8%, transparent);
+}
+/* The frozen top row */
+.collection-table thead th {
+  position: sticky;
+  top: var(--stick);
+  z-index: 20;
+  padding-block: 0.4rem;
+  background: color-mix(in oklch, var(--background) 90%, transparent);
+  backdrop-filter: blur(14px);
+  border-bottom-color: color-mix(in oklch, var(--foreground) 16%, transparent);
+  font-weight: 400;
+}
+.table-sort {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  height: 1.9rem;
+  margin-inline: -0.5rem;
+  padding-inline: 0.5rem;
+  border-radius: calc(var(--radius) - 2px);
+  font-size: 0.62rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+  cursor: pointer;
+}
+.table-sort:hover {
+  color: var(--foreground);
+  background: var(--accent);
+}
+.table-sort svg {
+  opacity: 0.35;
+}
+.table-sort[data-active] {
+  color: var(--foreground);
+}
+.table-sort[data-active] svg {
+  opacity: 1;
+  color: var(--metal-mid);
+}
+.collection-table .table-group {
+  padding-top: 2rem;
+  font-size: 0.68rem;
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+.table-row {
+  position: relative;
+  transition: background-color 400ms var(--ease-out-expo);
+}
+.table-row:hover {
+  background: color-mix(in oklch, var(--accent) 55%, transparent);
+}
+.table-row > td:first-child {
+  transition: color 400ms ease;
+}
+.table-row:hover > td:first-child {
+  color: var(--metal-mid);
+}
+/* The whole row opens the site: the name's link is stretched over it */
+.table-link::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+}
+.table-link:focus-visible {
+  outline: none;
+}
+.table-row:has(.table-link:focus-visible) {
+  outline: 1.5px solid var(--metal-mid);
+  outline-offset: -2px;
+}
+.table-thumb {
+  position: relative;
+  flex-shrink: 0;
+  width: 4.5rem;
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  border-radius: calc(var(--radius) - 2px);
+  background: var(--muted);
+  box-shadow: inset 0 0 0 1px
+    color-mix(in oklch, var(--foreground) 8%, transparent);
+}
+.table-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top;
+  transition: scale 900ms var(--ease-out-expo);
+}
+.table-row:hover .table-thumb img {
+  scale: 1.12;
+}
+
+/* ---- LIST: the index ---- */
+.index-list {
+  border-top: 1px solid color-mix(in oklch, var(--foreground) 10%, transparent);
+}
+.index-row {
+  position: relative;
+  display: grid;
+  grid-template-columns: 2.5rem 1fr auto;
+  align-items: baseline;
+  column-gap: 1rem;
+  padding-block: 1.35rem;
+  border-bottom: 1px solid
+    color-mix(in oklch, var(--foreground) 10%, transparent);
+  transition: opacity 500ms var(--ease-out-expo);
+}
+@media (min-width: 1024px) {
+  .index-row {
+    grid-template-columns: 3.5rem minmax(0, 1fr) minmax(0, 0.8fr) 10rem auto;
+  }
+}
+/* A metal rule draws across the hovered row */
+.index-row::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 1px;
+  background: linear-gradient(90deg, var(--metal-hi), var(--metal-mid));
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 900ms var(--ease-out-expo);
+}
+.index-row:hover::after,
+.index-row:focus-visible::after {
+  transform: scaleX(1);
+}
+.index-list:has(.index-row:hover) .index-row:not(:hover) {
+  opacity: 0.35;
+}
+.index-no {
+  font-size: 0.7rem;
+  letter-spacing: 0.18em;
+  color: var(--muted-foreground);
+}
+.index-name {
+  font-size: clamp(1.6rem, 4.2vw, 3.4rem);
+  font-weight: 500;
+  line-height: 1.05;
+  letter-spacing: -0.035em;
+  transition:
+    translate 700ms var(--ease-out-expo),
+    color 400ms ease;
+}
+.index-row:hover .index-name {
+  translate: 0.5rem 0;
+}
+.index-note {
+  display: none;
+  font-size: 0.85rem;
+  line-height: 1.7;
+  color: var(--muted-foreground);
+}
+.index-meta {
+  display: none;
+  font-size: 0.66rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+}
+@media (min-width: 1024px) {
+  .index-note,
+  .index-meta {
+    display: block;
+  }
+}
+.index-arrow {
+  align-self: center;
+  color: var(--muted-foreground);
+}
+.index-row:hover .index-arrow {
+  color: var(--foreground);
+}
+.index-row:focus-visible {
+  outline-offset: 4px;
+}
+
+/* The trailing preview: fixed to the viewport, a beat behind the pointer, revealed from its centre */
+.index-plate {
+  display: none;
+}
+@media (pointer: fine) {
+  .index-plate {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 40;
+    display: block;
+    width: clamp(16rem, 24vw, 24rem);
+    aspect-ratio: 16 / 10;
+    padding: 2px;
+    border-radius: var(--radius);
+    background-image: linear-gradient(
+      145deg,
+      var(--metal-hi),
+      var(--metal-mid) 54%,
+      var(--metal-lo)
+    );
+    box-shadow: 0 40px 80px -30px
+      color-mix(in oklch, var(--shade) 70%, transparent);
+    pointer-events: none;
+    translate: calc(var(--px, -100vw) + 1.5rem) calc(var(--py, 0px) - 50%);
+    rotate: -2deg;
+    clip-path: inset(50% 50% 50% 50% round var(--radius));
+    opacity: 0;
+    transition:
+      translate 500ms var(--ease-out-expo),
+      clip-path 600ms var(--ease-out-expo),
+      opacity 300ms ease,
+      rotate 800ms var(--ease-spring);
+  }
+  .index-plate[data-on] {
+    clip-path: inset(0 0 0 0 round var(--radius));
+    opacity: 1;
+    rotate: 0deg;
+  }
+  .index-plate img {
+    width: 100%;
+    height: 100%;
+    border-radius: 1px;
+    object-fit: cover;
+    object-position: top;
+    animation: plate-swap 600ms var(--ease-out-expo) both;
+  }
+}
+@keyframes plate-swap {
+  from {
+    opacity: 0;
+    scale: 1.08;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .collection-view,
+  .toolbar-pitch,
+  .index-plate img {
+    animation: none;
+  }
+  .index-plate {
+    display: none;
+  }
+}
