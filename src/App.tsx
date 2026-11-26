@@ -46,6 +46,13 @@ function Hero() {
         aria-hidden
         className="hero-glow absolute -top-1/4 left-1/3 size-[42rem] rounded-full blur-2xl"
       />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute top-[14%] right-[7%] hidden aspect-[1024/1292] h-[64%] lg:block"
+      >
+        <span className="hero-mark-fill absolute inset-0" />
+        <span className="hero-mark absolute inset-0" />
+      </div>
 
       <div className="hero-content container-wide relative flex min-h-[calc(92svh-4rem)] flex-col justify-center py-24">
         <p className="animate-rise flex items-center gap-3 font-mono text-[0.7rem] tracking-[0.28em] text-muted-foreground uppercase">
@@ -72,7 +79,7 @@ function Hero() {
 
         <div className="animate-rise mt-10 flex flex-wrap items-center gap-3 [--rise-delay:380ms]">
           <a
-            href="#works"
+            href="#gallery"
             className="pressable group/cta inline-flex h-11 items-center gap-2 rounded-full bg-foreground px-6 text-sm font-medium text-background hover:shadow-[0_12px_30px_-12px_color-mix(in_oklch,var(--shade)_50%,transparent)]"
           >
             瀏覽作品
@@ -100,8 +107,8 @@ function Hero() {
       </div>
 
       <a
-        href="#works"
-        aria-label="捲動到作品"
+        href="#gallery"
+        aria-label="捲動到精選展間"
         className="pressable group/cue absolute bottom-8 left-1/2 hidden -translate-x-1/2 flex-col items-center gap-3 font-mono text-[0.6rem] tracking-[0.3em] text-muted-foreground uppercase hover:text-foreground sm:flex"
       >
         Scroll
@@ -116,12 +123,18 @@ function Footer() {
   return (
     <footer className="relative mt-12 overflow-hidden border-t">
       <div ref={reveal} className="reveal container-wide py-16">
-        <p
-          aria-hidden
-          className="wordmark inline-block cursor-default font-mono text-5xl font-semibold tracking-tighter select-none sm:text-7xl lg:text-8xl"
-        >
-          {site.brand}
-        </p>
+        <div className="flex items-center gap-5 sm:gap-7">
+          <span
+            aria-hidden
+            className="brand-mark inline-block aspect-[1024/1292] h-14 shrink-0 sm:h-20 lg:h-24"
+          />
+          <p
+            aria-hidden
+            className="wordmark inline-block cursor-default px-[0.2em] text-6xl leading-[1.3] select-none sm:text-8xl lg:text-9xl"
+          >
+            {site.brand}
+          </p>
+        </div>
         <div className="hairline-metal mt-10" />
         <div className="mt-6 flex flex-col gap-4 font-mono text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
           <p>

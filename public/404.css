@@ -10,6 +10,15 @@ body {
   background: #f6f4ef;
   color: #1c1a17;
 }
+/* The brand mark in the shadowed metal, as in the page header */
+.mark {
+  justify-self: center;
+  width: 3.2rem;
+  aspect-ratio: 1024 / 1292;
+  margin-bottom: 0.75rem;
+  background: linear-gradient(145deg, #8c8578, #5e584c 54%, #332e24);
+  mask: url("/mark.svg") center / contain no-repeat;
+}
 a {
   color: #5e584c;
   text-underline-offset: 0.3em;
@@ -21,5 +30,8 @@ a {
   }
   a {
     color: #d2ccba;
+  }
+  .mark {
+    background: linear-gradient(145deg, #f5f0de, #d2ccba 54%, #7b776f);
   }
 }

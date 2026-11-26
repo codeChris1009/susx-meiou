@@ -5,9 +5,6 @@
 .gallery-room {
   background: var(--background);
   color: var(--foreground);
-  box-shadow:
-    inset 0 1px 0 color-mix(in oklch, var(--metal-mid) 22%, transparent),
-    inset 0 -1px 0 color-mix(in oklch, var(--metal-mid) 22%, transparent);
 }
 
 /* The room behind the transparent canvas: a halo where the spotlight falls, ink everywhere else */
@@ -73,4 +70,110 @@
   .gallery-flat-img {
     animation: none;
   }
+}
+
+/* On ink the vitrine is the page; on paper it eases in and out of the page instead of starting at a hard edge */
+html.dark .gallery-room {
+  box-shadow:
+    inset 0 1px 0 color-mix(in oklch, var(--metal-mid) 22%, transparent),
+    inset 0 -1px 0 color-mix(in oklch, var(--metal-mid) 22%, transparent);
+}
+html:not(.dark) .gallery-room {
+  box-shadow: none;
+}
+html:not(.dark) .gallery-room::before,
+html:not(.dark) .gallery-room::after {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  z-index: 2;
+  height: 5rem;
+  pointer-events: none;
+}
+html:not(.dark) .gallery-room::before {
+  top: 0;
+  background: linear-gradient(var(--meiou-100), transparent);
+}
+html:not(.dark) .gallery-room::after {
+  bottom: 0;
+  background: linear-gradient(transparent, var(--meiou-100));
+}
+
+/* The edges of the room fall away, so the eye rests on the lit piece */
+.gallery-vignette {
+  background: radial-gradient(
+    120% 95% at 50% 42%,
+    transparent 58%,
+    color-mix(in oklch, var(--background) 80%, transparent)
+  );
+}
+
+.gallery-stage:focus-visible {
+  outline: 1.5px solid color-mix(in oklch, var(--metal-mid) 60%, transparent);
+  outline-offset: -14px;
+}
+
+/*
+ * A ring that follows the mouse over the room and says what a click does: Drag, View (a side piece), Open (the
+ * piece in front) or Private. Fine pointers only; touch keeps the plain behaviour.
+ */
+.gallery-cursor {
+  display: none;
+}
+@media (pointer: fine) {
+  .gallery-canvas[data-ready] {
+    cursor: none;
+  }
+  .gallery-cursor[data-ready] {
+    display: grid;
+    place-items: center;
+    width: 4.75rem;
+    height: 4.75rem;
+    margin: -2.375rem 0 0 -2.375rem;
+    border-radius: 50%;
+    border: 1px solid color-mix(in oklch, var(--metal-hi) 55%, transparent);
+    background: color-mix(in oklch, var(--background) 30%, transparent);
+    backdrop-filter: blur(6px);
+    font-family: var(--font-mono);
+    font-size: 0.58rem;
+    letter-spacing: 0.26em;
+    text-transform: uppercase;
+    color: var(--metal-hi);
+    opacity: 0;
+    scale: 0.6;
+    translate: var(--x, 50%) var(--y, 50%);
+    transition:
+      opacity 300ms var(--ease-out-expo),
+      scale 450ms var(--ease-spring);
+  }
+  .gallery-cursor[data-ready][data-on] {
+    opacity: 1;
+    scale: 1;
+  }
+  .gallery-cursor[data-ready][data-pressed] {
+    scale: 0.82;
+  }
+}
+
+/* Progress ticks: the current piece is a longer stroke of metal */
+.gallery-tick {
+  width: 1.1rem;
+  background: color-mix(in oklch, var(--foreground) 25%, transparent);
+  transition:
+    width 600ms var(--ease-out-expo),
+    background-color 300ms ease;
+}
+.group\/tick:hover .gallery-tick {
+  background: color-mix(in oklch, var(--foreground) 60%, transparent);
+}
+[aria-current] > .gallery-tick {
+  width: 2.5rem;
+  background: var(--metal-hi);
+}
+
+.gallery-hint {
+  transition: opacity 900ms var(--ease-out-expo);
+}
+.gallery-hint[data-hidden] {
+  opacity: 0;
 }

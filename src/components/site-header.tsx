@@ -2,11 +2,13 @@ import { Moon, Sun } from "lucide-react"
 
 import { GithubMark } from "@/components/github-mark"
 import { useTheme } from "@/components/theme-provider"
+import { useActiveSection } from "@/hooks/use-active-section"
 import { site } from "@/site"
 
 const NAV = [
-  { href: "#works", label: "作品" },
-  { href: "#practice", label: "練習" },
+  { id: "gallery", label: "精選" },
+  { id: "works", label: "作品" },
+  { id: "practice", label: "練習" },
 ] as const
 
 const iconButton =
@@ -42,7 +44,10 @@ function ThemeToggle() {
   )
 }
 
+const NAV_IDS = NAV.map((item) => item.id)
+
 export function SiteHeader() {
+  const active = useActiveSection(NAV_IDS)
   return (
     <header className="site-header sticky top-0 z-50">
       <div className="container-wide flex h-full items-center justify-between">
@@ -63,8 +68,9 @@ export function SiteHeader() {
         <nav className="flex items-center gap-1 sm:gap-2" aria-label="主要">
           {NAV.map((item) => (
             <a
-              key={item.href}
-              href={item.href}
+              key={item.id}
+              href={`#${item.id}`}
+              aria-current={active === item.id || undefined}
               className="pressable link-draw hidden px-2 py-1 text-sm text-muted-foreground hover:text-foreground sm:inline-block"
             >
               {item.label}

@@ -30,17 +30,27 @@ describe("palette", () => {
     }
   })
 
-  it("declares the metal steps per theme with the same values", () => {
+  it("declares both faces of the metal in :root with the same values", () => {
+    const root = block(":root")
+    for (const theme of ["light", "dark"] as const) {
+      for (const [step, hex] of Object.entries(METAL[theme])) {
+        expect(
+          declared(root, `metal-${theme}-${step}`),
+          `--metal-${theme}-${step}`
+        ).toBe(hex)
+      }
+    }
+  })
+
+  it("points each theme at its face of the metal", () => {
     for (const [theme, selector] of [
       ["light", ":root"],
       ["dark", ".dark"],
     ] as const) {
-      const body = block(selector)
-      for (const [step, hex] of Object.entries(METAL[theme])) {
-        expect(
-          declared(body, `metal-${step}`),
-          `${theme} --metal-${step}`
-        ).toBe(hex)
+      for (const step of Object.keys(METAL[theme])) {
+        expect(declared(block(selector), `metal-${step}`)).toBe(
+          `var(--metal-${theme}-${step})`
+        )
       }
     }
   })

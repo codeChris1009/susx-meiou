@@ -163,10 +163,21 @@ html[data-intro] .animate-rise {
   color: var(--muted-foreground);
   font-variant-numeric: tabular-nums;
 }
+/* A hairline track that fills with the same metal, in step with the mark: the count, drawn */
 .intro-count-rule {
-  width: 2.5rem;
+  position: relative;
+  width: 3.5rem;
   height: 1px;
-  background: linear-gradient(90deg, transparent, var(--metal-mid));
+  overflow: hidden;
+  background: color-mix(in oklch, var(--foreground) 14%, transparent);
+}
+.intro-count-rule::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, var(--metal-mid), var(--metal-hi));
+  transform: scaleX(var(--intro-fill, 0));
+  transform-origin: left;
 }
 
 /* ---- Exit: the stage swells, softens and fades; the ground follows a beat later ---- */

@@ -58,6 +58,8 @@ export interface GalleryCallbacks {
   onFocus: (index: number) => void
   /** The piece already in front was clicked */
   onOpen: (index: number) => void
+  /** The piece under the mouse changed (null: none), so the page can say what a click will do */
+  onHover?: (index: number | null) => void
 }
 
 // ---- The room, in metres ----
@@ -89,6 +91,11 @@ const DRAG = 0.0042
 const TAP_SLOP = 6
 /** A drag longer than this (px) moves at least one piece, even if released short of the halfway point */
 const FLICK = 36
+/**
+ * On first appearance the ring is this far (radians) short of its place and settles into it, a slow swing as the
+ * vitrine lights. Under half a step, so the plaque never flickers through a neighbour's name.
+ */
+const ENTRANCE_SWING = 0.3
 
 const room = {
   ink: NEUTRAL[950],
@@ -255,6 +262,7 @@ export class GalleryScene {
       this.artMeshes.push(artMesh)
     })
 
+    if (!this.reducedMotion) this.angle = this.target + ENTRANCE_SWING
     this.layout(0)
     await this.renderer.compileAsync(this.scene, this.camera)
     if (this.disposed) return
@@ -350,8 +358,11 @@ export class GalleryScene {
 
     if (this.hoverDirty) {
       this.hoverDirty = false
-      this.hovered = this.pick()
-      this.canvas.style.cursor = this.hovered === null ? "grab" : "pointer"
+      const hovered = this.pick()
+      if (hovered !== this.hovered) {
+        this.hovered = hovered
+        this.callbacks.onHover?.(hovered)
+      }
     }
 
     const k = this.reducedMotion ? 1 : 1 - Math.exp(-SPRING * dt)
@@ -568,6 +579,7 @@ export class GalleryScene {
   }
 
   private readonly onLeave = () => {
+    if (this.hovered !== null) this.callbacks.onHover?.(null)
     this.hovered = null
     this.pointer.set(0, 0)
   }

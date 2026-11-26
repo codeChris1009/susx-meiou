@@ -1,6 +1,7 @@
 import { ArrowLeft, ArrowRight, ArrowUpRight, Lock } from "lucide-react"
 import {
   type KeyboardEvent,
+  type PointerEvent,
   useCallback,
   useEffect,
   useRef,
@@ -42,11 +43,17 @@ interface GallerySectionProps {
  * scene loads and stays if WebGL is unavailable. Turning the ring and pressing the buttons are the same action.
  */
 export function GallerySection({ pieces, numeral }: GallerySectionProps) {
+  const section = useRef<HTMLElement>(null)
   const stage = useRef<HTMLDivElement>(null)
+  const cursor = useRef<HTMLDivElement>(null)
   const canvas = useRef<HTMLCanvasElement>(null)
   const scene = useRef<GalleryScene | null>(null)
   const [mode, setMode] = useState<Mode>("idle")
   const [current, setCurrent] = useState(0)
+  /** The piece under the pointer (3D only): the cursor says what a click will do */
+  const [hovered, setHovered] = useState<number | null>(null)
+  /** The hint retires once the reader has turned the ring once */
+  const [touched, setTouched] = useState(false)
   const count = pieces.length
   const piece = pieces[current]
 
@@ -61,6 +68,7 @@ export function GallerySection({ pieces, numeral }: GallerySectionProps) {
   // Relative to where the ring is heading, not where it is: quick presses add up instead of repeating one step
   const step = useCallback(
     (delta: number) => {
+      setTouched(true)
       if (scene.current) scene.current.step(delta)
       else setCurrent((c) => (((c + delta) % count) + count) % count)
     },
@@ -95,6 +103,7 @@ export function GallerySection({ pieces, numeral }: GallerySectionProps) {
               images: pieces.map((p) => p.image),
               callbacks: {
                 onFocus: setCurrent,
+                onHover: setHovered,
                 onOpen: (i) => latest.current.open(i),
               },
               reducedMotion: reduced,
@@ -145,7 +154,50 @@ export function GallerySection({ pieces, numeral }: GallerySectionProps) {
     }
   }, [mode])
 
+  const go = useCallback(
+    (i: number) => {
+      setTouched(true)
+      if (scene.current) scene.current.goTo(i)
+      else setCurrent(((i % count) + count) % count)
+    },
+    [count]
+  )
+
+  // On paper, the header borrows the ink tokens while this dark band is under it (see .site-header in index.css)
+  useEffect(() => {
+    const el = section.current
+    if (!el) return
+    const html = document.documentElement
+    const io = new IntersectionObserver(
+      ([entry]) =>
+        html.toggleAttribute("data-header-dark", !!entry?.isIntersecting),
+      { rootMargin: "0px 0px -94% 0px" }
+    )
+    io.observe(el)
+    return () => {
+      io.disconnect()
+      html.removeAttribute("data-header-dark")
+    }
+  }, [])
+
+  /** The cursor ring follows the pointer through CSSOM writes (no style attributes under the CSP) */
+  const follow = (e: PointerEvent<HTMLCanvasElement>) => {
+    const c = cursor.current
+    if (!c || e.pointerType !== "mouse") return
+    c.style.setProperty("--x", `${e.nativeEvent.offsetX}px`)
+    c.style.setProperty("--y", `${e.nativeEvent.offsetY}px`)
+  }
+  const cursorLabel =
+    hovered === null
+      ? "Drag"
+      : hovered !== current
+        ? "View"
+        : pieces[hovered]?.href
+          ? "Open"
+          : "Private"
+
   const onKey = (e: KeyboardEvent) => {
+    setTouched(true)
     if (e.key === "ArrowRight") step(1)
     else if (e.key === "ArrowLeft") step(-1)
     else if (e.key === "Enter" && e.target === e.currentTarget) open(current)
@@ -157,7 +209,11 @@ export function GallerySection({ pieces, numeral }: GallerySectionProps) {
   const flat = mode !== "3d"
 
   return (
-    <section aria-labelledby="gallery" className="gallery-room dark relative">
+    <section
+      ref={section}
+      aria-labelledby="gallery"
+      className="gallery-room dark relative"
+    >
       <div className="container-wide pt-24">
         <SectionHeading
           id="gallery"
@@ -175,13 +231,25 @@ export function GallerySection({ pieces, numeral }: GallerySectionProps) {
         aria-label="精選作品展間，用左右方向鍵切換"
         tabIndex={0}
         onKeyDown={onKey}
-        className="gallery-stage relative mt-6 h-[clamp(34rem,86svh,56rem)] outline-none focus-visible:ring-1 focus-visible:ring-metal/40"
+        className="gallery-stage relative mt-6 h-[clamp(34rem,86svh,56rem)]"
       >
         <canvas
           ref={canvas}
           aria-hidden
           data-ready={mode === "3d" || undefined}
-          className="gallery-canvas absolute inset-0 size-full cursor-grab touch-pan-y active:cursor-grabbing"
+          onPointerDown={(e) => {
+            setTouched(true)
+            cursor.current?.setAttribute("data-pressed", "")
+            follow(e)
+          }}
+          onPointerUp={() => cursor.current?.removeAttribute("data-pressed")}
+          onPointerMove={follow}
+          onPointerEnter={() => cursor.current?.setAttribute("data-on", "")}
+          onPointerLeave={() => {
+            cursor.current?.removeAttribute("data-on")
+            cursor.current?.removeAttribute("data-pressed")
+          }}
+          className="gallery-canvas absolute inset-0 size-full touch-pan-y"
         />
 
         {/* Stand-in while three.js loads, and the whole gallery where WebGL is unavailable */}
@@ -202,22 +270,36 @@ export function GallerySection({ pieces, numeral }: GallerySectionProps) {
             />
           </div>
           {mode === "loading" && (
-            <p className="mt-4 text-center font-mono text-[0.65rem] tracking-[0.3em] text-muted-foreground uppercase">
+            <p className="metal-shine mt-4 text-center font-mono text-[0.65rem] tracking-[0.3em] uppercase">
               Hanging the gallery…
             </p>
           )}
         </div>
 
-        <div className="gallery-plaque pointer-events-none absolute inset-x-0 bottom-0 pt-24 pb-8 sm:pb-12">
+        <div
+          aria-hidden
+          className="gallery-vignette pointer-events-none absolute inset-0"
+        />
+
+        <div
+          ref={cursor}
+          aria-hidden
+          data-ready={mode === "3d" || undefined}
+          className="gallery-cursor pointer-events-none absolute top-0 left-0"
+        >
+          <span>{cursorLabel}</span>
+        </div>
+
+        <div className="gallery-plaque pointer-events-none absolute inset-x-0 bottom-0 pt-24 pb-8 sm:pb-10">
           <div className="container-wide flex flex-col items-center text-center">
             <div key={piece.id} aria-live="polite" className="plaque-swap">
               <p className="font-mono text-[0.65rem] tracking-[0.32em] text-muted-foreground tabular-nums">
                 {pad(current + 1)} / {pad(count)}
               </p>
-              <h3 className="gallery-title mt-1 text-metal px-[0.3em] text-[clamp(2.6rem,6vw,4.5rem)] leading-[1.35]">
+              <h3 className="gallery-title metal-shine mt-1 px-[0.3em] text-[clamp(2.6rem,6vw,4.5rem)] leading-[1.35]">
                 {piece.title}
               </h3>
-              <p className="mt-1 text-sm text-muted-foreground">
+              <p className="mt-1 text-sm text-balance text-muted-foreground">
                 {piece.caption}
               </p>
             </div>
@@ -256,12 +338,34 @@ export function GallerySection({ pieces, numeral }: GallerySectionProps) {
                 <ArrowRight className="size-4" />
               </button>
             </div>
-            <p className="mt-4 hidden font-mono text-[0.6rem] tracking-[0.28em] text-muted-foreground/70 uppercase sm:block">
+
+            {/* One tick per piece: where the ring is, and a way to jump straight to any piece */}
+            <div className="pointer-events-auto mt-5 flex items-center">
+              {pieces.map((p, i) => (
+                <button
+                  key={p.id}
+                  type="button"
+                  onClick={() => go(i)}
+                  aria-label={`第 ${i + 1} 件：${p.title}`}
+                  aria-current={i === current || undefined}
+                  className="group/tick px-1 py-2.5"
+                >
+                  <span className="gallery-tick block h-px" />
+                </button>
+              ))}
+            </div>
+
+            <p
+              data-hidden={touched || undefined}
+              className="gallery-hint mt-3 hidden font-mono text-[0.6rem] tracking-[0.28em] text-muted-foreground/70 uppercase sm:block"
+            >
               Drag · ← → · Click the front piece to open
             </p>
           </div>
         </div>
       </div>
+      {/* Room for the vitrine to fade back into the page (on paper) below the plaque */}
+      <div aria-hidden className="h-16" />
     </section>
   )
 }

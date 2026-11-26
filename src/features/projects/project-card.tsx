@@ -83,7 +83,8 @@ export function ProjectCard({
             height={800}
             loading={eager ? "eager" : "lazy"}
             decoding="async"
-            className="size-full object-cover object-top transition-[scale,filter] duration-[1400ms] ease-(--ease-out-expo) group-hover/project:scale-[1.045] group-hover/project:brightness-[1.04]"
+            onLoad={(e) => e.currentTarget.setAttribute("data-loaded", "")}
+            className="img-reveal size-full object-cover object-top group-hover/project:scale-[1.045] group-hover/project:brightness-[1.04]"
           />
         ) : (
           <div className="dot-grid flex size-full items-center justify-center">
@@ -131,7 +132,7 @@ export function ProjectCard({
         {project.description && (
           <p
             className={cn(
-              "prose-cjk text-muted-foreground",
+              "prose-cjk text-pretty text-muted-foreground",
               compact
                 ? "line-clamp-2 text-xs"
                 : feature
@@ -141,6 +142,16 @@ export function ProjectCard({
           >
             {project.description}
           </p>
+        )}
+        {feature && (
+          // The whole card is the link (the stretched title); this only says so, in the space a short description leaves
+          <span
+            aria-hidden
+            className="mt-2 inline-flex items-center gap-2 self-start font-mono text-xs tracking-[0.18em] text-foreground uppercase"
+          >
+            <span className="hairline-metal w-6 transition-[width] duration-700 ease-(--ease-out-expo) group-hover/project:w-12" />
+            Open the site
+          </span>
         )}
 
         <div className="mt-auto flex flex-wrap items-center gap-x-3 gap-y-2 pt-3 font-mono text-xs text-muted-foreground">
