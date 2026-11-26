@@ -28,7 +28,7 @@ function ThemeToggle() {
       className={iconButton}
     >
       {/* The two icons swap with a quarter turn; hover nudges the visible one */}
-      <span className="relative size-4 transition-transform duration-500 ease-(--ease-spring) group-hover/action:rotate-12">
+      <span className="relative size-4 transition-transform duration-500 ease-(--ease-settle) group-hover/action:rotate-12">
         <Sun
           aria-hidden
           className="absolute inset-0 size-4 scale-50 -rotate-90 opacity-0 transition-all duration-500 ease-(--ease-out-expo) dark:scale-100 dark:rotate-0 dark:opacity-100"
@@ -56,7 +56,7 @@ export function SiteHeader() {
           {/* The artwork is portrait (1024 x 1292), so the width is 0.79 of the height */}
           <span
             aria-hidden
-            className="brand-mark inline-block h-6 w-[1.19rem] shrink-0 transition-transform duration-700 ease-(--ease-spring) group-hover/logo:scale-110 group-hover/logo:-rotate-6"
+            className="brand-mark inline-block h-6 w-[1.19rem] shrink-0 transition-transform duration-700 ease-(--ease-settle) group-hover/logo:scale-110 group-hover/logo:-rotate-6"
           />
           <span className="transition-[letter-spacing] duration-500 ease-(--ease-out-expo) group-hover/logo:tracking-wide">
             {site.brand}
@@ -91,7 +91,7 @@ export function SiteHeader() {
           >
             <GithubMark
               aria-hidden
-              className="size-4 transition-transform duration-500 ease-(--ease-spring) group-hover/action:scale-110"
+              className="size-4 transition-transform duration-500 ease-(--ease-settle) group-hover/action:scale-110"
             />
           </a>
           <ThemeToggle />

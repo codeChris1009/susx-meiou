@@ -38,7 +38,7 @@ function EmptyResult({ onReset }: { onReset: () => void }) {
       >
         <RotateCcw
           aria-hidden
-          className="size-3.5 transition-transform duration-500 ease-(--ease-spring) group-hover/reset:-rotate-45"
+          className="size-3.5 transition-transform duration-500 ease-(--ease-settle) group-hover/reset:-rotate-45"
         />
         <Roll>Reset</Roll>
       </button>

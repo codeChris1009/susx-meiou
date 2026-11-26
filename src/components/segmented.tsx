@@ -77,7 +77,7 @@ export function Segmented<T extends string>({
           {Icon && (
             <Icon
               aria-hidden
-              className="size-3.5 transition-transform duration-500 ease-(--ease-spring) group-hover/segment:scale-110 group-hover/segment:-rotate-6"
+              className="size-3.5 transition-transform duration-500 ease-(--ease-settle) group-hover/segment:scale-110 group-hover/segment:-rotate-6"
             />
           )}
           <span

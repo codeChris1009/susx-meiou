@@ -311,7 +311,7 @@ html:not(.dark) .intro-card {
   display: flex;
   align-items: center;
   gap: 0.9rem;
-  font-size: 0.68rem;
+  font-size: 0.6875rem;
   letter-spacing: 0.32em;
   text-transform: uppercase;
   color: var(--muted-foreground);
@@ -367,7 +367,7 @@ html:not(.dark) .intro-card {
     opacity 700ms var(--ease-out-expo),
     translate 900ms var(--ease-out-expo),
     visibility 0s linear 700ms,
-    scale 450ms var(--ease-spring),
+    scale 450ms var(--ease-settle),
     color 450ms var(--ease-out-expo),
     letter-spacing 700ms var(--ease-out-expo),
     box-shadow 700ms var(--ease-out-expo);

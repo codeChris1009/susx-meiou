@@ -76,7 +76,7 @@ export function CollectionToolbar({
       <div className="flex flex-wrap items-center gap-2">
         <p
           aria-live="polite"
-          className="min-w-24 pl-2 text-[0.66rem] tracking-[0.2em] text-muted-foreground uppercase tabular-nums"
+          className="min-w-24 pl-2 text-[0.6875rem] tracking-[0.2em] text-muted-foreground uppercase tabular-nums"
         >
           <span className="text-foreground">{pad(shown)}</span> / {pad(total)}{" "}
           {noun}
@@ -119,7 +119,7 @@ export function CollectionToolbar({
         >
           <RotateCcw
             aria-hidden
-            className="size-3.5 transition-transform duration-500 ease-(--ease-spring) group-hover/reset:-rotate-45 group-active/reset:-rotate-90"
+            className="size-3.5 transition-transform duration-500 ease-(--ease-settle) group-hover/reset:-rotate-45 group-active/reset:-rotate-90"
           />
           <Roll>Reset</Roll>
         </button>
@@ -147,7 +147,7 @@ export function CollectionToolbar({
         </div>
         <p
           key={p.view}
-          className="toolbar-pitch ml-auto hidden pr-2 text-[0.66rem] tracking-[0.2em] text-muted-foreground uppercase lg:block"
+          className="toolbar-pitch ml-auto hidden pr-2 text-[0.6875rem] tracking-[0.2em] text-muted-foreground uppercase lg:block"
         >
           {VIEW_PITCH[p.view]}
         </p>

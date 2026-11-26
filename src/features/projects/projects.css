@@ -79,7 +79,7 @@
 
 .toolbar-label {
   padding-left: 0.5rem;
-  font-size: 0.62rem;
+  font-size: 0.6875rem;
   letter-spacing: 0.24em;
   text-transform: uppercase;
   color: var(--muted-foreground);
@@ -138,7 +138,7 @@
   height: 2rem;
   padding-inline: 0.75rem;
   border-radius: calc(var(--radius) - 2px);
-  font-size: 0.64rem;
+  font-size: 0.6875rem;
   font-weight: 500;
   letter-spacing: 0.2em;
   text-transform: uppercase;
@@ -200,7 +200,7 @@
   margin-inline: -0.5rem;
   padding-inline: 0.5rem;
   border-radius: calc(var(--radius) - 2px);
-  font-size: 0.62rem;
+  font-size: 0.6875rem;
   letter-spacing: 0.22em;
   text-transform: uppercase;
   color: var(--muted-foreground);
@@ -222,7 +222,7 @@
 }
 .collection-table .table-group {
   padding-top: 2rem;
-  font-size: 0.68rem;
+  font-size: 0.6875rem;
   font-weight: 500;
   letter-spacing: 0.22em;
   text-transform: uppercase;
@@ -234,17 +234,16 @@
 .table-row:hover {
   background: color-mix(in oklch, var(--accent) 55%, transparent);
 }
-/* The hovered or focused row is marked by a metal edge at its left, and its number takes the metal */
+/* The hovered or focused row is marked by its tint and by its number taking the metal: no stripe down one side */
 .table-row > td:first-child {
-  box-shadow: inset 0 0 0 transparent;
-  transition:
-    color 400ms ease,
-    box-shadow 500ms var(--ease-out-expo);
+  transition: color 400ms ease;
 }
 .table-row:hover > td:first-child,
 .table-row:has(.table-link:focus-visible) > td:first-child {
   color: var(--metal-mid);
-  box-shadow: inset 2px 0 0 var(--metal-mid);
+}
+.table-row:has(.table-link:focus-visible) {
+  background: color-mix(in oklch, var(--accent) 55%, transparent);
 }
 /* The whole row opens the site: the name's link is stretched over it */
 .table-link::after {
@@ -326,36 +325,24 @@
   letter-spacing: 0.18em;
   color: var(--muted-foreground);
 }
-/* Ink at rest; on hover the metal floods the name from the left (two backgrounds clipped to the text) */
+/* Ink at rest; the hovered name steps forward and takes the metal's solid tone, while the rest of the list dims */
 .index-name {
   font-size: clamp(1.6rem, 4.2vw, 3.4rem);
   font-weight: 500;
   line-height: 1.05;
   letter-spacing: -0.035em;
-  padding-bottom: 0.06em;
-  background:
-    linear-gradient(
-        100deg,
-        var(--metal-hi),
-        var(--metal-mid) 55%,
-        var(--metal-lo)
-      )
-      0 0 / 0% 100% no-repeat,
-    linear-gradient(var(--foreground), var(--foreground));
-  background-clip: text;
-  color: transparent;
   transition:
     translate 700ms var(--ease-out-expo),
-    background-size 1000ms var(--ease-out-expo);
+    color 600ms var(--ease-out-expo);
 }
 .index-row:hover .index-name,
 .index-row:focus-visible .index-name {
-  background-size:
-    100% 100%,
-    auto;
-}
-.index-row:hover .index-name {
   translate: 0.5rem 0;
+  color: var(--metal-hi);
+}
+html:not(.dark) .index-row:hover .index-name,
+html:not(.dark) .index-row:focus-visible .index-name {
+  color: var(--metal-mid);
 }
 .index-note {
   display: none;
@@ -365,7 +352,7 @@
 }
 .index-meta {
   display: none;
-  font-size: 0.66rem;
+  font-size: 0.6875rem;
   letter-spacing: 0.2em;
   text-transform: uppercase;
   color: var(--muted-foreground);
@@ -419,7 +406,7 @@
       translate 500ms var(--ease-out-expo),
       clip-path 600ms var(--ease-out-expo),
       opacity 300ms ease,
-      rotate 800ms var(--ease-spring);
+      rotate 800ms var(--ease-settle);
   }
   /* Near the right edge the plate trails on the other side of the pointer, so it is never cut off */
   .index-plate[data-flip] {

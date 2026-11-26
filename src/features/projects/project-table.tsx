@@ -190,7 +190,7 @@ export function ProjectTable({
                 ) : (
                   <ArrowUpRight
                     aria-hidden
-                    className="ml-auto size-3.5 text-muted-foreground transition-transform duration-500 ease-(--ease-spring) group-hover/row:translate-x-0.5 group-hover/row:-translate-y-0.5 group-hover/row:text-foreground"
+                    className="ml-auto size-3.5 text-muted-foreground transition-transform duration-500 ease-(--ease-settle) group-hover/row:translate-x-0.5 group-hover/row:-translate-y-0.5 group-hover/row:text-foreground"
                   />
                 )}
               </td>

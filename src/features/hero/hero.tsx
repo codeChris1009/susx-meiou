@@ -13,11 +13,11 @@ import { Hello } from "./hello"
 
 function Stat({ value, label }: { value: number; label: string }) {
   return (
-    <div className="group/stat cursor-default transition-transform duration-300 ease-(--ease-spring) select-none active:scale-95">
-      <dt className="text-[0.66rem] tracking-[0.22em] text-muted-foreground uppercase">
+    <div className="group/stat cursor-default transition-transform duration-300 ease-(--ease-settle) select-none active:scale-95">
+      <dt className="text-[0.6875rem] tracking-[0.22em] text-muted-foreground uppercase">
         {label}
       </dt>
-      <dd className="mt-1.5 text-metal text-4xl font-light tracking-tight tabular-nums transition-[translate,filter] duration-500 ease-(--ease-spring) group-hover/stat:-translate-y-1 group-hover/stat:brightness-125">
+      <dd className="mt-1.5 text-4xl font-light tracking-tight text-metal tabular-nums transition-[translate,filter] duration-500 ease-(--ease-settle) group-hover/stat:-translate-y-1 group-hover/stat:brightness-125">
         {pad(value)}
       </dd>
     </div>
@@ -99,7 +99,7 @@ export function Hero() {
       <div className="hero-content container-wide relative flex min-h-[calc(88svh-4rem)] flex-col justify-between gap-16 pt-8 pb-12 sm:min-h-[calc(100svh-4rem)] lg:pb-28">
         <p
           lang="en"
-          className="animate-rise grid grid-cols-2 gap-4 border-b border-foreground/10 pb-4 text-[0.66rem] tracking-[0.24em] text-muted-foreground uppercase sm:grid-cols-4"
+          className="animate-rise grid grid-cols-2 gap-4 border-b border-foreground/10 pb-4 text-[0.6875rem] tracking-[0.24em] text-muted-foreground uppercase sm:grid-cols-4"
         >
           <span>{site.brand}</span>
           <span>{site.role}</span>
@@ -147,7 +147,7 @@ export function Hero() {
                 className={actionVariants({ tone: "solid" })}
               >
                 <Roll>Explore works</Roll>
-                <ArrowDown className="size-3.5 transition-transform duration-500 ease-(--ease-spring) group-hover/action:translate-y-0.5" />
+                <ArrowDown className="size-3.5 transition-transform duration-500 ease-(--ease-settle) group-hover/action:translate-y-0.5" />
               </a>
               <a
                 ref={github}
@@ -158,7 +158,7 @@ export function Hero() {
               >
                 <GithubMark
                   aria-hidden
-                  className="size-3.5 transition-transform duration-500 ease-(--ease-spring) group-hover/action:-rotate-12"
+                  className="size-3.5 transition-transform duration-500 ease-(--ease-settle) group-hover/action:-rotate-12"
                 />
                 <Roll>GitHub</Roll>
               </a>
@@ -180,7 +180,7 @@ export function Hero() {
         href={href(SECTION.gallery)}
         lang="en"
         aria-label="Scroll to the gallery"
-        className="hero-cue pressable group/cue absolute bottom-6 left-1/2 hidden -translate-x-1/2 flex-col items-center gap-3 text-[0.58rem] tracking-[0.3em] text-muted-foreground uppercase hover:text-foreground sm:right-6 lg:flex"
+        className="hero-cue pressable group/cue absolute bottom-6 left-1/2 hidden -translate-x-1/2 flex-col items-center gap-3 text-[0.6875rem] tracking-[0.3em] text-muted-foreground uppercase hover:text-foreground sm:right-6 lg:flex"
       >
         Scroll
         <span className="scroll-cue-line block h-12 w-px bg-foreground/15 transition-[height] duration-500 ease-(--ease-out-expo) group-hover/cue:h-16" />

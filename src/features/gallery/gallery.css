@@ -152,7 +152,7 @@ html:not(.dark) .gallery-room::after {
     background: color-mix(in oklch, var(--background) 30%, transparent);
     backdrop-filter: blur(6px);
     font-family: var(--font-sans);
-    font-size: 0.58rem;
+    font-size: 0.6875rem;
     letter-spacing: 0.26em;
     text-transform: uppercase;
     color: var(--metal-hi);
@@ -161,7 +161,7 @@ html:not(.dark) .gallery-room::after {
     translate: var(--x, 50%) var(--y, 50%);
     transition:
       opacity 300ms var(--ease-out-expo),
-      scale 450ms var(--ease-spring);
+      scale 450ms var(--ease-settle);
   }
   .gallery-cursor[data-ready][data-on] {
     opacity: 1;
@@ -186,6 +186,51 @@ html:not(.dark) .gallery-room::after {
 [aria-current] > .gallery-tick {
   width: 2.5rem;
   background: var(--metal-hi);
+}
+
+/* ---- The viewer: a piece with no public site, opened at full size in a modal dialog ---- */
+.piece-viewer {
+  width: min(92vw, 56rem);
+  max-width: none;
+  max-height: 92svh;
+  margin: auto;
+  padding: 2rem clamp(1rem, 4vw, 2.5rem) 2.25rem;
+  overflow: auto;
+  border: 0;
+  border-radius: var(--radius);
+  background: var(--background);
+  color: var(--foreground);
+  box-shadow:
+    inset 0 0 0 1px color-mix(in oklch, var(--metal-mid) 25%, transparent),
+    0 60px 120px -40px color-mix(in oklch, var(--shade) 85%, transparent);
+}
+.piece-viewer::backdrop {
+  background: color-mix(in oklch, var(--meiou-950) 72%, transparent);
+  backdrop-filter: blur(10px);
+}
+.piece-viewer[open] {
+  animation: viewer-in 700ms var(--ease-out-expo);
+}
+.piece-viewer[open]::backdrop {
+  animation: backdrop-in 500ms ease;
+}
+@keyframes viewer-in {
+  from {
+    opacity: 0;
+    scale: 0.96;
+    filter: blur(8px);
+  }
+}
+@keyframes backdrop-in {
+  from {
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .piece-viewer[open],
+  .piece-viewer[open]::backdrop {
+    animation: none;
+  }
 }
 
 .gallery-hint {

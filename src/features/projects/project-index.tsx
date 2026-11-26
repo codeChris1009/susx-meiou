@@ -55,7 +55,7 @@ export function ProjectIndex({ groups }: { groups: readonly Group[] }) {
                   </span>
                   <ArrowUpRight
                     aria-hidden
-                    className="index-arrow size-5 transition-transform duration-500 ease-(--ease-spring) group-hover/row:translate-x-1 group-hover/row:-translate-y-1 group-hover/row:rotate-12"
+                    className="index-arrow size-5 transition-transform duration-500 ease-(--ease-settle) group-hover/row:translate-x-1 group-hover/row:-translate-y-1 group-hover/row:rotate-12"
                   />
                 </a>
               </li>

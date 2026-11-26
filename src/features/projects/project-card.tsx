@@ -76,7 +76,7 @@ export function ProjectCard({
           />
         ) : (
           <div className="dot-grid flex size-full items-center justify-center">
-            <span className="text-metal text-4xl font-semibold tracking-tight">
+            <span className="text-4xl font-semibold tracking-tight text-metal">
               {project.title.slice(0, 2)}
             </span>
           </div>
@@ -92,15 +92,15 @@ export function ProjectCard({
         <div className="flex items-center justify-between gap-3">
           <span
             lang="en"
-            className="text-metal text-[0.7rem] tracking-[0.2em] uppercase tabular-nums"
+            className="text-[0.7rem] tracking-[0.2em] text-metal uppercase tabular-nums"
           >
             No. {pad(project.no)}
           </span>
           <span
             aria-hidden
-            className="grid size-7 place-items-center rounded-lg ring-1 ring-foreground/10 transition-all duration-500 ease-(--ease-spring) group-hover/project:bg-metal group-hover/project:text-background group-hover/project:ring-transparent"
+            className="grid size-7 place-items-center rounded-lg ring-1 ring-foreground/10 transition-all duration-500 ease-(--ease-settle) group-hover/project:bg-metal group-hover/project:text-background group-hover/project:ring-transparent"
           >
-            <ArrowUpRight className="size-3.5 transition-transform duration-500 ease-(--ease-spring) group-hover/project:translate-x-px group-hover/project:-translate-y-px group-hover/project:rotate-12" />
+            <ArrowUpRight className="size-3.5 transition-transform duration-500 ease-(--ease-settle) group-hover/project:translate-x-px group-hover/project:-translate-y-px group-hover/project:rotate-12" />
           </span>
         </div>
 

@@ -36,13 +36,13 @@ export function SectionHeading({
       >
         <span
           aria-hidden
-          className="self-start text-metal pt-[0.6em] text-xs font-medium tracking-[0.2em] tabular-nums"
+          className="self-start pt-[0.6em] text-xs font-medium tracking-[0.2em] text-metal tabular-nums"
         >
           ({index})
         </span>
         <h2
           id={id}
-          className="group/heading cursor-default transition-transform duration-500 ease-(--ease-spring) select-none active:scale-[0.985]"
+          className="group/heading cursor-default transition-transform duration-500 ease-(--ease-settle) select-none active:scale-[0.985]"
         >
           <span
             lang="en"

@@ -12,7 +12,7 @@ import { site } from "@/site"
 function Column({ title, children }: { title: string; children: ReactNode }) {
   return (
     <div>
-      <p className="text-[0.62rem] tracking-[0.26em] text-muted-foreground uppercase">
+      <p className="text-[0.6875rem] tracking-[0.26em] text-muted-foreground uppercase">
         {title}
       </p>
       <div className="mt-4 flex flex-col items-start gap-1">{children}</div>
@@ -50,12 +50,12 @@ export function SiteFooter() {
               <Roll>GitHub</Roll>
               <ArrowUpRight
                 aria-hidden
-                className="size-3.5 transition-transform duration-500 ease-(--ease-spring) group-hover/action:translate-x-0.5 group-hover/action:-translate-y-0.5"
+                className="size-3.5 transition-transform duration-500 ease-(--ease-settle) group-hover/action:translate-x-0.5 group-hover/action:-translate-y-0.5"
               />
             </a>
           </Column>
           <Column title="Colophon">
-            <p className="prose-cjk max-w-xs text-sm text-muted-foreground">
+            <p className="prose-cjk max-w-xs text-sm text-pretty text-muted-foreground">
               Set in Geist, Noto Sans TC and Stalemate. Built with React and
               three.js, served from Cloudflare Workers.
             </p>
@@ -77,7 +77,7 @@ export function SiteFooter() {
         <div className="hairline-metal mt-8" />
         <div
           lang="en"
-          className="mt-5 flex flex-col gap-3 text-[0.66rem] tracking-[0.2em] text-muted-foreground uppercase sm:flex-row sm:items-center sm:justify-between"
+          className="mt-5 flex flex-col gap-3 text-[0.6875rem] tracking-[0.2em] text-muted-foreground uppercase sm:flex-row sm:items-center sm:justify-between"
         >
           <p className="tabular-nums">
             © {year} {site.name}
@@ -93,7 +93,7 @@ export function SiteFooter() {
             <Roll>Back to top</Roll>
             <ArrowUp
               aria-hidden
-              className="size-3.5 transition-transform duration-500 ease-(--ease-spring) group-hover/action:-translate-y-0.5"
+              className="size-3.5 transition-transform duration-500 ease-(--ease-settle) group-hover/action:-translate-y-0.5"
             />
           </a>
         </div>
