@@ -121,6 +121,7 @@ export function ProjectCollection({
       <div ref={sentinel} aria-hidden className="h-px" />
       <CollectionToolbar
         ref={toolbar}
+        scope={root}
         id={id}
         noun={noun}
         presentation={presentation}

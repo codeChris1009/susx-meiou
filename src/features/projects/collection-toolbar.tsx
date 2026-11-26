@@ -1,8 +1,9 @@
 import { LayoutGrid, List, RotateCcw, Search, Table2 } from "lucide-react"
-import { useMemo, type Ref } from "react"
+import { useMemo, useRef, type Ref, type RefObject } from "react"
 
 import { Roll, actionVariants } from "@/components/action"
 import { Segmented, type SegmentOption } from "@/components/segmented"
+import { useSlashFocus } from "@/hooks/use-slash-focus"
 import { pad } from "@/lib/format"
 
 import {
@@ -37,6 +38,8 @@ const ALL = "all"
 
 interface CollectionToolbarProps {
   ref?: Ref<HTMLDivElement>
+  /** The collection this ring controls: "/" focuses this ring's filter while the collection is on screen */
+  scope: RefObject<HTMLElement | null>
   /** Prefix for element ids, unique on the page */
   id: string
   /** What is being counted, plural: "works" */
@@ -54,6 +57,7 @@ interface CollectionToolbarProps {
  */
 export function CollectionToolbar({
   ref,
+  scope,
   id,
   noun,
   presentation: p,
@@ -63,6 +67,8 @@ export function CollectionToolbar({
   total,
 }: CollectionToolbarProps) {
   const set = (patch: Partial<Presentation>) => onChange({ ...p, ...patch })
+  const field = useRef<HTMLInputElement>(null)
+  useSlashFocus(field, scope, ".collection")
   const stackOptions = useMemo<SegmentOption<string>[]>(
     () => [
       { value: ALL, label: "All" },
@@ -89,7 +95,9 @@ export function CollectionToolbar({
           />
           <span className="sr-only">Filter {noun}</span>
           <input
+            ref={field}
             id={`${id}-filter`}
+            aria-keyshortcuts="/"
             type="search"
             value={p.query}
             onChange={(e) => set({ query: e.target.value })}
@@ -98,6 +106,11 @@ export function CollectionToolbar({
             spellCheck={false}
             className="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-[0.7rem] placeholder:tracking-[0.16em] placeholder:text-muted-foreground/70 placeholder:uppercase"
           />
+          {p.query === "" && (
+            <kbd aria-hidden className="collection-kbd">
+              /
+            </kbd>
+          )}
         </label>
 
         <Segmented
