@@ -49,7 +49,7 @@ function SectionHeading({ id, index, title, note }: SectionHeadingProps) {
         <h2 id={id} className="flex items-baseline gap-4">
           <span
             aria-hidden
-            className="font-mono text-5xl leading-none font-light tracking-tighter text-metal sm:text-6xl"
+            className="text-metal font-mono text-5xl leading-none font-light tracking-tighter sm:text-6xl"
           >
             {index}
           </span>
@@ -72,7 +72,7 @@ function Stat({ value, label }: { value: number; label: string }) {
       <dt className="font-mono text-[0.7rem] tracking-[0.2em] text-muted-foreground uppercase">
         {label}
       </dt>
-      <dd className="mt-1 font-mono text-4xl font-light text-metal tabular-nums transition-transform duration-500 ease-(--ease-spring) group-hover/stat:-translate-y-0.5">
+      <dd className="mt-1 text-metal font-mono text-4xl font-light tabular-nums transition-transform duration-500 ease-(--ease-spring) group-hover/stat:-translate-y-0.5">
         {String(value).padStart(2, "0")}
       </dd>
     </div>
@@ -160,7 +160,7 @@ function Footer() {
       <div ref={reveal} className="reveal container-wide py-16">
         <p
           aria-hidden
-          className="font-mono text-5xl font-semibold tracking-tighter text-metal select-none sm:text-7xl lg:text-8xl"
+          className="text-metal font-mono text-5xl font-semibold tracking-tighter select-none sm:text-7xl lg:text-8xl"
         >
           {site.brand}
         </p>

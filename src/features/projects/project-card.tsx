@@ -86,7 +86,7 @@ export function ProjectCard({
           />
         ) : (
           <div className="dot-grid flex size-full items-center justify-center">
-            <span className="font-mono text-4xl font-semibold tracking-tight text-metal">
+            <span className="text-metal font-mono text-4xl font-semibold tracking-tight">
               {project.title.slice(0, 2)}
             </span>
           </div>
@@ -100,7 +100,7 @@ export function ProjectCard({
         )}
       >
         <div className="flex items-center justify-between gap-3">
-          <span className="font-mono text-[0.7rem] tracking-[0.2em] text-metal uppercase">
+          <span className="text-metal font-mono text-[0.7rem] tracking-[0.2em] uppercase">
             No. {String(index + 1).padStart(2, "0")}
           </span>
           <span
