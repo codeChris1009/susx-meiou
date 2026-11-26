@@ -1,4 +1,5 @@
 import type { SyncedProject } from "@/features/projects/types"
+import { isWebUrl } from "@/lib/url"
 
 /**
  * The gallery's hang: nine pieces, in ring order. Images are hand-picked frames (src/assets/gallery, 1200×800 WebP),
@@ -98,7 +99,9 @@ export function buildGallery(
   images: Readonly<Record<string, string>>
 ): GalleryPiece[] {
   const live = new Map(
-    projects.filter((p) => p.online).map((p) => [p.repo, p.url])
+    projects
+      .filter((p) => p.online && isWebUrl(p.url))
+      .map((p) => [p.repo, p.url])
   )
   return hang.flatMap((spec) => {
     const image = images[spec.id]

@@ -11,6 +11,7 @@ import { readFile, writeFile } from "node:fs/promises"
 import { styleText } from "node:util"
 
 import type { SyncFile, SyncedProject } from "../src/features/projects/types.ts"
+import { isWebUrl } from "../src/lib/url.ts"
 import {
   type Candidate,
   hostOf,
@@ -98,7 +99,8 @@ async function candidatesFor(repo: Repo): Promise<Candidate[]> {
       candidates.push({ source: "deployment", url: latest.environment_url })
     }
   }
-  return candidates
+  // A homepage is free text: only absolute http(s) addresses are ever fetched or written out
+  return candidates.filter((c) => isWebUrl(c.url))
 }
 
 async function readSite(url: string) {

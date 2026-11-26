@@ -75,6 +75,12 @@ describe("buildGallery", () => {
     expect(gallery.find((p) => p.repo === null)?.href).toBeNull()
   })
 
+  it("never links a site whose address is not http(s)", () => {
+    const bad = { ...project("fovea"), url: "javascript:alert(1)" }
+    const gallery = buildGallery(HANG, [bad], images)
+    expect(gallery.find((p) => p.id === "fovea")?.href).toBeNull()
+  })
+
   it("leaves out a piece whose image is missing", () => {
     const some = Object.fromEntries(Object.entries(images).slice(0, 2))
     expect(buildGallery(HANG, [], some)).toHaveLength(2)
