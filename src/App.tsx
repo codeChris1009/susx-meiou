@@ -1,8 +1,11 @@
 import { ArrowDown, ArrowUp } from "lucide-react"
 
 import { GithubMark } from "@/components/github-mark"
+import { SectionHeading } from "@/components/section-heading"
 import { SiteHeader } from "@/components/site-header"
 import data from "@/data/projects.json"
+import { GallerySection } from "@/features/gallery/gallery-section"
+import { HANG, buildGallery, imagesById } from "@/features/gallery/pieces"
 import { curation } from "@/features/projects/curation"
 import { ProjectCard } from "@/features/projects/project-card"
 import { buildShowcase, shotsByRepo } from "@/features/projects/showcase"
@@ -21,6 +24,17 @@ const shots = shotsByRepo(
   })
 )
 const { featured, practice } = buildShowcase(sync.projects, curation, shots)
+const gallery = buildGallery(
+  HANG,
+  sync.projects,
+  imagesById(
+    import.meta.glob<string>("/src/assets/gallery/*.webp", {
+      eager: true,
+      query: "?url",
+      import: "default",
+    })
+  )
+)
 const syncedOn = sync.syncedAt.slice(0, 10)
 const year = syncedOn.slice(0, 4)
 const platforms = new Set([...featured, ...practice].map((p) => p.host)).size
@@ -29,45 +43,6 @@ const platforms = new Set([...featured, ...practice].map((p) => p.host)).size
 const stagger = (index: number, perRow: number) => (index % perRow) * 110
 
 const HERO_ID = "top"
-
-interface SectionHeadingProps {
-  id: string
-  index: string
-  title: string
-  note: string
-}
-
-function SectionHeading({ id, index, title, note }: SectionHeadingProps) {
-  const reveal = useReveal<HTMLDivElement>()
-  const rule = useReveal<HTMLDivElement>()
-  return (
-    <div className="mb-10">
-      <div
-        ref={reveal}
-        className="reveal flex items-end justify-between gap-6 pb-5"
-      >
-        <h2
-          id={id}
-          className="group/heading flex cursor-default items-baseline gap-4 transition-transform duration-500 ease-(--ease-spring) active:scale-[0.98]"
-        >
-          <span
-            aria-hidden
-            className="text-metal font-mono text-5xl leading-none font-light tracking-tighter transition-[translate,filter] duration-700 ease-(--ease-out-expo) group-hover/heading:-translate-x-1 group-hover/heading:brightness-125 sm:text-6xl"
-          >
-            {index}
-          </span>
-          <span className="display-cjk text-2xl font-semibold sm:text-3xl">
-            {title}
-          </span>
-        </h2>
-        <p className="pb-1 font-mono text-xs tracking-[0.18em] text-muted-foreground uppercase">
-          {note}
-        </p>
-      </div>
-      <div ref={rule} aria-hidden className="reveal-rule hairline-metal" />
-    </div>
-  )
-}
 
 function Stat({ value, label }: { value: number; label: string }) {
   return (
@@ -208,10 +183,12 @@ export function App() {
       <main className="flex-1">
         <Hero />
 
+        <GallerySection pieces={gallery} index="01" />
+
         <section className="container-wide py-24" aria-labelledby="works">
           <SectionHeading
             id="works"
-            index="01"
+            index="02"
             title="作品"
             note={`${featured.length} projects`}
           />
@@ -233,7 +210,7 @@ export function App() {
           <section className="container-wide pb-24" aria-labelledby="practice">
             <SectionHeading
               id="practice"
-              index="02"
+              index="03"
               title="練習"
               note="Early studies"
             />

@@ -1,0 +1,76 @@
+/*
+ * The gallery room is always dark, in both themes: a lit vitrine set into the page. The section carries the `dark`
+ * class, so its tokens (and Tailwind's dark: variants) resolve to ink inside it whatever the page around it is.
+ */
+.gallery-room {
+  background: var(--background);
+  color: var(--foreground);
+  box-shadow:
+    inset 0 1px 0 color-mix(in oklch, var(--metal-mid) 22%, transparent),
+    inset 0 -1px 0 color-mix(in oklch, var(--metal-mid) 22%, transparent);
+}
+
+/* The room behind the transparent canvas: a halo where the spotlight falls, ink everywhere else */
+.gallery-stage {
+  background:
+    radial-gradient(
+      55% 45% at 50% 40%,
+      color-mix(in oklch, var(--metal-photon) 9%, transparent),
+      transparent 70%
+    ),
+    var(--background);
+  overflow: hidden;
+}
+
+.gallery-canvas {
+  opacity: 0;
+  transition: opacity 1200ms var(--ease-out-expo);
+}
+.gallery-canvas[data-ready] {
+  opacity: 1;
+}
+
+.gallery-flat {
+  transition:
+    opacity 900ms var(--ease-out-expo),
+    filter 900ms var(--ease-out-expo),
+    scale 1200ms var(--ease-out-expo);
+}
+.gallery-flat[data-hidden] {
+  opacity: 0;
+  filter: blur(8px);
+  scale: 0.96;
+}
+.gallery-flat-img {
+  animation: plaque-in 700ms var(--ease-out-expo) both;
+}
+
+/* The plaque sits over the floor; a scrim keeps it legible over the reflection */
+.gallery-plaque {
+  background: linear-gradient(
+    to top,
+    color-mix(in oklch, var(--background) 88%, transparent) 20%,
+    transparent
+  );
+}
+.gallery-title {
+  font-family: "Stalemate", cursive;
+  font-weight: 400;
+}
+.plaque-swap {
+  animation: plaque-in 800ms var(--ease-out-expo) both;
+}
+@keyframes plaque-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+    filter: blur(6px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .plaque-swap,
+  .gallery-flat-img {
+    animation: none;
+  }
+}
