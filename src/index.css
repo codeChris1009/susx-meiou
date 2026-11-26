@@ -511,6 +511,8 @@ html[data-scrolled] .site-header {
   scale: 0.985;
 }
 /* The hero's metal line quickens under the pointer */
-.metal-shine:hover {
+.metal-shine:hover,
+.group\/headline:hover .metal-shine {
   animation-duration: 2.4s;
+  filter: brightness(1.15);
 }

@@ -100,9 +100,11 @@ function Hero() {
           Selected work · {year}
         </p>
 
-        <h1 className="display-cjk mt-7 max-w-4xl origin-left cursor-default text-5xl font-semibold text-balance transition-[scale,letter-spacing] duration-500 ease-(--ease-spring) select-none active:scale-[0.985] active:tracking-wide sm:text-6xl lg:text-7xl">
+        <h1 className="group/headline display-cjk mt-7 max-w-4xl origin-left cursor-default text-5xl font-semibold text-balance transition-[scale,letter-spacing] duration-500 ease-(--ease-spring) select-none active:scale-[0.985] active:tracking-wide sm:text-6xl lg:text-7xl">
           <span className="animate-rise block [--rise-delay:90ms]">
-            每一個作品，
+            <span className="inline-block transition-[translate] duration-700 ease-(--ease-out-expo) group-hover/headline:translate-x-1.5">
+              每一個作品，
+            </span>
           </span>
           <span className="animate-rise metal-shine block pb-2 [--rise-delay:180ms]">
             都能直接打開
