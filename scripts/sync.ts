@@ -168,6 +168,11 @@ if (!excludeSetting) {
   process.exit(1)
 }
 const excluded = new Set(excludeSetting.split(",").map((name) => name.trim()))
+// The portfolio is live too, so it would find itself; its repository shares package.json's name
+const { name: self } = JSON.parse(
+  await readFile(new URL("../package.json", import.meta.url), "utf8")
+) as { name: string }
+excluded.add(self)
 const repos = (await ownedRepos()).filter(
   (r) => !r.fork && !r.archived && !excluded.has(r.name)
 )

@@ -1,5 +1,5 @@
 {
-  "syncedAt": "2026-11-26T12:14:43.343Z",
+  "syncedAt": "2026-11-26T12:16:08.283Z",
   "projects": [
     {
       "repo": "demo-3js-Gallery0",
@@ -131,17 +131,6 @@
       "title": "susx-lecture-react-todolist0",
       "description": "first react todo list neon",
       "pushedAt": "2025-08-27T18:04:44Z",
-      "online": true
-    },
-    {
-      "repo": "susx-meiou",
-      "url": "https://susx-meiou.susx.workers.dev/",
-      "host": "cloudflare",
-      "sourceUrl": "https://github.com/codeChris1009/susx-meiou",
-      "language": "TypeScript",
-      "title": "susx.meiou — 作品集",
-      "description": "susx 的線上作品：每一個都能直接打開來玩，部署在 Cloudflare Workers 與 GitHub Pages",
-      "pushedAt": "2026-11-26T11:54:03Z",
       "online": true
     },
     {
