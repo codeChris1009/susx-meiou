@@ -84,4 +84,13 @@ describe("buildGallery", () => {
     expect(HANG).toHaveLength(9)
     for (const { title } of HANG) expect(title).toMatch(/^[ -ÿ]+$/)
   })
+
+  it("labels every piece without punctuation, an English name over a Chinese line", () => {
+    for (const { title, name, caption } of HANG) {
+      for (const text of [title, name, caption])
+        expect(text).not.toMatch(/\p{P}/u)
+      expect(name).toMatch(/^[\p{Script=Latin}\d ]+$/u)
+      expect(caption).toMatch(/\p{Script=Han}/u)
+    }
+  })
 })
