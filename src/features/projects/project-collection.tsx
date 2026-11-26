@@ -91,10 +91,34 @@ export function ProjectCollection({
     return () => ro.disconnect()
   }, [])
 
+  // The ring floats (sticky) from md up; a sentinel just above it says when it has left its place in the flow
+  const sentinel = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    const mark = sentinel.current
+    const bar = toolbar.current
+    if (!mark || !bar) return
+    const wide = matchMedia("(min-width: 768px)")
+    const io = new IntersectionObserver(
+      ([entry]) =>
+        bar.toggleAttribute(
+          "data-stuck",
+          !!entry &&
+            wide.matches &&
+            !entry.isIntersecting &&
+            entry.boundingClientRect.top < 0
+        ),
+      // The header is 3.5rem once the page has moved, and the ring sticks 0.75rem below it
+      { rootMargin: "-68px 0px 0px 0px" }
+    )
+    io.observe(mark)
+    return () => io.disconnect()
+  }, [])
+
   const reset = () => setPresentation(defaultPresentation(presentation.view))
 
   return (
     <div ref={root} className="collection">
+      <div ref={sentinel} aria-hidden className="h-px" />
       <CollectionToolbar
         ref={toolbar}
         id={id}

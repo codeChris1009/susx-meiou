@@ -128,6 +128,28 @@ html[data-intro] .intro-veil {
     intro-depth var(--orbit) linear infinite;
   animation-delay: calc(var(--i) * var(--orbit) / var(--n) * -1);
 }
+/* On paper the far side fades into the page instead of darkening, and the frames cast a lighter shadow */
+html:not(.dark) .intro-card {
+  box-shadow: 0 1.5rem 3rem -2rem
+    color-mix(in oklch, var(--shade) 30%, transparent);
+  animation-name: intro-orbit, intro-depth-paper;
+}
+@keyframes intro-depth-paper {
+  0%,
+  100% {
+    opacity: 0.3;
+    filter: blur(7px);
+  }
+  20%,
+  80% {
+    opacity: 0.85;
+    filter: blur(0);
+  }
+  50% {
+    opacity: 0.4;
+    filter: blur(1.5px) saturate(0.7);
+  }
+}
 .intro-card img {
   display: block;
   width: 100%;
@@ -168,7 +190,8 @@ html[data-intro] .intro-veil {
 }
 /* Blur on nine moving layers is a desktop luxury: phones keep the depth in opacity alone */
 @media (max-width: 640px) {
-  .intro-card {
+  .intro-card,
+  html:not(.dark) .intro-card {
     animation-name: intro-orbit, intro-depth-light;
   }
 }
@@ -392,6 +415,16 @@ html[data-intro] .intro-veil {
 .intro-enter:focus-visible {
   outline-offset: 5px;
 }
+/* On paper the shadowed metal is too faint for a resting button: ink, with an ink hairline, until hovered */
+html:not(.dark) .intro-enter {
+  color: var(--foreground);
+  box-shadow: inset 0 0 0 1px
+    color-mix(in oklch, var(--foreground) 32%, transparent);
+}
+html:not(.dark) .intro-enter:hover,
+html:not(.dark) .intro-enter:focus-visible {
+  color: var(--background);
+}
 @keyframes intro-enter-breath {
   50% {
     opacity: 1;
@@ -434,6 +467,10 @@ html[data-intro] .intro-veil {
 .intro[data-state="enter"] .intro-ring {
   opacity: 0;
 }
+/* Grey frames sweeping over paper read as smoke: on paper the ring clears sooner */
+html:not(.dark) .intro[data-state="enter"] .intro-ring {
+  transition-delay: 600ms;
+}
 .intro[data-state="enter"] .intro-stage {
   transform: scale(1.9);
   filter: blur(16px);
@@ -456,8 +493,11 @@ html[data-intro] .intro-veil {
   .intro-card {
     animation: none;
     opacity: 0.4;
-    transform: translate(-50%, -50%) rotateY(calc(var(--i) * -1turn / var(--n)))
-      translateZ(var(--ring-r)) rotateY(calc(var(--i) * 1turn / var(--n)));
+    /* Half a step round, so no frame stands dead centre behind ENTER */
+    transform: translate(-50%, -50%)
+      rotateY(calc((var(--i) + 0.5) * -1turn / var(--n)))
+      translateZ(var(--ring-r))
+      rotateY(calc((var(--i) + 0.5) * 1turn / var(--n)));
   }
   .intro[data-state="enter"] .intro-ring-track,
   .intro[data-state="enter"] .intro-stage {

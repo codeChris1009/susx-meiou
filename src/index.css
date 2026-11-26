@@ -497,6 +497,37 @@ html[data-scrolled] .site-header {
   translate: 0 -100%;
 }
 
+/* Magnetic: useMagnetic writes the lean; it eases back when the pointer leaves */
+.magnetic {
+  translate: var(--mag-x, 0) var(--mag-y, 0);
+  transition-property:
+    transform, background-color, color, box-shadow, translate;
+  transition-duration: 450ms, 250ms, 250ms, 450ms, 700ms;
+  transition-timing-function:
+    var(--ease-spring), ease, ease, var(--ease-out-expo), var(--ease-out-expo);
+}
+
+/*
+ * Section titles rise out of a slot, line by line, the way a title card is cut in, rather than fading up blurred.
+ * The slot keeps room for descenders; the hidden state applies only while JS runs, like .reveal itself.
+ */
+.heading-rise {
+  display: block;
+  overflow: hidden;
+  padding-block: 0.04em 0.14em;
+  margin-block: -0.04em -0.14em;
+}
+.heading-rise-in {
+  display: inline-block;
+}
+.js .reveal .heading-rise-in {
+  translate: 0 105%;
+  transition: translate 1300ms var(--ease-out-expo) 80ms;
+}
+.js .reveal[data-revealed] .heading-rise-in {
+  translate: none;
+}
+
 /* A metal underline that draws in from the left on hover */
 .link-draw {
   background-image: linear-gradient(var(--metal-mid), var(--metal-mid));
@@ -539,6 +570,18 @@ html[data-scrolled] .site-header {
 .wordmark:hover {
   background-position: 0% 0;
   rotate: -1.5deg;
+}
+/* When the signature arrives, a light crosses it once */
+.reveal[data-revealed] .wordmark {
+  animation: wordmark-sweep 2600ms var(--ease-out-expo) 500ms;
+}
+@keyframes wordmark-sweep {
+  from {
+    background-position: 100% 0;
+  }
+  to {
+    background-position: 0% 0;
+  }
 }
 .wordmark:active {
   scale: 0.985;
@@ -616,5 +659,11 @@ body::after {
 @media (prefers-reduced-motion: reduce) {
   .img-reveal:not([data-loaded]) {
     filter: none;
+  }
+  .js .reveal .heading-rise-in {
+    translate: none;
+  }
+  .reveal[data-revealed] .wordmark {
+    animation: none;
   }
 }

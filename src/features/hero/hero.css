@@ -20,6 +20,42 @@
     color-mix(in oklch, var(--foreground) 6%, transparent);
   mask-image: linear-gradient(transparent, #000 18%, #000 70%, transparent);
   transform: translateY(calc(var(--hero-progress, 0) * 90px));
+  /* The rules draw down the page as the visitor arrives, a beat before the type */
+  animation: rules-in 1800ms var(--ease-out-expo) 150ms backwards;
+}
+@keyframes rules-in {
+  from {
+    clip-path: inset(0 0 100% 0);
+  }
+}
+html[data-intro] .hero-rules {
+  animation-play-state: paused;
+}
+
+/* A raking light under the pointer (useRakingLight): the grid and the engraved mark catch it, the type does not move */
+.hero-light {
+  background: radial-gradient(
+    32rem circle at var(--lx, 70%) var(--ly, 30%),
+    color-mix(in oklch, var(--metal-hi) 9%, transparent),
+    transparent 70%
+  );
+  opacity: 0;
+  transition: opacity 900ms var(--ease-out-expo);
+}
+.hero-light[data-on] {
+  opacity: 1;
+}
+html:not(.dark) .hero-light {
+  background: radial-gradient(
+    32rem circle at var(--lx, 70%) var(--ly, 30%),
+    color-mix(in oklch, var(--metal-dark-mid) 30%, transparent),
+    transparent 70%
+  );
+}
+
+/* The scroll cue leaves as soon as the page moves */
+.hero-cue {
+  opacity: calc(1 - var(--hero-progress, 0) * 6);
 }
 
 /* The display face: Geist, large and tight. Han in a display line keeps its natural spacing (see .display-cjk) */
@@ -46,9 +82,9 @@
   initial-value: transparent;
 }
 .hello {
-  /* On paper the hues sit darker and a touch richer; on ink, lighter */
-  --hello-l: 0.55;
-  --hello-c: 0.12;
+  /* Quiet colour: low chroma, so the hues read as tints of the metal rather than a rainbow. Darker on paper */
+  --hello-l: 0.52;
+  --hello-c: 0.085;
   --hello-h1: 80;
   --hello-h2: 45;
   --hello-h3: 15;
@@ -66,8 +102,8 @@
     --hello-3 1600ms var(--ease-out-expo);
 }
 .dark .hello {
-  --hello-l: 0.8;
-  --hello-c: 0.1;
+  --hello-l: 0.82;
+  --hello-c: 0.07;
 }
 .hello-word {
   display: inline-block;
@@ -89,12 +125,12 @@
   mask-position: 0 0;
   animation:
     hello-in 1400ms var(--ease-out-expo) both,
-    hello-drift 9s ease-in-out infinite alternate;
+    hello-drift 14s ease-in-out infinite alternate;
 }
 .hello-word[data-phase="out"] {
   animation:
     hello-out 650ms cubic-bezier(0.7, 0, 0.84, 0) forwards,
-    hello-drift 9s ease-in-out infinite alternate;
+    hello-drift 14s ease-in-out infinite alternate;
 }
 @keyframes hello-in {
   from {
@@ -169,6 +205,12 @@ html:not(.dark) .hero-mark {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .hero-rules {
+    animation: none;
+  }
+  .hero-light {
+    display: none;
+  }
   .hero-mark {
     transform: none;
   }

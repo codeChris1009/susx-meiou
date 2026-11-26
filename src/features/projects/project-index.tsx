@@ -19,6 +19,10 @@ export function ProjectIndex({ groups }: { groups: readonly Group[] }) {
     if (!el || e.pointerType !== "mouse") return
     el.style.setProperty("--px", `${e.clientX}px`)
     el.style.setProperty("--py", `${e.clientY}px`)
+    el.toggleAttribute(
+      "data-flip",
+      e.clientX > window.innerWidth - el.offsetWidth - 64
+    )
   }
 
   return (

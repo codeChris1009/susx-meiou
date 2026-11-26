@@ -1,6 +1,7 @@
 import { ArrowLeft, ArrowRight, ArrowUpRight, Lock } from "lucide-react"
 
 import { Roll, actionVariants } from "@/components/action"
+import { useMagnetic } from "@/hooks/use-magnetic"
 import { pad } from "@/lib/format"
 
 import type { GalleryPiece } from "./pieces"
@@ -17,7 +18,7 @@ export function GallerySignature({ piece }: { piece: GalleryPiece }) {
     >
       <p
         key={piece.id}
-        className="plaque-swap gallery-title metal-shine px-[0.3em] text-[clamp(2.4rem,5vw,4.25rem)] leading-[1.3]"
+        className="signature-swap gallery-title metal-shine px-[0.3em] text-[clamp(2.4rem,5vw,4.25rem)] leading-[1.3]"
       >
         {piece.title}
       </p>
@@ -41,6 +42,7 @@ export function GalleryPlaque({
   step,
   go,
 }: GalleryPlaqueProps) {
+  const open = useMagnetic<HTMLAnchorElement>()
   const piece = pieces[current]
   if (!piece) return null
   const count = pieces.length
@@ -76,6 +78,7 @@ export function GalleryPlaque({
           </button>
           {piece.href ? (
             <a
+              ref={open}
               href={piece.href}
               target="_blank"
               rel="noopener"

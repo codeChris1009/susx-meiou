@@ -46,9 +46,9 @@ export function SectionHeading({
         >
           <span
             lang="en"
-            className="heading-display block text-[clamp(3rem,8.5vw,7.5rem)] transition-[letter-spacing] duration-700 ease-(--ease-out-expo) group-hover/heading:tracking-[-0.03em]"
+            className="heading-display heading-rise text-[clamp(3rem,8.5vw,7.5rem)] transition-[letter-spacing] duration-700 ease-(--ease-out-expo) group-hover/heading:tracking-[-0.03em]"
           >
-            {title}
+            <span className="heading-rise-in">{title}</span>
           </span>
           <span className="mt-3 block text-base font-medium tracking-[0.18em] text-muted-foreground sm:text-lg">
             {subtitle}
