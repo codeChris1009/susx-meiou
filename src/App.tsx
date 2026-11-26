@@ -37,7 +37,10 @@ function Stat({ value, label }: { value: number; label: string }) {
 
 function Hero() {
   return (
-    <section id={HERO_ID} className="relative -mt-16 overflow-hidden pt-16">
+    <section
+      id={HERO_ID}
+      className="intro-veil relative -mt-16 overflow-hidden pt-16"
+    >
       <div
         aria-hidden
         className="hero-field dot-grid absolute inset-0 [mask-image:radial-gradient(ellipse_75%_70%_at_25%_10%,black,transparent)]"

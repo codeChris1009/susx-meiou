@@ -496,6 +496,31 @@ html[data-scrolled] .site-header {
   transition-duration: 120ms;
 }
 
+/*
+ * Roll: a label that slides up out of its box on hover and is replaced by its twin rising from below (the twin is the
+ * same word, from data-text). Every button and button-like link on the page uses it, the static ENTER included.
+ */
+.roll {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: top;
+  line-height: 1.3;
+}
+.roll-in {
+  position: relative;
+  display: block;
+  transition: translate 650ms var(--ease-out-expo);
+}
+.roll-in::after {
+  content: attr(data-text);
+  position: absolute;
+  top: 100%;
+  left: 0;
+}
+:is(a, button):is(:hover, :focus-visible) .roll-in {
+  translate: 0 -100%;
+}
+
 /* A metal underline that draws in from the left on hover */
 .link-draw {
   background-image: linear-gradient(var(--metal-mid), var(--metal-mid));

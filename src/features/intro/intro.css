@@ -1,25 +1,32 @@
 /*
  * Entry loader. The markup is static in index.html, so it paints with the first frame; intro.ts drives --intro-fill
- * (0..1) and data-state. the ANTHOLOGY prepare mark (a hairline outline and a metal fill rising from below) over the gallery's
- * script face, Stalemate, filling in step; sparks come from a canvas (sparks.ts).
+ * (0..1) and data-state:
  *
- * Shown only while <html data-intro> (set by public/theme-init.js, so never without JS). If the bundle fails to load
- * the failsafe animation still lifts the curtain after eight seconds: a loader must never be the reason a page is lost.
+ *   (none)  loading  the mark (a hairline outline, metal rising inside) and the script wordmark fill; the works appear
+ *                    one by one on a ring orbiting the camera, each as the fill passes its share
+ *   ready            the count gives way to ENTER; the ring keeps turning and the page waits for the visitor
+ *   enter            the camera dives through the ring (the nearest frames sweep past it, out of focus) while the mark
+ *                    swells and dissolves, and the page behind comes into focus
+ *
+ * Shown only while <html data-intro> (set by public/theme-init.js, so never without JS). Until intro.ts arms it, a
+ * failsafe lifts the curtain after eight seconds: if the bundle never runs, a loader must not be why the page is lost.
  */
 .intro {
   display: none;
 }
 html[data-intro] .intro,
-.intro[data-state="exit"] {
+.intro[data-state="enter"] {
   position: fixed;
   inset: 0;
   z-index: 100;
   display: grid;
   place-items: center;
   overflow: hidden;
-  background: var(--background);
+  background-color: var(--background);
   animation: intro-failsafe 600ms 8s forwards;
-  transition: opacity 760ms var(--ease-out-expo) 240ms;
+}
+.intro[data-armed] {
+  animation: none;
 }
 @keyframes intro-failsafe {
   to {
@@ -33,6 +40,16 @@ html.intro-lock {
 /* The hero waits behind the curtain: its entrance plays as the curtain lifts, not unseen beneath it */
 html[data-intro] .animate-rise {
   animation-play-state: paused;
+}
+/* …and it waits out of focus, a step too close, so entering reads as the eye settling on it */
+.intro-veil {
+  transition:
+    scale 2000ms var(--ease-out-expo) 300ms,
+    filter 1800ms var(--ease-out-expo) 300ms;
+}
+html[data-intro] .intro-veil {
+  scale: 1.07;
+  filter: blur(14px) brightness(0.7);
 }
 
 .intro-sparks {
@@ -56,10 +73,116 @@ html[data-intro] .animate-rise {
   filter: blur(28px);
   opacity: calc(0.35 + var(--intro-fill, 0) * 0.65);
   animation: intro-breath 2.4s ease-in-out infinite;
+  transition: opacity 600ms var(--ease-out-expo);
 }
 @keyframes intro-breath {
   50% {
     scale: 1.08;
+  }
+}
+
+/* ---- The ring: the works, orbiting the camera ---- */
+.intro-ring {
+  --card-w: clamp(8.5rem, 19vw, 19rem);
+  --ring-r: clamp(11rem, 36vw, 40rem);
+  --orbit: 54s;
+  position: absolute;
+  inset: 0;
+  perspective: 100vw;
+  perspective-origin: 50% 46%;
+  pointer-events: none;
+  opacity: 0.85;
+  transition: opacity 450ms ease 1050ms;
+}
+.intro-ring-track {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform-style: preserve-3d;
+  /* Seen from a little above: the near side of the ring passes under the mark, the far side over it */
+  transform: translateZ(0) rotateX(-13deg) rotateY(0deg);
+  /* In-out, not a pure ease-in: the dive has to be seen to start, then rush */
+  transition: transform 1500ms cubic-bezier(0.76, 0, 0.24, 1);
+}
+/*
+ * Each card orbits on its own timeline, phase-shifted by its place on the ring, and turns back as it goes so it always
+ * faces the camera. A second animation on the same timeline sets the depth of field: out of focus up close, sharp at
+ * the sides, dim at the back.
+ */
+.intro-card {
+  position: absolute;
+  width: var(--card-w);
+  aspect-ratio: 3 / 2;
+  padding: 2px;
+  border-radius: var(--radius);
+  background-image: linear-gradient(
+    145deg,
+    var(--metal-hi),
+    var(--metal-mid) 54%,
+    var(--metal-lo)
+  );
+  box-shadow: 0 2rem 4rem -2rem
+    color-mix(in oklch, var(--shade) 70%, transparent);
+  animation:
+    intro-orbit var(--orbit) linear infinite,
+    intro-depth var(--orbit) linear infinite;
+  animation-delay: calc(var(--i) * var(--orbit) / var(--n) * -1);
+}
+.intro-card img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 1px;
+  object-fit: cover;
+  /* Each work arrives as the fill passes its share of the ring */
+  opacity: clamp(0, calc(var(--intro-fill, 0) * var(--n) - var(--i)), 1);
+}
+.intro-card img:not([data-loaded]) {
+  visibility: hidden;
+}
+@keyframes intro-orbit {
+  from {
+    transform: translate(-50%, -50%) rotateY(0turn) translateZ(var(--ring-r))
+      rotateY(0turn);
+  }
+  to {
+    transform: translate(-50%, -50%) rotateY(-1turn) translateZ(var(--ring-r))
+      rotateY(1turn);
+  }
+}
+@keyframes intro-depth {
+  0%,
+  100% {
+    opacity: 0.22;
+    filter: blur(7px);
+  }
+  20%,
+  80% {
+    opacity: 0.7;
+    filter: blur(0);
+  }
+  50% {
+    opacity: 0.34;
+    filter: blur(1.5px) brightness(0.6);
+  }
+}
+/* Blur on nine moving layers is a desktop luxury: phones keep the depth in opacity alone */
+@media (max-width: 640px) {
+  .intro-card {
+    animation-name: intro-orbit, intro-depth-light;
+  }
+}
+@keyframes intro-depth-light {
+  0%,
+  100% {
+    opacity: 0.18;
+  }
+  20%,
+  80% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 0.3;
   }
 }
 
@@ -68,9 +191,9 @@ html[data-intro] .animate-rise {
   display: grid;
   justify-items: center;
   transition:
-    transform 1000ms var(--ease-out-expo),
-    filter 800ms var(--ease-out-expo),
-    opacity 700ms var(--ease-out-expo);
+    transform 1200ms cubic-bezier(0.62, 0, 0.84, 0.18),
+    filter 900ms var(--ease-out-expo),
+    opacity 700ms ease 250ms;
 }
 
 /* ---- The mark: outline at rest, metal rising inside it ---- */
@@ -151,17 +274,29 @@ html[data-intro] .animate-rise {
   color: transparent;
 }
 
+/* ---- The gate: the count, then ENTER in the same place ---- */
+.intro-gate {
+  display: grid;
+  place-items: center;
+  margin-top: 0.75rem;
+  min-height: 3.25rem;
+}
+.intro-gate > * {
+  grid-area: 1 / 1;
+}
 .intro-count {
-  margin-top: 0.4rem;
   display: flex;
   align-items: center;
   gap: 0.9rem;
-  font-family: var(--font-sans);
   font-size: 0.68rem;
   letter-spacing: 0.32em;
   text-transform: uppercase;
   color: var(--muted-foreground);
   font-variant-numeric: tabular-nums;
+  transition:
+    opacity 500ms var(--ease-out-expo),
+    translate 700ms var(--ease-out-expo),
+    filter 500ms var(--ease-out-expo);
 }
 /* A hairline track that fills with the same metal, in step with the mark: the count, drawn */
 .intro-count-rule {
@@ -180,23 +315,156 @@ html[data-intro] .animate-rise {
   transform-origin: left;
 }
 
-/* ---- Exit: the stage swells, softens and fades; the ground follows a beat later ---- */
-.intro[data-state="exit"] {
+/*
+ * ENTER: a plate of metal hairline. Hover floods it with metal from below and rolls the word; a press sinks it. While it
+ * waits, a slow light breathes along its edge so the eye finds it without it shouting.
+ */
+.intro-enter {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  height: 3.25rem;
+  padding-inline: 2.6rem;
+  overflow: hidden;
+  border-radius: var(--radius);
+  box-shadow: inset 0 0 0 1px
+    color-mix(in oklch, var(--metal-hi) 45%, transparent);
+  color: var(--metal-hi);
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.46em;
+  /* Tracking adds space after the last letter too: pad the start to match, so the word sits centred */
+  text-indent: 0.46em;
+  cursor: pointer;
+  visibility: hidden;
+  opacity: 0;
+  translate: 0 10px;
+  transition:
+    opacity 700ms var(--ease-out-expo),
+    translate 900ms var(--ease-out-expo),
+    visibility 0s linear 700ms,
+    scale 450ms var(--ease-spring),
+    color 450ms var(--ease-out-expo),
+    letter-spacing 700ms var(--ease-out-expo),
+    box-shadow 700ms var(--ease-out-expo);
+}
+.intro-enter::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: linear-gradient(
+    160deg,
+    var(--metal-photon),
+    var(--metal-hi) 40%,
+    var(--metal-mid)
+  );
+  transform: scaleY(0);
+  transform-origin: bottom;
+  transition: transform 650ms var(--ease-out-expo);
+}
+.intro-enter::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: 0 0 1.75rem color-mix(in oklch, var(--metal-hi) 40%, transparent);
+  opacity: 0;
+  animation: intro-enter-breath 2.8s ease-in-out infinite;
+}
+.intro-enter > .roll {
+  position: relative;
+}
+.intro-enter:hover,
+.intro-enter:focus-visible {
+  color: var(--background);
+  letter-spacing: 0.56em;
+  text-indent: 0.56em;
+}
+.intro-enter:hover::before,
+.intro-enter:focus-visible::before {
+  transform: scaleY(1);
+}
+.intro-enter:active {
+  scale: 0.95;
+  transition-duration: 120ms;
+}
+.intro-enter:focus-visible {
+  outline-offset: 5px;
+}
+@keyframes intro-enter-breath {
+  50% {
+    opacity: 1;
+  }
+}
+
+.intro[data-state="ready"] .intro-count,
+.intro[data-state="enter"] .intro-count {
+  opacity: 0;
+  translate: 0 -10px;
+  filter: blur(4px);
+}
+.intro[data-state="ready"] .intro-enter {
+  visibility: visible;
+  opacity: 1;
+  translate: none;
+  transition-delay: 150ms, 150ms, 0s, 0s, 0s, 0s, 0s;
+}
+.intro[data-state="ready"] .intro-ring {
+  opacity: 1;
+}
+.intro[data-state="ready"] .intro-glow {
+  opacity: 1;
+}
+
+/* ---- Enter: the dive. The curtain thins first, so the page focuses under the frames sweeping past ---- */
+.intro[data-state="enter"] {
+  background-color: transparent;
   opacity: 0;
   pointer-events: none;
+  transition:
+    background-color 1200ms cubic-bezier(0.65, 0, 0.35, 1) 300ms,
+    opacity 600ms ease 1300ms;
 }
-.intro[data-state="exit"] .intro-stage {
-  transform: scale(1.07);
-  filter: blur(10px);
+.intro[data-state="enter"] .intro-ring-track {
+  /* The nearest frame stops just short of the camera: past it, browsers draw 3D layers unreliably */
+  transform: translateZ(calc(100vw * 0.9 - var(--ring-r))) rotateX(-3deg)
+    rotateY(-40deg);
+}
+.intro[data-state="enter"] .intro-ring {
   opacity: 0;
+}
+.intro[data-state="enter"] .intro-stage {
+  transform: scale(1.9);
+  filter: blur(16px);
+  opacity: 0;
+}
+.intro[data-state="enter"] .intro-glow {
+  opacity: 0;
+}
+.intro[data-state="enter"] .intro-enter {
+  opacity: 0;
+  scale: 1.1;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .intro-glow {
+  .intro-glow,
+  .intro-enter::after {
     animation: none;
   }
-  .intro[data-state="exit"] .intro-stage {
+  /* The ring stands still, evenly hung, and entering is a plain cross-fade */
+  .intro-card {
+    animation: none;
+    opacity: 0.4;
+    transform: translate(-50%, -50%) rotateY(calc(var(--i) * -1turn / var(--n)))
+      translateZ(var(--ring-r)) rotateY(calc(var(--i) * 1turn / var(--n)));
+  }
+  .intro[data-state="enter"] .intro-ring-track,
+  .intro[data-state="enter"] .intro-stage {
     transform: none;
+    filter: none;
+  }
+  html[data-intro] .intro-veil {
+    scale: none;
     filter: none;
   }
 }

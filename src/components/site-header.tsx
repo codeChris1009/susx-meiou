@@ -50,7 +50,7 @@ export function SiteHeader() {
   const active = useActiveSection(NAV_IDS)
   return (
     <header className="site-header sticky top-0 z-50">
-      <div className="container-wide flex h-full items-center justify-between">
+      <div className="intro-veil container-wide flex h-full items-center justify-between">
         <a
           href="#top"
           className="pressable group/logo inline-flex items-center gap-2.5 rounded-md text-sm font-semibold tracking-tight"
