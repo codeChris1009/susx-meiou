@@ -1,8 +1,9 @@
 import { ArrowUpRight } from "lucide-react"
-import { cn } from "cn"
+import type { CSSProperties } from "react"
 
 import { GithubMark } from "@/components/github-mark"
 import { useReveal } from "@/hooks/use-reveal"
+import { cn } from "@/lib/utils"
 import type { Host, Project } from "./types.ts"
 
 const HOST_LABEL: Record<Host, string> = {
@@ -49,7 +50,7 @@ export function ProjectCard({
   return (
     <article
       ref={reveal}
-      style={{ "--reveal-delay": `${delayMs}ms` } as React.CSSProperties}
+      style={{ "--reveal-delay": `${delayMs}ms` } as CSSProperties}
       className={cn(
         "reveal group/project relative flex flex-col overflow-hidden rounded-xl bg-card text-card-foreground ring-1 ring-foreground/8",
         "shadow-[0_1px_2px_color-mix(in_oklch,var(--shade)_5%,transparent)] transition-[translate,scale,box-shadow,--tw-ring-color] duration-700 ease-(--ease-out-expo)",

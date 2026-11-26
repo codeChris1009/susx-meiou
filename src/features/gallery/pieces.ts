@@ -78,27 +78,18 @@ export const HANG: readonly GallerySpec[] = [
   },
 ]
 
-/** Image URLs by id, from an import.meta.glob of src/assets/gallery */
-export function imagesById(glob: Record<string, string>) {
-  return new Map(
-    Object.entries(glob).map(([path, url]) => [
-      path.slice(path.lastIndexOf("/") + 1, path.lastIndexOf(".")),
-      url,
-    ])
-  )
-}
-
 /** Joins the hang with images and live links; a piece without an image is left out rather than hung as a blank */
 export function buildGallery(
   hang: readonly GallerySpec[],
   projects: readonly SyncedProject[],
-  images: ReadonlyMap<string, string>
+  /** Image URLs by id (file name), see byFileStem */
+  images: Readonly<Record<string, string>>
 ): GalleryPiece[] {
   const live = new Map(
     projects.filter((p) => p.online).map((p) => [p.repo, p.url])
   )
   return hang.flatMap((spec) => {
-    const image = images.get(spec.id)
+    const image = images[spec.id]
     if (!image) return []
     return [
       { ...spec, image, href: (spec.repo && live.get(spec.repo)) || null },

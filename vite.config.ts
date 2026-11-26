@@ -11,6 +11,17 @@ export default defineConfig({
     // blocks under font-src 'self'. Other small assets keep the default inlining.
     assetsInlineLimit: (file) =>
       /\.(woff2?|ttf|otf)$/.test(file) ? false : undefined,
+    rolldownOptions: {
+      output: {
+        // three.js in a chunk of its own: it changes only on upgrade, so a change to the gallery scene re-downloads a
+        // few kB of scene code, not the whole engine. Both load only when the gallery nears the viewport.
+        codeSplitting: {
+          groups: [{ name: "three", test: /node_modules[\\/]three[\\/]/ }],
+        },
+      },
+    },
+    // The three chunk is ~550 kB minified (~140 kB gzip) by itself and lazy; the entry bundle stays well under this
+    chunkSizeWarningLimit: 600,
   },
   resolve: {
     alias: {

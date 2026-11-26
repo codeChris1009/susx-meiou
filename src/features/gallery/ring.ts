@@ -33,16 +33,22 @@ export function focusOf(off: number, count: number) {
   return 1 - t * t * (3 - 2 * t)
 }
 
+/** Front-piece share of the view width, from a phone held upright to a wide screen */
+const TALL = { aspect: 0.7, coverage: 0.88 }
+const WIDE = { aspect: 1.6, coverage: 0.4 }
+const FOV_RANGE = [30, 78] as const
+
 /**
  * Vertical field of view that makes the front piece fill `coverage` of the view's width at `distance`: about 40% on a
  * wide screen, so neighbours show at the sides, and nearly all of it on a phone held upright.
  */
 export function fitFov(aspect: number, width: number, distance: number) {
-  const wide = 1.6
-  const tall = 0.7
-  const t = Math.min(1, Math.max(0, (aspect - tall) / (wide - tall)))
-  const coverage = 0.88 + (0.4 - 0.88) * t
+  const t = Math.min(
+    1,
+    Math.max(0, (aspect - TALL.aspect) / (WIDE.aspect - TALL.aspect))
+  )
+  const coverage = TALL.coverage + (WIDE.coverage - TALL.coverage) * t
   const halfH = Math.atan(width / (2 * distance * coverage))
   const fov = 2 * Math.atan(Math.tan(halfH) / aspect) * (180 / Math.PI)
-  return Math.min(78, Math.max(30, fov))
+  return Math.min(FOV_RANGE[1], Math.max(FOV_RANGE[0], fov))
 }

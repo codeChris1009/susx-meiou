@@ -19,9 +19,12 @@ type Mode = "idle" | "loading" | "3d" | "flat"
 
 const pad = (n: number) => String(n).padStart(2, "0")
 
+/** Probes for WebGL 2, then hands the context back: browsers cap live contexts, and a probe should not hold one */
 function supportsWebGL() {
   try {
-    return !!document.createElement("canvas").getContext("webgl2")
+    const gl = document.createElement("canvas").getContext("webgl2")
+    gl?.getExtension("WEBGL_lose_context")?.loseContext()
+    return !!gl
   } catch {
     return false
   }
@@ -29,7 +32,8 @@ function supportsWebGL() {
 
 interface GallerySectionProps {
   pieces: readonly GalleryPiece[]
-  index: string
+  /** Section numeral in the page outline, "01" */
+  numeral: string
 }
 
 /**
@@ -37,10 +41,7 @@ interface GallerySectionProps {
  * screen reader can reach: the plaque, the controls, the keyboard, and a flat framed picture that stands in while the
  * scene loads and stays if WebGL is unavailable. Turning the ring and pressing the buttons are the same action.
  */
-export function GallerySection({
-  pieces,
-  index: sectionIndex,
-}: GallerySectionProps) {
+export function GallerySection({ pieces, numeral }: GallerySectionProps) {
   const stage = useRef<HTMLDivElement>(null)
   const canvas = useRef<HTMLCanvasElement>(null)
   const scene = useRef<GalleryScene | null>(null)
@@ -89,12 +90,15 @@ export function GallerySection({
         import("./scene")
           .then(async ({ GalleryScene }) => {
             if (disposed) return
-            made = new GalleryScene(
-              cv,
-              pieces.map((p) => p.image),
-              { onFocus: setCurrent, onOpen: (i) => latest.current.open(i) },
-              reduced
-            )
+            made = new GalleryScene({
+              canvas: cv,
+              images: pieces.map((p) => p.image),
+              callbacks: {
+                onFocus: setCurrent,
+                onOpen: (i) => latest.current.open(i),
+              },
+              reducedMotion: reduced,
+            })
             const box = cv.getBoundingClientRect()
             made.resize(box.width, box.height)
             await made.load()
@@ -157,7 +161,7 @@ export function GallerySection({
       <div className="container-wide pt-24">
         <SectionHeading
           id="gallery"
-          index={sectionIndex}
+          index={numeral}
           title="精選"
           note={`Gallery · ${count} pieces`}
           className="mb-0"

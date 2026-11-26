@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 
-import { buildShowcase, shotsByRepo } from "./showcase.ts"
+import { buildShowcase } from "./showcase.ts"
 import type { Curation, SyncedProject } from "./types.ts"
 
 const project = (
@@ -61,19 +61,5 @@ describe("buildShowcase", () => {
     expect(a?.title).toBe("A!")
     expect(a?.shot).toBe("/a.jpg")
     expect(featured.find((p) => p.repo === "b")?.shot).toBeNull()
-  })
-})
-
-describe("shotsByRepo", () => {
-  it("keys screenshot URLs by file name, dots in repo names included", () => {
-    expect(
-      shotsByRepo({
-        "/src/assets/shots/fovea.jpg": "/assets/fovea-abc.jpg",
-        "/src/assets/shots/dethveiler-0.0.0.jpg": "/assets/d-1.jpg",
-      })
-    ).toEqual({
-      fovea: "/assets/fovea-abc.jpg",
-      "dethveiler-0.0.0": "/assets/d-1.jpg",
-    })
   })
 })

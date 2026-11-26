@@ -6,6 +6,11 @@ import { describe, expect, it } from "vitest"
 import { METAL, NEUTRAL } from "../src/theme/palette.ts"
 
 const css = readFileSync(new URL("../src/index.css", import.meta.url), "utf8")
+// The 404 page is static, outside the bundle, so it repeats a few palette values by hand
+const notFound = readFileSync(
+  new URL("../public/404.css", import.meta.url),
+  "utf8"
+).toLowerCase()
 
 /** The body of the first rule whose selector is exactly `selector` */
 function block(selector: string) {
@@ -38,6 +43,17 @@ describe("palette", () => {
         ).toBe(hex)
       }
     }
+  })
+
+  it("keeps the 404 page on palette values", () => {
+    const allowed = new Set<string>([
+      ...Object.values(NEUTRAL),
+      ...Object.values(METAL.light),
+      ...Object.values(METAL.dark),
+    ])
+    const used = notFound.match(/#[0-9a-f]{6}\b/g) ?? []
+    expect(used.length).toBeGreaterThan(0)
+    for (const hex of used) expect(allowed, hex).toContain(hex)
   })
 
   it("never uses pure white or pure black", () => {

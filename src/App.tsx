@@ -3,41 +3,19 @@ import { ArrowDown, ArrowUp } from "lucide-react"
 import { GithubMark } from "@/components/github-mark"
 import { SectionHeading } from "@/components/section-heading"
 import { SiteHeader } from "@/components/site-header"
-import data from "@/data/projects.json"
+import {
+  featured,
+  gallery,
+  platforms,
+  practice,
+  syncedOn,
+  year,
+} from "@/content"
 import { GallerySection } from "@/features/gallery/gallery-section"
-import { HANG, buildGallery, imagesById } from "@/features/gallery/pieces"
-import { curation } from "@/features/projects/curation"
 import { ProjectCard } from "@/features/projects/project-card"
-import { buildShowcase, shotsByRepo } from "@/features/projects/showcase"
-import type { SyncFile } from "@/features/projects/types"
 import { useReveal } from "@/hooks/use-reveal"
 import { useScrollEffects } from "@/hooks/use-scroll-effects"
 import { site } from "@/site"
-
-// Written by scripts/sync.ts against the same SyncFile type; JSON imports widen string unions, hence the assertion
-const sync = data as SyncFile
-const shots = shotsByRepo(
-  import.meta.glob<string>("/src/assets/shots/*.jpg", {
-    eager: true,
-    query: "?url",
-    import: "default",
-  })
-)
-const { featured, practice } = buildShowcase(sync.projects, curation, shots)
-const gallery = buildGallery(
-  HANG,
-  sync.projects,
-  imagesById(
-    import.meta.glob<string>("/src/assets/gallery/*.webp", {
-      eager: true,
-      query: "?url",
-      import: "default",
-    })
-  )
-)
-const syncedOn = sync.syncedAt.slice(0, 10)
-const year = syncedOn.slice(0, 4)
-const platforms = new Set([...featured, ...practice].map((p) => p.host)).size
 
 // Cards in a row arrive one after another; the stagger restarts every row so late cards never wait long
 const stagger = (index: number, perRow: number) => (index % perRow) * 110
@@ -183,7 +161,7 @@ export function App() {
       <main className="flex-1">
         <Hero />
 
-        <GallerySection pieces={gallery} index="01" />
+        <GallerySection pieces={gallery} numeral="01" />
 
         <section className="container-wide py-24" aria-labelledby="works">
           <SectionHeading

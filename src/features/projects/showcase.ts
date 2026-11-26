@@ -36,15 +36,3 @@ export function buildShowcase(
     practice: projects.filter((p) => practice.has(p.repo)),
   }
 }
-
-/** `/src/assets/shots/fovea.jpg` → `fovea` */
-export function shotsByRepo(
-  modules: Readonly<Record<string, string>>
-): Record<string, string> {
-  return Object.fromEntries(
-    Object.entries(modules).map(([path, url]) => [
-      path.slice(path.lastIndexOf("/") + 1).replace(/\.[^.]+$/, ""),
-      url,
-    ])
-  )
-}

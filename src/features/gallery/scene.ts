@@ -99,7 +99,18 @@ const room = {
   tint: METAL.dark.hi,
 }
 
+export interface GallerySceneOptions {
+  canvas: HTMLCanvasElement
+  /** Image URLs, in ring order */
+  images: readonly string[]
+  callbacks: GalleryCallbacks
+  reducedMotion: boolean
+}
+
 interface Hung {
+  /** Turns the piece round the ring */
+  pivot: Group
+  /** Moves and scales the piece within its place on the ring */
   holder: Group
   art: MeshBasicMaterial
   hover: number
@@ -115,7 +126,12 @@ export class GalleryScene {
   private readonly floor: Reflector
   private readonly dust: Points<BufferGeometry, ShaderMaterial>
   private readonly raycaster = new Raycaster()
+  /** Pointer in normalised device coordinates, for parallax and picking */
   private readonly pointer = new Vector2(0, 0)
+  /** Canvas size in CSS px, kept by resize(): input never reads layout */
+  private size = { width: 1, height: 1 }
+  /** Hover is resolved once per frame, however many pointer events arrive */
+  private hoverDirty = false
   private readonly look = new Vector2(0, 0)
   private readonly canvas: HTMLCanvasElement
   private readonly images: readonly string[]
@@ -134,12 +150,12 @@ export class GalleryScene {
   private clock = 0
   private disposed = false
 
-  constructor(
-    canvas: HTMLCanvasElement,
-    images: readonly string[],
-    callbacks: GalleryCallbacks,
-    reducedMotion: boolean
-  ) {
+  constructor({
+    canvas,
+    images,
+    callbacks,
+    reducedMotion,
+  }: GallerySceneOptions) {
     this.canvas = canvas
     this.images = images
     this.callbacks = callbacks
@@ -180,12 +196,17 @@ export class GalleryScene {
     const loader = new ImageBitmapLoader().setOptions({
       imageOrientation: "flipY",
     })
-    const bitmaps = await Promise.all(
+    const settled = await Promise.allSettled(
       this.images.map((url) => loader.loadAsync(url))
     )
-    if (this.disposed) {
+    const bitmaps = settled.flatMap((r) =>
+      r.status === "fulfilled" ? [r.value] : []
+    )
+    // One missing piece fails the whole hang (the section falls back to the flat view); free what did decode
+    if (this.disposed || bitmaps.length < settled.length) {
       for (const b of bitmaps) b.close()
-      return
+      if (this.disposed) return
+      throw new Error("A gallery image failed to load")
     }
     const anisotropy = Math.min(
       8,
@@ -230,7 +251,7 @@ export class GalleryScene {
       holder.add(frame, lip, artMesh)
       pivot.add(holder)
       this.ring.add(pivot)
-      this.hung.push({ holder, art, hover: 0 })
+      this.hung.push({ pivot, holder, art, hover: 0 })
       this.artMeshes.push(artMesh)
     })
 
@@ -264,6 +285,7 @@ export class GalleryScene {
 
   resize(width: number, height: number) {
     if (!width || !height) return
+    this.size = { width, height }
     this.renderer.setSize(width, height, false)
     this.camera.aspect = width / height
     this.camera.fov = fitFov(this.camera.aspect, ART_W, RADIUS - PUSH)
@@ -326,6 +348,12 @@ export class GalleryScene {
     this.last = now
     if (!this.reducedMotion) this.clock += dt
 
+    if (this.hoverDirty) {
+      this.hoverDirty = false
+      this.hovered = this.pick()
+      this.canvas.style.cursor = this.hovered === null ? "grab" : "pointer"
+    }
+
     const k = this.reducedMotion ? 1 : 1 - Math.exp(-SPRING * dt)
     this.angle += (this.target - this.angle) * k
     this.layout(dt)
@@ -356,8 +384,7 @@ export class GalleryScene {
       const off = offFront(this.angle, i, n)
       const f = focusOf(off, n)
       h.hover += ((this.hovered === i ? 1 : 0) - h.hover) * hoverEase
-      const pivot = h.holder.parent!
-      pivot.rotation.y = -off
+      h.pivot.rotation.y = -off
       h.holder.position.z = -RADIUS + PUSH * f
       h.holder.position.y = CENTER_Y + h.hover * 0.05
       h.holder.scale.setScalar(
@@ -479,13 +506,17 @@ export class GalleryScene {
 
   // ---- Input: drag to turn, click a side piece to bring it round, click the front piece to open it ----
 
-  private pick(e: PointerEvent) {
-    const rect = this.canvas.getBoundingClientRect()
-    const ndc = new Vector2(
-      ((e.clientX - rect.left) / rect.width) * 2 - 1,
-      -((e.clientY - rect.top) / rect.height) * 2 + 1
+  /** Pointer position from the event, against the canvas size kept by resize() (no layout read per event) */
+  private track(e: PointerEvent) {
+    this.pointer.set(
+      (e.offsetX / this.size.width) * 2 - 1,
+      -(e.offsetY / this.size.height) * 2 + 1
     )
-    this.raycaster.setFromCamera(ndc, this.camera)
+  }
+
+  /** The piece under the pointer, if any */
+  private pick() {
+    this.raycaster.setFromCamera(this.pointer, this.camera)
     const hit = this.raycaster.intersectObjects(this.artMeshes, false)[0]
     return hit ? (hit.object.userData.index as number) : null
   }
@@ -496,11 +527,7 @@ export class GalleryScene {
   }
 
   private readonly onMove = (e: PointerEvent) => {
-    const rect = this.canvas.getBoundingClientRect()
-    this.pointer.set(
-      ((e.clientX - rect.left) / rect.width) * 2 - 1,
-      -((e.clientY - rect.top) / rect.height) * 2 + 1
-    )
+    this.track(e)
     if (this.drag) {
       const dx = e.clientX - this.drag.x
       if (!this.drag.moved && Math.abs(dx) > TAP_SLOP) {
@@ -509,8 +536,7 @@ export class GalleryScene {
       }
       if (this.drag.moved) this.target = this.drag.target + dx * DRAG
     } else if (e.pointerType === "mouse") {
-      this.hovered = this.pick(e)
-      this.canvas.style.cursor = this.hovered === null ? "grab" : "pointer"
+      this.hoverDirty = true
     }
     this.wake()
   }
@@ -521,7 +547,8 @@ export class GalleryScene {
     if (!drag) return
     const n = this.count
     if (!drag.moved) {
-      const i = this.pick(e)
+      this.track(e)
+      const i = this.pick()
       if (i === null) return
       if (i === indexAt(this.target, n)) this.callbacks.onOpen(i)
       else this.goTo(i)

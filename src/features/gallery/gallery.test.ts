@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest"
 
 import type { SyncedProject } from "@/features/projects/types"
 
-import { HANG, buildGallery, imagesById } from "./pieces"
+import { HANG, buildGallery } from "./pieces"
 import {
   TAU,
   angleFor,
@@ -59,11 +59,7 @@ describe("ring", () => {
 })
 
 describe("buildGallery", () => {
-  const images = imagesById(
-    Object.fromEntries(
-      HANG.map((p) => [`/src/assets/gallery/${p.id}.webp`, `/a/${p.id}.webp`])
-    )
-  )
+  const images = Object.fromEntries(HANG.map((p) => [p.id, `/a/${p.id}.webp`]))
 
   it("links pieces to their live site and keeps the hang order", () => {
     const gallery = buildGallery(HANG, [project("fovea")], images)
@@ -80,7 +76,7 @@ describe("buildGallery", () => {
   })
 
   it("leaves out a piece whose image is missing", () => {
-    const some = new Map([...images].slice(0, 2))
+    const some = Object.fromEntries(Object.entries(images).slice(0, 2))
     expect(buildGallery(HANG, [], some)).toHaveLength(2)
   })
 

@@ -2,23 +2,63 @@
  * Entry loader controller. The markup is static in index.html (it paints with the first frame, before this bundle has
  * even parsed); this drives it: --intro-fill (0..1) for the rising metal, the counter, the sparks, and the exit.
  *
- * Sequence: fill (the ANTHOLOGY mark and the script wordmark fill from below, sparks thrown off the fill line) → 100%, a burst
- * → a short hold so the full mark is seen → the curtain lifts and the hero's own entrance plays.
+ * Sequence: fill (the ANTHOLOGY mark and the script wordmark fill from below, sparks thrown off the fill line) → 100%,
+ * a burst → a short hold so the full mark is seen → the curtain lifts and the hero's own entrance plays.
  */
 import { METAL, type MetalSteps } from "@/theme/palette"
 
 import { FULL, QUICK, chase, targetAt, type IntroTiming } from "./progress"
-import { Sparks } from "./sparks"
+import { Sparks, type Spray } from "./sparks"
 
 const SEEN_KEY = "intro-seen"
 /** Never hold the page longer than this, whatever is still loading */
 const MAX_WAIT_MS = 6000
-/** Matches the exit transition in intro.css */
-const EXIT_MS = 1000
+/** The exit is timed by intro.css; this only covers a transitionend that never comes (a hidden tab, say) */
+const EXIT_FALLBACK_MS = 1600
 /** Physics step cap: a long stall should not fling sparks across the screen */
 const MAX_DT = 48
 
-function sessionFlag(): boolean {
+// ---- Sprays: how sparks leave the metal ----
+const UP = -Math.PI / 2
+/** Off the molten edge of the mark while it fills */
+const MARK_SPRAY: Spray = {
+  angle: UP,
+  spread: Math.PI * 0.9,
+  speed: [0.05, 0.3],
+  life: [500, 1100],
+  size: [0.8, 1.8],
+}
+/** Off the word's fill line: fewer, smaller, slower */
+const WORD_SPRAY: Spray = {
+  angle: UP,
+  spread: Math.PI * 0.7,
+  speed: [0.04, 0.2],
+  life: [400, 900],
+  size: [0.6, 1.4],
+}
+/** At 100%: a ring off the full mark */
+const MARK_BURST: Spray = {
+  angle: UP,
+  spread: Math.PI * 2,
+  speed: [0.12, 0.62],
+  life: [900, 1900],
+  size: [0.9, 2.2],
+}
+/** At 100%: a lighter spray off the word */
+const WORD_BURST: Spray = {
+  angle: UP,
+  spread: Math.PI * 1.4,
+  speed: [0.08, 0.42],
+  life: [800, 1600],
+  size: [0.7, 1.7],
+}
+/** Sparks per point of progress, and the chance per frame of a stray one while the fill creeps */
+const SPARKS_PER_POINT = 1.4
+const IDLE_SPARK_CHANCE = 0.3
+const WORD_SPARK_CHANCE = 0.45
+
+/** Records this visit and reports whether the session had already seen the intro */
+function seenBeforeThisSession(): boolean {
   try {
     const seen = sessionStorage.getItem(SEEN_KEY) === "1"
     sessionStorage.setItem(SEEN_KEY, "1")
@@ -30,9 +70,13 @@ function sessionFlag(): boolean {
 
 const delay = (ms: number) => new Promise((r) => setTimeout(r, ms))
 
-function sparkColours(metal: MetalSteps) {
-  return [metal.photon, metal.hi, metal.hi, metal.mid]
-}
+/** Mostly the bright faces of the metal, a few from the middle: sparks are the metal at its hottest */
+const sparkColours = (metal: MetalSteps) => [
+  metal.photon,
+  metal.hi,
+  metal.hi,
+  metal.mid,
+]
 
 /** Resolves when the page behind the curtain is ready: first render committed and the fonts it asked for decoded */
 export function pageReady() {
@@ -60,7 +104,7 @@ export function startIntro(ready: Promise<unknown>) {
   }
 
   const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches
-  const timing: IntroTiming = sessionFlag() || reduced ? QUICK : FULL
+  const timing: IntroTiming = seenBeforeThisSession() || reduced ? QUICK : FULL
   const dark = html.classList.contains("dark")
   const sparks = reduced
     ? null
@@ -88,11 +132,19 @@ export function startIntro(ready: Promise<unknown>) {
   }
   window.addEventListener("resize", onResize)
 
+  let finished = false
+  const finish = () => {
+    finished = true
+  }
+  root.addEventListener("transitionend", (e) => {
+    if (e.target === root && e.propertyName === "opacity") finish()
+  })
+
   const start = performance.now()
   let last = start
   let shown = 0
   let completedAt = 0
-  let exitAt = 0
+  let exiting = false
 
   const frame = (now: number) => {
     const dt = now - last
@@ -104,14 +156,15 @@ export function startIntro(ready: Promise<unknown>) {
       const fill = shown / 100
       root.style.setProperty("--intro-fill", fill.toFixed(4))
       count.textContent = String(Math.floor(shown)).padStart(3, "0")
-      if (sparks) throwFromFillLine(sparks, fill, shown - before)
+      if (sparks) spray(sparks, fill, shown - before)
       if (shown >= 100) {
         completedAt = now
         if (sparks) burst(sparks)
       }
-    } else if (!exitAt && now - completedAt >= timing.settleMs) {
-      exitAt = now
+    } else if (!exiting && now - completedAt >= timing.settleMs) {
+      exiting = true
       root.setAttribute("data-state", "exit")
+      setTimeout(finish, EXIT_FALLBACK_MS)
       // Let the page's own entrance start under the lifting curtain, not after it
       html.classList.remove("intro-lock")
       delete html.dataset.intro
@@ -119,7 +172,7 @@ export function startIntro(ready: Promise<unknown>) {
 
     sparks?.step(Math.min(dt, MAX_DT))
 
-    if (exitAt && now - exitAt >= EXIT_MS) {
+    if (finished) {
       window.removeEventListener("resize", onResize)
       sparks?.clear()
       root.remove()
@@ -130,55 +183,50 @@ export function startIntro(ready: Promise<unknown>) {
   requestAnimationFrame(frame)
 
   /** Sparks leave the molten edge of both fills, more of them the faster the metal rises */
-  function throwFromFillLine(s: Sparks, fill: number, advanced: number) {
+  function spray(s: Sparks, fill: number, advanced: number) {
     if (fill <= 0.02 || fill >= 1) return
-    const rate = advanced * 1.4 + (Math.random() < 0.3 ? 1 : 0)
-    const n = Math.floor(rate + Math.random())
-    s.emit(n, {
-      x: markBox.left + markBox.width / 2,
-      y: markBox.bottom - fill * markBox.height,
-      width: markBox.width * 0.55,
-      angle: -Math.PI / 2,
-      spread: Math.PI * 0.9,
-      speed: [0.05, 0.3],
-      life: [500, 1100],
-      size: [0.8, 1.8],
-    })
-    if (Math.random() < 0.45) {
-      s.emit(1, {
-        x: wordBox.left + wordBox.width / 2,
-        y: wordBox.bottom - fill * wordBox.height,
-        width: wordBox.width * 0.8,
-        angle: -Math.PI / 2,
-        spread: Math.PI * 0.7,
-        speed: [0.04, 0.2],
-        life: [400, 900],
-        size: [0.6, 1.4],
-      })
+    const extra = Math.random() < IDLE_SPARK_CHANCE ? 1 : 0
+    const n = Math.floor(advanced * SPARKS_PER_POINT + extra + Math.random())
+    s.emit(
+      n,
+      {
+        x: markBox.left + markBox.width / 2,
+        y: markBox.bottom - fill * markBox.height,
+        width: markBox.width * 0.55,
+      },
+      MARK_SPRAY
+    )
+    if (Math.random() < WORD_SPARK_CHANCE) {
+      s.emit(
+        1,
+        {
+          x: wordBox.left + wordBox.width / 2,
+          y: wordBox.bottom - fill * wordBox.height,
+          width: wordBox.width * 0.8,
+        },
+        WORD_SPRAY
+      )
     }
   }
 
-  /** The finish: a ring of sparks off the full mark, a lighter spray off the word */
   function burst(s: Sparks) {
-    s.emit(110, {
-      x: markBox.left + markBox.width / 2,
-      y: markBox.top + markBox.height * 0.45,
-      width: markBox.width * 0.7,
-      angle: -Math.PI / 2,
-      spread: Math.PI * 2,
-      speed: [0.12, 0.62],
-      life: [900, 1900],
-      size: [0.9, 2.2],
-    })
-    s.emit(60, {
-      x: wordBox.left + wordBox.width / 2,
-      y: wordBox.top + wordBox.height / 2,
-      width: wordBox.width,
-      angle: -Math.PI / 2,
-      spread: Math.PI * 1.4,
-      speed: [0.08, 0.42],
-      life: [800, 1600],
-      size: [0.7, 1.7],
-    })
+    s.emit(
+      110,
+      {
+        x: markBox.left + markBox.width / 2,
+        y: markBox.top + markBox.height * 0.45,
+        width: markBox.width * 0.7,
+      },
+      MARK_BURST
+    )
+    s.emit(
+      60,
+      {
+        x: wordBox.left + wordBox.width / 2,
+        y: wordBox.top + wordBox.height / 2,
+        width: wordBox.width,
+      },
+      WORD_BURST
+    )
   }
 }

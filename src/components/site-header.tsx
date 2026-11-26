@@ -91,6 +91,7 @@ export function SiteHeader() {
       </div>
       <div
         aria-hidden
+        data-scroll-rule
         className="scroll-rule absolute inset-x-0 bottom-0 h-px bg-metal"
       />
     </header>

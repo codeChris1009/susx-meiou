@@ -34,8 +34,8 @@ GitHub API ──pnpm sync──▶ src/data/projects.json ─┐
 
 ## 自動化
 
-- **CI/CD**（[ci.yml](.github/workflows/ci.yml)）：PR 與 push 都跑 `pnpm check`；main 上通過後部署到 Cloudflare、
-  對線上站做 smoke test，失敗就 rollback
+- **CI/CD**（[ci.yml](.github/workflows/ci.yml)）：PR 與 push 都跑 `pnpm check`；main 上通過後，把通過檢查的那份
+  `dist/` 原封不動部署到 Cloudflare（不重新 build），再對線上站做 smoke test（連同延遲載入的展間 chunk 與畫作），失敗就 rollback
 - **Sync**（[sync.yml](.github/workflows/sync.yml)）：每週一 09:17（台北）重掃 GitHub 並截新圖，有變動才 commit，
   再觸發 CI/CD 部署。Actions 頁面的 Run workflow 可以隨時手動跑
 
@@ -59,9 +59,22 @@ Repository variable（同一頁的 Variables 分頁）：
 
 ## 設計
 
-shadcn `radix-nova`、`neutral` 單色 oklch、`--radius: 0.35rem`；字體是 Geist、Noto Sans TC（自架、unicode-range 切片，
-只下載頁面用到的字）與 Geist Mono。唯一的材質是三段金屬漸層：深色模式是香檳到暖灰，淺色模式是同一塊金屬的暗面，
-用在標記、編號、細線與捲動進度。
+**色票**（[palette.ts](src/theme/palette.ts)）：兩種材質。中性色是 50–950 共 11 階的暖色階，全部落在金屬的色相
+（oklch 86°），從象牙紙到墨，沒有純白也沒有純黑；淺色模式是紙上的墨，深色模式反過來。金屬是三段漸層加最亮面：
+深色模式是香檳到暖灰，淺色模式是同一塊金屬的暗面。CSS 變數在 [index.css](src/index.css)，同一組 hex 由 palette.ts
+給 three.js 用，[palette.test.ts](scripts/palette.test.ts) 確保兩邊（含 404 頁）一致。
+
+shadcn `radix-nova`、`--radius: 0.35rem`；字體是 Geist、Noto Sans TC（自架、unicode-range 切片，只下載頁面用到的字）、
+Geist Mono，以及只用在進場字標與展間名牌的花體字 Stalemate（自架、只有 Latin）。
+
+**進場動畫**（[src/features/intro](src/features/intro)）：標記寫死在 `index.html`，bundle 還沒執行就先畫出來。品牌標記與
+花體字標由下往上注入金屬，邊緣噴出火花（canvas + 固定大小的粒子池），100% 時爆一次再淡出。進度是誠實的：時間只推到 92%，
+最後 8% 等首次 render 與字體；同一個 session 重新整理時改成短版；bundle 載入失敗時 8 秒後 CSS 自動收起。
+
+**精選展間**（[src/features/gallery](src/features/gallery)）：three.js 環形畫廊，九件作品圍著鏡頭、石材地面反射。
+three.js 獨立成 chunk，展間接近畫面才下載；只在看得到時算圖。要換展品：把 1200×800 的 WebP 放進
+`src/assets/gallery/`，再改 [pieces.ts](src/features/gallery/pieces.ts) 的 `HANG`（`repo` 對應作品清單，連結跟著每週同步走；
+`repo: null` 是不公開的作品，只展示不連結）。沒有 WebGL 時改用同一組按鈕切換的平面畫框。
 
 動態：卡片 hover 會上浮、截圖慢速放大並掃過一道光，按下會回沉；捲動時區塊依序浮現、標題細線由左畫出、header 收合，
 主視覺隨捲動淡出並有視差。系統設定「減少動態效果」時全部關閉。
