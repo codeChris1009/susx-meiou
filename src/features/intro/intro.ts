@@ -1,20 +1,25 @@
 /**
  * Entry loader controller. The markup is static in index.html (it paints with the first frame, before this bundle has
- * even parsed); this drives it: --intro-fill (0..1) for the rising metal, the counter, the sparks, and the exit.
+ * even parsed); this drives it: --intro-fill (0..1) for the rising metal, the counter, the sparks, the ring of works,
+ * and the gate.
  *
- * Sequence: fill (the ANTHOLOGY mark and the script wordmark fill from below, sparks thrown off the fill line) → 100%,
- * a burst → a short hold so the full mark is seen → the curtain lifts and the hero's own entrance plays.
+ * Sequence: fill (the mark and the script wordmark fill from below, sparks thrown off the fill line, the works arriving
+ * on the ring) → 100%, a burst → READY: ENTER appears and the page waits for the visitor → ENTER: the camera dives
+ * through the ring, the mark dissolves and the page focuses behind the thinning curtain (intro.css times it).
  */
 import { METAL, type MetalSteps } from "@/theme/palette"
 
 import { FULL, QUICK, chase, targetAt, type IntroTiming } from "./progress"
+import { markEntered } from "./entered"
 import { Sparks, type Spray } from "./sparks"
 
 const SEEN_KEY = "intro-seen"
 /** Never hold the page longer than this, whatever is still loading */
 const MAX_WAIT_MS = 6000
-/** The exit is timed by intro.css; this only covers a transitionend that never comes (a hidden tab, say) */
-const EXIT_FALLBACK_MS = 1600
+/** The dive is timed by intro.css (~1.9s); this only covers a transitionend that never comes (a hidden tab, say) */
+const EXIT_FALLBACK_MS = 2600
+/** The ring holds this many works at most: more and the near side crowds the mark */
+const RING_MAX = 9
 /** Physics step cap: a long stall should not fling sparks across the screen */
 const MAX_DT = 48
 
@@ -90,18 +95,66 @@ export function pageReady() {
   })
 }
 
-export function startIntro(ready: Promise<unknown>) {
+/** Hangs the works on the ring: one card per image, phase-shifted by its place (intro.css does the orbit) */
+function hang(track: HTMLElement, artwork: readonly string[]) {
+  const works = artwork.slice(0, RING_MAX)
+  track.style.setProperty("--n", String(works.length))
+  for (const [i, src] of works.entries()) {
+    const card = document.createElement("div")
+    card.className = "intro-card"
+    card.style.setProperty("--i", String(i))
+    const img = new Image()
+    img.alt = ""
+    img.decoding = "async"
+    // The fonts and the first render matter more; the ring fades each work in whenever it lands
+    img.fetchPriority = "low"
+    img.addEventListener("load", () => img.setAttribute("data-loaded", ""), {
+      once: true,
+    })
+    img.src = src
+    card.append(img)
+    track.append(card)
+  }
+}
+
+/**
+ * @param ready  resolves when the page behind the curtain is ready (see pageReady)
+ * @param artwork  image URLs for the ring, in hanging order
+ */
+export function startIntro(
+  ready: Promise<unknown>,
+  artwork: readonly string[]
+) {
   const root = document.getElementById("intro")
+  const page = document.getElementById("root")
   const html = document.documentElement
   const mark = root?.querySelector<HTMLElement>(".intro-mark")
   const word = root?.querySelector<HTMLElement>(".intro-word")
   const count = root?.querySelector<HTMLElement>(".intro-count-value")
   const canvas = root?.querySelector<HTMLCanvasElement>(".intro-sparks")
-  if (!root || !mark || !word || !count || !canvas) {
+  const track = root?.querySelector<HTMLElement>(".intro-ring-track")
+  const enter = root?.querySelector<HTMLButtonElement>(".intro-enter")
+  const status = root?.querySelector<HTMLElement>(".intro-status")
+  if (
+    !root ||
+    !page ||
+    !mark ||
+    !word ||
+    !count ||
+    !canvas ||
+    !track ||
+    !enter
+  ) {
     root?.remove()
     delete html.dataset.intro
+    markEntered()
     return
   }
+
+  // From here this script owns the curtain: the CSS failsafe stands down, and the page behind it cannot take focus
+  root.setAttribute("data-armed", "")
+  page.inert = true
+  html.classList.add("intro-lock")
 
   const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches
   const timing: IntroTiming = seenBeforeThisSession() || reduced ? QUICK : FULL
@@ -110,7 +163,7 @@ export function startIntro(ready: Promise<unknown>) {
     ? null
     : new Sparks(canvas, sparkColours(dark ? METAL.dark : METAL.light), dark)
 
-  html.classList.add("intro-lock")
+  hang(track, artwork)
 
   // The script face downloads only once something asks for it; show the word when its glyphs are in, not before
   void document.fonts
@@ -132,6 +185,8 @@ export function startIntro(ready: Promise<unknown>) {
   }
   window.addEventListener("resize", onResize)
 
+  type Phase = "loading" | "ready" | "entering"
+  let phase: Phase = "loading"
   let finished = false
   const finish = () => {
     finished = true
@@ -140,11 +195,65 @@ export function startIntro(ready: Promise<unknown>) {
     if (e.target === root && e.propertyName === "opacity") finish()
   })
 
+  /**
+   * The gate opens: ENTER takes the count's place, and the whole curtain becomes the button. It is not focused for the
+   * visitor (a focus ring on arrival reads as an error); Enter or Space anywhere does what the button does, and Tab
+   * reaches it as the only focusable thing left on the screen.
+   */
+  const onKey = (e: KeyboardEvent) => {
+    if (e.key !== "Enter" && e.key !== " ") return
+    // A focused ENTER fires its own click; acting here too would only race it
+    if (document.activeElement === enter) return
+    e.preventDefault()
+    go()
+  }
+  const open = () => {
+    phase = "ready"
+    root.setAttribute("data-state", "ready")
+    if (status) status.textContent = "Ready. Press Enter to come in"
+    root.addEventListener("click", go)
+    window.addEventListener("keydown", onKey)
+  }
+
+  /** The dive: the page is handed back at once, so its entrance plays under the curtain as it thins */
+  const go = () => {
+    if (phase !== "ready") return
+    phase = "entering"
+    wake()
+    root.removeEventListener("click", go)
+    window.removeEventListener("keydown", onKey)
+    root.setAttribute("data-state", "enter")
+    if (sparks) {
+      const box = enter.getBoundingClientRect()
+      sparks.emit(
+        70,
+        {
+          x: box.left + box.width / 2,
+          y: box.top + box.height / 2,
+          width: box.width,
+        },
+        WORD_BURST
+      )
+    }
+    page.inert = false
+    html.classList.remove("intro-lock")
+    delete html.dataset.intro
+    markEntered()
+    setTimeout(finish, EXIT_FALLBACK_MS)
+  }
+
   const start = performance.now()
   let last = start
+  /** The loop stops while the gate waits with nothing in the air; ENTER starts it again for the burst and the exit */
+  let sleeping = false
+  const wake = () => {
+    if (!sleeping) return
+    sleeping = false
+    last = performance.now()
+    requestAnimationFrame(frame)
+  }
   let shown = 0
   let completedAt = 0
-  let exiting = false
 
   const frame = (now: number) => {
     const dt = now - last
@@ -161,13 +270,8 @@ export function startIntro(ready: Promise<unknown>) {
         completedAt = now
         if (sparks) burst(sparks)
       }
-    } else if (!exiting && now - completedAt >= timing.settleMs) {
-      exiting = true
-      root.setAttribute("data-state", "exit")
-      setTimeout(finish, EXIT_FALLBACK_MS)
-      // Let the page's own entrance start under the lifting curtain, not after it
-      html.classList.remove("intro-lock")
-      delete html.dataset.intro
+    } else if (phase === "loading" && now - completedAt >= timing.settleMs) {
+      open()
     }
 
     sparks?.step(Math.min(dt, MAX_DT))
@@ -176,6 +280,11 @@ export function startIntro(ready: Promise<unknown>) {
       window.removeEventListener("resize", onResize)
       sparks?.clear()
       root.remove()
+      return
+    }
+    // Waiting at the gate, no sparks left to draw: stop asking for frames (the ring turns in CSS on its own)
+    if (phase === "ready" && !sparks?.live) {
+      sleeping = true
       return
     }
     requestAnimationFrame(frame)

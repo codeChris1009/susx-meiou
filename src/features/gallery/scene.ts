@@ -78,9 +78,9 @@ const SIDE_LIGHT = 0.34
 const DUST = 260
 /**
  * Shift lens, as a fraction of the view height: the room rises in the frame (verticals stay vertical, unlike tilting
- * the camera) and leaves the floor below the front piece for the plaque
+ * the camera). Small: the piece sits a little above centre, the script title above it and the plaque below
  */
-const LENS_SHIFT = 0.13
+const LENS_SHIFT = 0.035
 
 // ---- Motion ----
 /** Spring rate (1/s): the ring covers ~63% of the remaining turn every 1/SPRING seconds */

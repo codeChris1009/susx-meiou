@@ -26,5 +26,6 @@ dist-ssr
 # Wrangler local state
 .wrangler
 
-# Editor hook cache
-.impeccable
+# Design detector: the hook cache stays local, the shared config (reviewed ignores) is versioned
+.impeccable/*
+!.impeccable/config.json

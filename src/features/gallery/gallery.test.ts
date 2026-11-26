@@ -75,6 +75,12 @@ describe("buildGallery", () => {
     expect(gallery.find((p) => p.repo === null)?.href).toBeNull()
   })
 
+  it("never links a site whose address is not http(s)", () => {
+    const bad = { ...project("fovea"), url: "javascript:alert(1)" }
+    const gallery = buildGallery(HANG, [bad], images)
+    expect(gallery.find((p) => p.id === "fovea")?.href).toBeNull()
+  })
+
   it("leaves out a piece whose image is missing", () => {
     const some = Object.fromEntries(Object.entries(images).slice(0, 2))
     expect(buildGallery(HANG, [], some)).toHaveLength(2)
@@ -83,5 +89,14 @@ describe("buildGallery", () => {
   it("hangs nine pieces, titles in Latin for the script face", () => {
     expect(HANG).toHaveLength(9)
     for (const { title } of HANG) expect(title).toMatch(/^[ -ÿ]+$/)
+  })
+
+  it("labels every piece without punctuation, an English name over a Chinese line", () => {
+    for (const { title, name, caption } of HANG) {
+      for (const text of [title, name, caption])
+        expect(text).not.toMatch(/\p{P}/u)
+      expect(name).toMatch(/^[\p{Script=Latin}\d ]+$/u)
+      expect(caption).toMatch(/\p{Script=Han}/u)
+    }
   })
 })

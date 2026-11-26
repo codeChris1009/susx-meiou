@@ -1,3 +1,5 @@
+import { isWebUrl } from "../../lib/url.ts"
+
 import type { Curation, Project, SyncedProject } from "./types.ts"
 
 export interface Showcase {
@@ -18,9 +20,11 @@ export function buildShowcase(
   const rank = new Map(curation.order.map((repo, i) => [repo, i]))
 
   const projects = synced
-    .filter((p) => p.online)
+    // Defence in depth: the sync only writes web URLs, but nothing else may reach an href either way
+    .filter((p) => p.online && isWebUrl(p.url))
     .map((p): Project => ({
       ...p,
+      sourceUrl: isWebUrl(p.sourceUrl) ? p.sourceUrl : null,
       ...curation.overrides[p.repo],
       shot: shots[p.repo] ?? null,
     }))

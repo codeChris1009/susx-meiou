@@ -1,11 +1,34 @@
+import { readFileSync } from "node:fs"
 import { resolve } from "node:path"
 import tailwindcss from "@tailwindcss/vite"
 import react from "@vitejs/plugin-react"
-import { defineConfig } from "vite"
+import { defineConfig, type Plugin } from "vite"
+
+/**
+ * The 404 page is static, outside the bundle, so it cannot import the self-hosted Geist the way the app does. This
+ * emits the Latin slice at a fixed path for public/404.css to load: same file, same origin, so font-src stays self.
+ */
+function notFoundFont(): Plugin {
+  const file = resolve(
+    import.meta.dirname,
+    "node_modules/@fontsource-variable/geist/files/geist-latin-wght-normal.woff2"
+  )
+  return {
+    name: "not-found-font",
+    apply: "build",
+    generateBundle() {
+      this.emitFile({
+        type: "asset",
+        fileName: "fonts/geist-latin.woff2",
+        source: readFileSync(file),
+      })
+    },
+  }
+}
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [react(), tailwindcss()],
+  plugins: [react(), tailwindcss(), notFoundFont()],
   build: {
     // Fonts always ship as files: Vite inlines small assets as data: URIs, which the CSP (public/_headers) rightly
     // blocks under font-src 'self'. Other small assets keep the default inlining.

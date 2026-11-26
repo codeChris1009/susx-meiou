@@ -1,18 +1,16 @@
 import { Moon, Sun } from "lucide-react"
 
+import { Roll, actionVariants } from "@/components/action"
 import { GithubMark } from "@/components/github-mark"
 import { useTheme } from "@/components/theme-provider"
 import { useActiveSection } from "@/hooks/use-active-section"
+import { NAV, SECTION, href } from "@/sections"
 import { site } from "@/site"
 
-const NAV = [
-  { id: "gallery", label: "精選" },
-  { id: "works", label: "作品" },
-  { id: "practice", label: "練習" },
-] as const
-
-const iconButton =
-  "pressable group/icon grid size-9 place-items-center rounded-full text-muted-foreground hover:bg-accent hover:text-foreground"
+const iconButton = actionVariants({
+  tone: "quiet",
+  className: "size-9 px-0",
+})
 
 function ThemeToggle() {
   const { setTheme } = useTheme()
@@ -30,7 +28,7 @@ function ThemeToggle() {
       className={iconButton}
     >
       {/* The two icons swap with a quarter turn; hover nudges the visible one */}
-      <span className="relative size-4 transition-transform duration-500 ease-(--ease-spring) group-hover/icon:rotate-12">
+      <span className="relative size-4 transition-transform duration-500 ease-(--ease-settle) group-hover/action:rotate-12">
         <Sun
           aria-hidden
           className="absolute inset-0 size-4 scale-50 -rotate-90 opacity-0 transition-all duration-500 ease-(--ease-out-expo) dark:scale-100 dark:rotate-0 dark:opacity-100"
@@ -50,15 +48,15 @@ export function SiteHeader() {
   const active = useActiveSection(NAV_IDS)
   return (
     <header className="site-header sticky top-0 z-50">
-      <div className="container-wide flex h-full items-center justify-between">
+      <div className="intro-veil container-wide flex h-full items-center justify-between">
         <a
-          href="#top"
-          className="pressable group/logo inline-flex items-center gap-2.5 rounded-md font-mono text-sm font-semibold tracking-tight"
+          href={href(SECTION.hero)}
+          className="pressable group/logo inline-flex items-center gap-2.5 rounded-md text-sm font-semibold tracking-tight"
         >
           {/* The artwork is portrait (1024 x 1292), so the width is 0.79 of the height */}
           <span
             aria-hidden
-            className="brand-mark inline-block h-6 w-[1.19rem] shrink-0 transition-transform duration-700 ease-(--ease-spring) group-hover/logo:scale-110 group-hover/logo:-rotate-6"
+            className="brand-mark inline-block h-6 w-[1.19rem] shrink-0 transition-transform duration-700 ease-(--ease-settle) group-hover/logo:scale-110 group-hover/logo:-rotate-6"
           />
           <span className="transition-[letter-spacing] duration-500 ease-(--ease-out-expo) group-hover/logo:tracking-wide">
             {site.brand}
@@ -69,11 +67,15 @@ export function SiteHeader() {
           {NAV.map((item) => (
             <a
               key={item.id}
-              href={`#${item.id}`}
+              href={href(item.id)}
               aria-current={active === item.id || undefined}
-              className="pressable link-draw hidden px-2 py-1 text-sm text-muted-foreground hover:text-foreground sm:inline-block"
+              lang="en"
+              className={actionVariants({
+                tone: "quiet",
+                className: "nav-link hidden sm:inline-flex",
+              })}
             >
-              {item.label}
+              <Roll>{item.label}</Roll>
             </a>
           ))}
           <span
@@ -89,7 +91,7 @@ export function SiteHeader() {
           >
             <GithubMark
               aria-hidden
-              className="size-4 transition-transform duration-500 ease-(--ease-spring) group-hover/icon:scale-110"
+              className="size-4 transition-transform duration-500 ease-(--ease-settle) group-hover/action:scale-110"
             />
           </a>
           <ThemeToggle />

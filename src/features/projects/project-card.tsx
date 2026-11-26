@@ -4,24 +4,13 @@ import type { CSSProperties } from "react"
 import { GithubMark } from "@/components/github-mark"
 import { useReveal } from "@/hooks/use-reveal"
 import { cn } from "@/lib/utils"
-import type { Host, Project } from "./types.ts"
-
-const HOST_LABEL: Record<Host, string> = {
-  cloudflare: "Cloudflare",
-  "github-pages": "GitHub Pages",
-  vercel: "Vercel",
-  other: "Web",
-}
-
-const displayUrl = (url: string) =>
-  url.replace(/^https?:\/\//, "").replace(/\/$/, "")
+import { HOST_LABEL, type Entry } from "./collection"
+import { displayUrl, pad } from "@/lib/format"
 
 export type CardVariant = "feature" | "default" | "compact"
 
 interface ProjectCardProps {
-  project: Project
-  /** Position in its section, shown as No. 01 */
-  index: number
+  project: Entry
   variant?: CardVariant
   /** Stagger for the scroll reveal */
   delayMs?: number
@@ -38,7 +27,6 @@ interface ProjectCardProps {
  */
 export function ProjectCard({
   project,
-  index,
   variant = "default",
   delayMs = 0,
   eager = false,
@@ -52,7 +40,7 @@ export function ProjectCard({
       ref={reveal}
       style={{ "--reveal-delay": `${delayMs}ms` } as CSSProperties}
       className={cn(
-        "reveal group/project relative flex flex-col overflow-hidden rounded-xl bg-card text-card-foreground ring-1 ring-foreground/8",
+        "reveal group/project relative flex flex-col overflow-hidden rounded-lg bg-card text-card-foreground ring-1 ring-foreground/8",
         "shadow-[0_1px_2px_color-mix(in_oklch,var(--shade)_5%,transparent)] transition-[translate,scale,box-shadow,--tw-ring-color] duration-700 ease-(--ease-out-expo)",
         "hover:-translate-y-1.5 hover:shadow-[0_28px_60px_-24px_color-mix(in_oklch,var(--shade)_35%,transparent)] hover:ring-metal/45",
         "focus-within:ring-2 focus-within:ring-metal/70",
@@ -88,7 +76,7 @@ export function ProjectCard({
           />
         ) : (
           <div className="dot-grid flex size-full items-center justify-center">
-            <span className="text-metal font-mono text-4xl font-semibold tracking-tight">
+            <span className="text-4xl font-semibold tracking-tight text-metal">
               {project.title.slice(0, 2)}
             </span>
           </div>
@@ -102,14 +90,17 @@ export function ProjectCard({
         )}
       >
         <div className="flex items-center justify-between gap-3">
-          <span className="text-metal font-mono text-[0.7rem] tracking-[0.2em] uppercase">
-            No. {String(index + 1).padStart(2, "0")}
+          <span
+            lang="en"
+            className="text-[0.7rem] tracking-[0.2em] text-metal uppercase tabular-nums"
+          >
+            No. {pad(project.no)}
           </span>
           <span
             aria-hidden
-            className="grid size-7 place-items-center rounded-full ring-1 ring-foreground/10 transition-all duration-500 ease-(--ease-spring) group-hover/project:bg-metal group-hover/project:text-background group-hover/project:ring-transparent"
+            className="grid size-7 place-items-center rounded-lg ring-1 ring-foreground/10 transition-all duration-500 ease-(--ease-settle) group-hover/project:bg-metal group-hover/project:text-background group-hover/project:ring-transparent"
           >
-            <ArrowUpRight className="size-3.5 transition-transform duration-500 ease-(--ease-spring) group-hover/project:translate-x-px group-hover/project:-translate-y-px group-hover/project:rotate-12" />
+            <ArrowUpRight className="size-3.5 transition-transform duration-500 ease-(--ease-settle) group-hover/project:translate-x-px group-hover/project:-translate-y-px group-hover/project:rotate-12" />
           </span>
         </div>
 
@@ -147,14 +138,15 @@ export function ProjectCard({
           // The whole card is the link (the stretched title); this only says so, in the space a short description leaves
           <span
             aria-hidden
-            className="mt-2 inline-flex items-center gap-2 self-start font-mono text-xs tracking-[0.18em] text-foreground uppercase"
+            lang="en"
+            className="mt-2 inline-flex items-center gap-2 self-start text-xs tracking-[0.18em] text-foreground uppercase"
           >
             <span className="hairline-metal w-6 transition-[width] duration-700 ease-(--ease-out-expo) group-hover/project:w-12" />
             Open the site
           </span>
         )}
 
-        <div className="mt-auto flex flex-wrap items-center gap-x-3 gap-y-2 pt-3 font-mono text-xs text-muted-foreground">
+        <div className="mt-auto flex flex-wrap items-center gap-x-3 gap-y-2 pt-3 text-xs text-muted-foreground">
           <span className="flex min-w-0 items-center gap-2">
             <span aria-hidden className="relative flex size-1.5 shrink-0">
               <span className="absolute inset-0 animate-ping rounded-full bg-live opacity-60 motion-reduce:hidden" />
@@ -171,7 +163,7 @@ export function ProjectCard({
                 .map((label) => (
                   <span
                     key={label}
-                    className="rounded-full px-2 py-0.5 ring-1 ring-foreground/10 transition-[color,--tw-ring-color] duration-500 group-hover/project:text-foreground group-hover/project:ring-metal/50"
+                    className="rounded-lg px-2 py-0.5 ring-1 ring-foreground/10 transition-[color,--tw-ring-color] duration-500 group-hover/project:text-foreground group-hover/project:ring-metal/50"
                   >
                     {label}
                   </span>
@@ -182,7 +174,7 @@ export function ProjectCard({
                   target="_blank"
                   rel="noopener"
                   aria-label={`${project.title} 原始碼`}
-                  className="pressable relative z-10 grid size-7 place-items-center rounded-full hover:bg-accent hover:text-foreground"
+                  className="pressable relative z-10 grid size-7 place-items-center rounded-lg hover:bg-accent hover:text-foreground"
                 >
                   <GithubMark aria-hidden className="size-3.5" />
                 </a>

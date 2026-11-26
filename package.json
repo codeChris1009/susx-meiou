@@ -21,7 +21,6 @@
   },
   "dependencies": {
     "@fontsource-variable/geist": "^5.3.0",
-    "@fontsource-variable/geist-mono": "^5.3.0",
     "@fontsource-variable/noto-sans-tc": "^5.3.1",
     "@fontsource/stalemate": "^5.3.0",
     "@tailwindcss/vite": "^4",

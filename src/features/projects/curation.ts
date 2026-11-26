@@ -18,12 +18,12 @@ export const curation = {
   ],
   overrides: {
     fovea: { title: "Fovea" },
-    "yi-64": { title: "YI·64" },
+    "yi-64": { title: "YI 64" },
     "pokemon-ash": { title: "I Choose You" },
     "pokemon-rivals": { title: "Pokémon Rivals" },
     "pokemon-gym-leaders": { title: "Gym Leaders" },
     "pokemon-girl-friends": { title: "Pokémon Heroines" },
-    "pokemon-anti-org": { title: "Pokémon Anti-Org" },
+    "pokemon-anti-org": { title: "Pokémon Anti Org" },
     // The practice sites have no meta description and their repo descriptions are notes to self
     "React-TodoList0": {
       title: "React Todo List",

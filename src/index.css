@@ -1,5 +1,6 @@
 /*
- * Design tokens: shadcn radix-nova, neutral, monochrome oklch, radius 0.35rem, Geist + Noto Sans TC + Geist Mono.
+ * Design tokens: shadcn radix-nova, neutral, monochrome oklch. Radius 0.35rem everywhere: square corners, softened.
+ * Type: Geist for every Latin letter and digit, Noto Sans TC for Han, Stalemate (script) for the few signed words.
  * Ink on paper, with one material: a three-stop metal gradient (champagne in dark, its shadowed face in light) for
  * marks, numerals, hairlines and the scroll rule. Colour proper is left to the screenshots of the work.
  */
@@ -7,11 +8,12 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 @import "@fontsource-variable/geist";
-@import "@fontsource-variable/geist-mono";
 @import "@fontsource-variable/noto-sans-tc";
 /* Latin only: the script face sets one word, the loader's wordmark */
 @import "@fontsource/stalemate/latin-400.css";
 @import "./features/intro/intro.css";
+@import "./features/hero/hero.css";
+@import "./features/projects/projects.css";
 @import "./features/gallery/gallery.css";
 
 @custom-variant dark (&:is(.dark *));
@@ -26,8 +28,6 @@
     "Geist Variable", "Noto Sans TC Variable", ui-sans-serif, system-ui,
     "PingFang TC", "Microsoft JhengHei", sans-serif, "Apple Color Emoji",
     "Segoe UI Emoji";
-  --font-mono:
-    "Geist Mono Variable", ui-monospace, "SFMono-Regular", Menlo, monospace;
   --font-heading: var(--font-sans);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
@@ -66,7 +66,8 @@
   --color-metal-hi: var(--metal-hi);
   --color-metal-lo: var(--metal-lo);
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
-  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  /* A quick start and a long, soft settle: no overshoot, so nothing bounces */
+  --ease-settle: cubic-bezier(0.22, 1, 0.36, 1);
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
@@ -115,7 +116,12 @@
   --secondary: var(--meiou-200);
   --secondary-foreground: var(--meiou-800);
   --muted: var(--meiou-200);
-  --muted-foreground: var(--meiou-500);
+  /* Step 500 is 4.49:1 on paper; a touch of 600 carries it past the 4.5:1 AA floor */
+  --muted-foreground: color-mix(
+    in oklch,
+    var(--meiou-500),
+    var(--meiou-600) 22%
+  );
   --accent: var(--meiou-200);
   --accent-foreground: var(--meiou-800);
   --destructive: oklch(0.577 0.2 27);
@@ -270,15 +276,12 @@
     var(--metal-lo) 100%
   );
 }
+/*
+ * Metal as type, for numerals and small marks: one solid tone (champagne on ink, bronze on paper). Gradient-filled
+ * type is kept for the few signed moments (the name, the greeting, the script signatures), not spent on every count.
+ */
 @utility text-metal {
-  background-image: linear-gradient(
-    160deg,
-    var(--metal-hi) 0%,
-    var(--metal-mid) 54%,
-    var(--metal-lo) 100%
-  );
-  background-clip: text;
-  color: transparent;
+  color: var(--metal-mid);
 }
 
 /*
@@ -460,35 +463,10 @@ html[data-scrolled] .site-header {
   transform-origin: left;
 }
 
-/* ---------- Hero: lifts and fades as it scrolls away; the dot field drifts slower (parallax) ---------- */
-.hero-content {
-  opacity: calc(1 - var(--hero-progress, 0) * 1.3);
-  transform: translateY(calc(var(--hero-progress, 0) * -64px))
-    scale(calc(1 - var(--hero-progress, 0) * 0.035));
-  will-change: opacity, transform;
-}
-.hero-field {
-  transform: translateY(calc(var(--hero-progress, 0) * 120px));
-}
-.hero-glow {
-  /* On paper the shadowed metal would read as a grey smudge: a lighter, warmer breath there, the lit face on ink */
-  background: radial-gradient(
-    closest-side,
-    color-mix(in oklch, var(--metal-dark-mid) 38%, transparent),
-    transparent
-  );
-  animation: drift 18s ease-in-out infinite alternate;
-}
-@keyframes drift {
-  to {
-    transform: translate(8%, 6%) scale(1.08);
-  }
-}
-
 /* ---------- Pressable: the shared hover / press feel for small controls ---------- */
 .pressable {
   transition:
-    transform 450ms var(--ease-spring),
+    transform 450ms var(--ease-settle),
     background-color 250ms ease,
     color 250ms ease,
     box-shadow 450ms var(--ease-out-expo);
@@ -496,6 +474,61 @@ html[data-scrolled] .site-header {
 .pressable:active {
   transform: scale(0.94);
   transition-duration: 120ms;
+}
+
+/*
+ * Roll: a label that slides up out of its box on hover and is replaced by its twin rising from below (the twin is the
+ * same word, aria-hidden). Every button and button-like link on the page uses it, the static ENTER included.
+ */
+.roll {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: top;
+  line-height: 1.3;
+}
+.roll-in {
+  position: relative;
+  display: block;
+  transition: translate 650ms var(--ease-out-expo);
+}
+.roll-twin {
+  position: absolute;
+  top: 100%;
+  left: 0;
+}
+:is(a, button):is(:hover, :focus-visible) .roll-in {
+  translate: 0 -100%;
+}
+
+/* Magnetic: useMagnetic writes the lean; it eases back when the pointer leaves */
+.magnetic {
+  translate: var(--mag-x, 0) var(--mag-y, 0);
+  transition-property:
+    transform, background-color, color, box-shadow, translate;
+  transition-duration: 450ms, 250ms, 250ms, 450ms, 700ms;
+  transition-timing-function:
+    var(--ease-settle), ease, ease, var(--ease-out-expo), var(--ease-out-expo);
+}
+
+/*
+ * Section titles rise out of a slot, line by line, the way a title card is cut in, rather than fading up blurred.
+ * The slot keeps room for descenders; the hidden state applies only while JS runs, like .reveal itself.
+ */
+.heading-rise {
+  display: block;
+  overflow: hidden;
+  padding-block: 0.04em 0.14em;
+  margin-block: -0.04em -0.14em;
+}
+.heading-rise-in {
+  display: inline-block;
+}
+.js .reveal .heading-rise-in {
+  translate: 0 105%;
+  transition: translate 1300ms var(--ease-out-expo) 80ms;
+}
+.js .reveal[data-revealed] .heading-rise-in {
+  translate: none;
 }
 
 /* A metal underline that draws in from the left on hover */
@@ -513,14 +546,6 @@ html[data-scrolled] .site-header {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .hero-content,
-  .hero-field {
-    opacity: 1;
-    transform: none;
-  }
-  .hero-glow {
-    animation: none;
-  }
 }
 
 /* Footer wordmark: still metal at rest; on hover a band of light crosses it and the letters breathe apart */
@@ -539,8 +564,8 @@ html[data-scrolled] .site-header {
   color: transparent;
   transition:
     background-position 1600ms var(--ease-out-expo),
-    rotate 900ms var(--ease-spring),
-    scale 300ms var(--ease-spring);
+    rotate 900ms var(--ease-settle),
+    scale 300ms var(--ease-settle);
   /* The loader's script face: the brand signs off the page the way it opened it */
   font-family: "Stalemate", cursive;
   font-weight: 400;
@@ -548,6 +573,18 @@ html[data-scrolled] .site-header {
 .wordmark:hover {
   background-position: 0% 0;
   rotate: -1.5deg;
+}
+/* When the signature arrives, a light crosses it once */
+.reveal[data-revealed] .wordmark {
+  animation: wordmark-sweep 2600ms var(--ease-out-expo) 500ms;
+}
+@keyframes wordmark-sweep {
+  from {
+    background-position: 100% 0;
+  }
+  to {
+    background-position: 0% 0;
+  }
 }
 .wordmark:active {
   scale: 0.985;
@@ -557,45 +594,6 @@ html[data-scrolled] .site-header {
 .group\/headline:hover .metal-shine {
   animation-duration: 2.4s;
   filter: brightness(1.15);
-}
-
-.dark .hero-glow {
-  background: radial-gradient(
-    closest-side,
-    color-mix(in oklch, var(--metal-hi) 16%, transparent),
-    transparent
-  );
-}
-
-/*
- * The mark, large and engraved at the hero's right: the loader's outline staying behind as a watermark. It drifts up a
- * little slower than the copy as the hero scrolls away.
- */
-.hero-mark {
-  background-image: linear-gradient(
-    160deg,
-    var(--metal-hi),
-    var(--metal-mid) 55%,
-    transparent
-  );
-  mask:
-    url("/mark.svg") center / 100% 100% no-repeat,
-    url("/mark.svg") center / 97% 97% no-repeat;
-  mask-composite: exclude;
-  opacity: 0.55;
-  transform: translateY(calc(var(--hero-progress, 0) * -48px));
-}
-/* Shadowed metal on paper carries more contrast than the lit face on ink: engrave it lighter there */
-html:not(.dark) .hero-mark {
-  opacity: 0.4;
-}
-.hero-mark-fill {
-  background-image: linear-gradient(
-    180deg,
-    color-mix(in oklch, var(--metal-hi) 10%, transparent),
-    transparent 70%
-  );
-  mask: url("/mark.svg") center / 100% 100% no-repeat;
 }
 
 /*
@@ -615,10 +613,23 @@ html[data-header-dark]:not(.dark) .site-header {
   color: var(--foreground);
 }
 
-/* The section on screen keeps its nav link underlined */
-.link-draw[aria-current="true"] {
-  background-size: 100% 1px;
+/* The section on screen keeps its nav link lit, with a short metal rule beneath */
+.nav-link::after {
+  content: "";
+  position: absolute;
+  inset-inline: 0.625rem;
+  bottom: 0.3rem;
+  height: 1px;
+  background: var(--metal-mid);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 600ms var(--ease-out-expo);
+}
+.nav-link[aria-current="true"] {
   color: var(--foreground);
+}
+.nav-link[aria-current="true"]::after {
+  transform: scaleX(1);
 }
 
 /* Screenshots arrive softly instead of popping in */
@@ -652,7 +663,10 @@ body::after {
   .img-reveal:not([data-loaded]) {
     filter: none;
   }
-  .hero-mark {
-    transform: none;
+  .js .reveal .heading-rise-in {
+    translate: none;
+  }
+  .reveal[data-revealed] .wordmark {
+    animation: none;
   }
 }

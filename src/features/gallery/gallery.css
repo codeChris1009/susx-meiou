@@ -57,6 +57,22 @@
 .plaque-swap {
   animation: plaque-in 800ms var(--ease-out-expo) both;
 }
+/* The signature writes itself on from the left, as the greeting does, while the slow metal light keeps crossing it */
+.signature-swap {
+  mask-image: linear-gradient(90deg, #000 45%, transparent 55%);
+  mask-size: 240% 100%;
+  mask-position: 0 0;
+  animation:
+    signature-in 1500ms var(--ease-out-expo) backwards,
+    shine 7s ease-in-out infinite;
+}
+@keyframes signature-in {
+  from {
+    mask-position: 100% 0;
+    filter: blur(8px);
+    translate: 0 0.12em;
+  }
+}
 @keyframes plaque-in {
   from {
     opacity: 0;
@@ -67,6 +83,7 @@
 
 @media (prefers-reduced-motion: reduce) {
   .plaque-swap,
+  .signature-swap,
   .gallery-flat-img {
     animation: none;
   }
@@ -130,12 +147,12 @@ html:not(.dark) .gallery-room::after {
     width: 4.75rem;
     height: 4.75rem;
     margin: -2.375rem 0 0 -2.375rem;
-    border-radius: 50%;
+    border-radius: var(--radius);
     border: 1px solid color-mix(in oklch, var(--metal-hi) 55%, transparent);
     background: color-mix(in oklch, var(--background) 30%, transparent);
     backdrop-filter: blur(6px);
-    font-family: var(--font-mono);
-    font-size: 0.58rem;
+    font-family: var(--font-sans);
+    font-size: 0.6875rem;
     letter-spacing: 0.26em;
     text-transform: uppercase;
     color: var(--metal-hi);
@@ -144,7 +161,7 @@ html:not(.dark) .gallery-room::after {
     translate: var(--x, 50%) var(--y, 50%);
     transition:
       opacity 300ms var(--ease-out-expo),
-      scale 450ms var(--ease-spring);
+      scale 450ms var(--ease-settle);
   }
   .gallery-cursor[data-ready][data-on] {
     opacity: 1;
@@ -169,6 +186,51 @@ html:not(.dark) .gallery-room::after {
 [aria-current] > .gallery-tick {
   width: 2.5rem;
   background: var(--metal-hi);
+}
+
+/* ---- The viewer: a piece with no public site, opened at full size in a modal dialog ---- */
+.piece-viewer {
+  width: min(92vw, 56rem);
+  max-width: none;
+  max-height: 92svh;
+  margin: auto;
+  padding: 2rem clamp(1rem, 4vw, 2.5rem) 2.25rem;
+  overflow: auto;
+  border: 0;
+  border-radius: var(--radius);
+  background: var(--background);
+  color: var(--foreground);
+  box-shadow:
+    inset 0 0 0 1px color-mix(in oklch, var(--metal-mid) 25%, transparent),
+    0 60px 120px -40px color-mix(in oklch, var(--shade) 85%, transparent);
+}
+.piece-viewer::backdrop {
+  background: color-mix(in oklch, var(--meiou-950) 72%, transparent);
+  backdrop-filter: blur(10px);
+}
+.piece-viewer[open] {
+  animation: viewer-in 700ms var(--ease-out-expo);
+}
+.piece-viewer[open]::backdrop {
+  animation: backdrop-in 500ms ease;
+}
+@keyframes viewer-in {
+  from {
+    opacity: 0;
+    scale: 0.96;
+    filter: blur(8px);
+  }
+}
+@keyframes backdrop-in {
+  from {
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .piece-viewer[open],
+  .piece-viewer[open]::backdrop {
+    animation: none;
+  }
 }
 
 .gallery-hint {

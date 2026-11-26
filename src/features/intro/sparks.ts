@@ -149,6 +149,11 @@ export class Sparks {
     this.ctx?.setTransform(dpr, 0, 0, dpr, 0, 0)
   }
 
+  /** Sparks still in the air */
+  get live() {
+    return this.pool.count
+  }
+
   emit(n: number, from: Source, spray: Spray) {
     this.pool.emit(n, from, spray)
   }

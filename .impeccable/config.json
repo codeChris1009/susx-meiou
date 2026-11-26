@@ -1,0 +1,35 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "overused-font",
+        "value": "geist",
+        "createdAt": "2026-11-26T17:55:40.272Z",
+        "reason": "user confirmed in this session: 所有的英數字體除了花體都要使用 geist"
+      },
+      {
+        "rule": "gradient-text",
+        "value": "*",
+        "files": ["src/features/hero/hero.css"],
+        "createdAt": "2026-11-26T17:55:40.283Z",
+        "reason": "user confirmed in this session: Hello world 字體要漸層變色"
+      },
+      {
+        "rule": "gradient-text",
+        "value": "*",
+        "files": ["src/index.css"],
+        "createdAt": "2026-11-26T17:55:40.294Z",
+        "reason": "user confirmed in this session: Alan Su Here 比照原來的漸層金屬色 (metal-shine; also the footer script signature)"
+      },
+      {
+        "rule": "cream-palette",
+        "value": "*",
+        "files": ["src/index.css"],
+        "createdAt": "2026-11-26T17:55:40.305Z",
+        "reason": "user confirmed in this session: keep the locked meiou palette paper #f6f4ef"
+      }
+    ]
+  }
+}

@@ -62,4 +62,17 @@ describe("buildShowcase", () => {
     expect(a?.shot).toBe("/a.jpg")
     expect(featured.find((p) => p.repo === "b")?.shot).toBeNull()
   })
+
+  it("drops a project whose site is not a web URL and unlinks a bad source", () => {
+    const { featured } = buildShowcase(
+      [
+        project("a", { url: "javascript:alert(1)" }),
+        project("b", { sourceUrl: "data:text/html,x" }),
+      ],
+      curation,
+      {}
+    )
+    expect(featured.map((p) => p.repo)).toEqual(["b"])
+    expect(featured[0]!.sourceUrl).toBeNull()
+  })
 })

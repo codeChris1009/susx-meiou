@@ -9,21 +9,23 @@ export function useActiveSection(ids: readonly string[]) {
   const key = ids.join(",")
 
   useEffect(() => {
-    const sections = key
-      .split(",")
-      .map((id) => document.getElementById(id)?.closest("section"))
-      .filter((el): el is HTMLElement => !!el)
+    // Each observed section remembers the id it was found by, rather than reading one back out of its markup
+    const idOf = new Map<Element, string>()
+    for (const id of key.split(",")) {
+      const section = document.getElementById(id)?.closest("section")
+      if (section) idOf.set(section, id)
+    }
     const io = new IntersectionObserver(
       (entries) => {
         for (const entry of entries) {
-          const id = entry.target.querySelector("h2")?.id ?? null
+          const id = idOf.get(entry.target) ?? null
           if (entry.isIntersecting) setActive(id)
           else setActive((current) => (current === id ? null : current))
         }
       },
       { rootMargin: "-45% 0px -54% 0px" }
     )
-    for (const section of sections) io.observe(section)
+    for (const section of idOf.keys()) io.observe(section)
     return () => io.disconnect()
   }, [key])
 

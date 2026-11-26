@@ -26,24 +26,40 @@
     <script src="/theme-init.js"></script>
   </head>
   <body>
-    <!-- Entry loader: static so it paints before the bundle runs; driven by src/features/intro/intro.ts -->
-    <div id="intro" class="intro" role="status" aria-label="載入中">
+    <!-- Entry loader: static so it paints before the bundle runs; driven by src/features/intro/intro.ts. It fills,
+         waits for the visitor to press ENTER, then flies them through a ring of the works into the page -->
+    <div id="intro" class="intro">
+      <div class="intro-ring" aria-hidden="true">
+        <div class="intro-ring-track"></div>
+      </div>
       <canvas class="intro-sparks" aria-hidden="true"></canvas>
       <div class="intro-glow" aria-hidden="true"></div>
-      <div class="intro-stage" aria-hidden="true">
-        <div class="intro-mark">
+      <div class="intro-stage">
+        <div class="intro-mark" aria-hidden="true">
           <span class="intro-mark-outline"></span>
           <span class="intro-mark-fill"></span>
           <span class="intro-mark-edge"></span>
         </div>
-        <div class="intro-word">
+        <div class="intro-word" aria-hidden="true">
           <span class="intro-word-base">susx.meiou</span>
           <span class="intro-word-fill">susx.meiou</span>
         </div>
-        <p class="intro-count">
-          Loading<span class="intro-count-rule"></span
-          ><span class="intro-count-value">000</span>
-        </p>
+        <p class="intro-status sr-only" aria-live="polite" lang="en">Loading</p>
+        <div class="intro-gate">
+          <p class="intro-count" aria-hidden="true">
+            Loading<span class="intro-count-rule"></span
+            ><span class="intro-count-value">000</span>
+          </p>
+          <button class="intro-enter" type="button" lang="en">
+            <span class="roll"
+              ><span class="roll-in"
+                >Enter<span class="roll-twin" aria-hidden="true"
+                  >Enter</span
+                ></span
+              ></span
+            >
+          </button>
+        </div>
       </div>
     </div>
     <div id="root"></div>

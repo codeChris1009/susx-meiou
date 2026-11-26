@@ -1,0 +1,225 @@
+/*
+ * The hero. A printed title page more than a landing screen: a hairline column grid behind, a running head across the
+ * top, the greeting and the name set as one poster, and the brand mark engraved at the right as a watermark.
+ */
+
+/* Lifts and fades as it scrolls away (useScrollEffects writes --hero-progress); the column rules drift slower */
+.hero-content {
+  opacity: calc(1 - var(--hero-progress, 0) * 1.3);
+  transform: translateY(calc(var(--hero-progress, 0) * -64px));
+  will-change: opacity, transform;
+}
+.hero-rules {
+  background-image: linear-gradient(
+    90deg,
+    color-mix(in oklch, var(--foreground) 6%, transparent) 1px,
+    transparent 1px
+  );
+  background-size: calc(100% / 6) 100%;
+  border-inline-end: 1px solid
+    color-mix(in oklch, var(--foreground) 6%, transparent);
+  mask-image: linear-gradient(transparent, #000 18%, #000 70%, transparent);
+  transform: translateY(calc(var(--hero-progress, 0) * 90px));
+  /* The rules draw down the page as the visitor arrives, a beat before the type */
+  animation: rules-in 1800ms var(--ease-out-expo) 150ms backwards;
+}
+@keyframes rules-in {
+  from {
+    clip-path: inset(0 0 100% 0);
+  }
+}
+html[data-intro] .hero-rules {
+  animation-play-state: paused;
+}
+
+/* A raking light under the pointer (useRakingLight): the grid and the engraved mark catch it, the type does not move */
+.hero-light {
+  background: radial-gradient(
+    32rem circle at var(--lx, 70%) var(--ly, 30%),
+    color-mix(in oklch, var(--metal-hi) 9%, transparent),
+    transparent 70%
+  );
+  opacity: 0;
+  transition: opacity 900ms var(--ease-out-expo);
+}
+.hero-light[data-on] {
+  opacity: 1;
+}
+html:not(.dark) .hero-light {
+  background: radial-gradient(
+    32rem circle at var(--lx, 70%) var(--ly, 30%),
+    color-mix(in oklch, var(--metal-dark-mid) 30%, transparent),
+    transparent 70%
+  );
+}
+
+/* The scroll cue leaves as soon as the page moves */
+.hero-cue {
+  opacity: calc(1 - var(--hero-progress, 0) * 6);
+}
+
+/* The display face: Geist, large and tight. Han in a display line keeps its natural spacing (see .display-cjk) */
+.heading-display {
+  font-weight: 600;
+  line-height: 0.92;
+  letter-spacing: -0.045em;
+}
+
+/* ---- Hello world: a gradient whose hues morph, written on from the left ---- */
+@property --hello-1 {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: transparent;
+}
+@property --hello-2 {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: transparent;
+}
+@property --hello-3 {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: transparent;
+}
+.hello {
+  /* Quiet colour: low chroma, so the hues read as tints of the metal rather than a rainbow. Darker on paper */
+  --hello-l: 0.52;
+  --hello-c: 0.085;
+  --hello-h1: 80;
+  --hello-h2: 45;
+  --hello-h3: 15;
+  --hello-angle: 120deg;
+  --hello-1: oklch(var(--hello-l) var(--hello-c) var(--hello-h1));
+  --hello-2: oklch(
+    calc(var(--hello-l) + 0.06) calc(var(--hello-c) * 0.8) var(--hello-h2)
+  );
+  --hello-3: oklch(var(--hello-l) var(--hello-c) var(--hello-h3));
+  display: block;
+  white-space: nowrap;
+  transition:
+    --hello-1 1600ms var(--ease-out-expo),
+    --hello-2 1600ms var(--ease-out-expo),
+    --hello-3 1600ms var(--ease-out-expo);
+}
+.dark .hello {
+  --hello-l: 0.82;
+  --hello-c: 0.07;
+}
+.hello-word {
+  display: inline-block;
+  /* Room inside the clip for descenders and the last letter's overhang */
+  padding-block: 0.06em 0.1em;
+  padding-inline-end: 0.08em;
+  background-image: linear-gradient(
+    var(--hello-angle),
+    var(--hello-1),
+    var(--hello-2) 50%,
+    var(--hello-3)
+  );
+  background-size: 200% 100%;
+  background-clip: text;
+  color: transparent;
+  /* A feathered edge that sweeps left to right: the write-on */
+  mask-image: linear-gradient(90deg, #000 45%, transparent 55%);
+  mask-size: 240% 100%;
+  mask-position: 0 0;
+  animation:
+    hello-in 1400ms var(--ease-out-expo) both,
+    hello-drift 14s ease-in-out infinite alternate;
+}
+.hello-word[data-phase="out"] {
+  animation:
+    hello-out 650ms cubic-bezier(0.7, 0, 0.84, 0) forwards,
+    hello-drift 14s ease-in-out infinite alternate;
+}
+@keyframes hello-in {
+  from {
+    mask-position: 100% 0;
+    filter: blur(14px);
+    translate: 0 0.16em;
+    opacity: 0;
+  }
+  35% {
+    opacity: 1;
+  }
+}
+@keyframes hello-out {
+  to {
+    filter: blur(12px);
+    translate: 0 -0.14em;
+    opacity: 0;
+  }
+}
+@keyframes hello-drift {
+  to {
+    background-position: 100% 0;
+  }
+}
+/* The entrance waits behind the curtain with everything else */
+html[data-intro] .hello-word {
+  animation-play-state: paused;
+}
+
+/*
+ * Poster scale, sized so the longest greeting (Bonjour le monde, 7.64em in Geist at this tracking, plus the clip
+ * padding) still fits the container on every width: (100vw - gutters) / 7.75 ≈ 12vw - 0.5rem
+ */
+.hero-title {
+  font-size: clamp(2.25rem, calc(12vw - 0.5rem), 9.75rem);
+}
+
+/* "Alan Su Here": the metal, as the headline always was, with a slow light crossing it */
+.hero-name {
+  padding-bottom: 0.08em;
+}
+
+/*
+ * The mark, large and engraved at the hero's right: the loader's outline staying behind as a watermark. It drifts up a
+ * little slower than the copy as the hero scrolls away.
+ */
+.hero-mark {
+  background-image: linear-gradient(
+    160deg,
+    var(--metal-hi),
+    var(--metal-mid) 55%,
+    transparent
+  );
+  mask:
+    url("/mark.svg") center / 100% 100% no-repeat,
+    url("/mark.svg") center / 97% 97% no-repeat;
+  mask-composite: exclude;
+  opacity: 0.55;
+  transform: translateY(calc(var(--hero-progress, 0) * -48px));
+}
+/* Shadowed metal on paper carries more contrast than the lit face on ink: engrave it lighter there */
+html:not(.dark) .hero-mark {
+  opacity: 0.4;
+}
+.hero-mark-fill {
+  background-image: linear-gradient(
+    180deg,
+    color-mix(in oklch, var(--metal-hi) 10%, transparent),
+    transparent 70%
+  );
+  mask: url("/mark.svg") center / 100% 100% no-repeat;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-rules {
+    animation: none;
+  }
+  .hero-light {
+    display: none;
+  }
+  .hero-mark {
+    transform: none;
+  }
+  .hero-content,
+  .hero-rules {
+    opacity: 1;
+    transform: none;
+  }
+  .hello-word {
+    animation: none;
+  }
+}

@@ -64,17 +64,26 @@ Repository variable（同一頁的 Variables 分頁）：
 深色模式是香檳到暖灰，淺色模式是同一塊金屬的暗面。CSS 變數在 [index.css](src/index.css)，同一組 hex 由 palette.ts
 給 three.js 用，[palette.test.ts](scripts/palette.test.ts) 確保兩邊（含 404 頁）一致。
 
-shadcn `radix-nova`、`--radius: 0.35rem`；字體是 Geist、Noto Sans TC（自架、unicode-range 切片，只下載頁面用到的字）、
-Geist Mono，以及只用在進場字標與展間名牌的花體字 Stalemate（自架、只有 Latin）。
+shadcn `radix-nova`；圓角一律 `--radius: 0.35rem`（直角帶一點圓，只有狀態圓點是圓的）。字體分工：英文與數字一律 Geist，
+中文 Noto Sans TC（自架、unicode-range 切片，只下載頁面用到的字），花體字 Stalemate 只用在進場字標、展間名牌與頁尾簽名（自架、只有 Latin）。
 
 **進場動畫**（[src/features/intro](src/features/intro)）：標記寫死在 `index.html`，bundle 還沒執行就先畫出來。品牌標記與
-花體字標由下往上注入金屬，邊緣噴出火花（canvas + 固定大小的粒子池），100% 時爆一次再淡出。進度是誠實的：時間只推到 92%，
-最後 8% 等首次 render 與字體；同一個 session 重新整理時改成短版；bundle 載入失敗時 8 秒後 CSS 自動收起。
+花體字標由下往上注入金屬，邊緣噴出火花（canvas + 固定大小的粒子池），九件展品隨進度一件件掛上環繞鏡頭的 CSS 3D 環。
+到 100% 不會自己離開：等訪客按 ENTER（點任何地方、Enter 或 Space 也行），鏡頭穿過作品環、標記放大散焦，後方的首頁由失焦拉回清楚。
+等待時整頁 `inert`、動畫迴圈休眠；進度是誠實的（時間只推到 92%，最後 8% 等首次 render 與字體）；bundle 載入失敗時 8 秒後 CSS 自動收起。
 
-**精選展間**（[src/features/gallery](src/features/gallery)）：three.js 環形畫廊，九件作品圍著鏡頭、石材地面反射。
-three.js 獨立成 chunk，展間接近畫面才下載；只在看得到時算圖。要換展品：把 1200×800 的 WebP 放進
+**首頁**（[src/features/hero](src/features/hero)）：Hello world 輪播十五種語言（只用 Geist 與 Noto Sans TC 排得出的文字），
+語言、漸層色相、角度與停留時間各自從洗牌袋抽，不連續重複也沒有固定順序；下一行 Alan Su Here 是金屬漸層。進場後才開始，
+離開畫面就暫停，減少動態效果時停在英文。
+
+**作品與練習**（[src/features/projects](src/features/projects)）：同一份篩選狀態、三種呈現。GRID 是截圖卡片，TABLE 是可依任一欄排序、
+表頭凍結在工具列下的規格表，LIST 是大字索引、滑過時截圖跟著游標。工具列（篩選字串、語言、分組、檢視、RESET）捲動時凍結在頁首下；
+篩選、排序、分組都是 [collection.ts](src/features/projects/collection.ts) 裡有測試的純函式。
+
+**精選展間**（[src/features/gallery](src/features/gallery)）：three.js 環形畫廊，九件作品圍著鏡頭、石材地面反射。作品上方是花體字標題，
+下方是英文專案名稱與一行中文描述。three.js 獨立成 chunk，展間接近畫面才下載；只在看得到時算圖。要換展品：把 1200×800 的 WebP 放進
 `src/assets/gallery/`，再改 [pieces.ts](src/features/gallery/pieces.ts) 的 `HANG`（`repo` 對應作品清單，連結跟著每週同步走；
-`repo: null` 是不公開的作品，只展示不連結）。沒有 WebGL 時改用同一組按鈕切換的平面畫框。
+`repo: null` 是不公開的作品，按 VIEW PIECE 在站內檢視窗打開，不附連結）。沒有 WebGL 時改用同一組按鈕切換的平面畫框。
 
-動態：卡片 hover 會上浮、截圖慢速放大並掃過一道光，按下會回沉；捲動時區塊依序浮現、標題細線由左畫出、header 收合，
-主視覺隨捲動淡出並有視差。系統設定「減少動態效果」時全部關閉。
+**標題與按鈕**：標題英文大、中文小，不加標點；按鈕一律英文大寫，共用 [action.tsx](src/components/action.tsx)：hover 時字從下方換上、
+底色由下往上填滿，按下回沉。頁面錨點集中在 [sections.ts](src/sections.ts)。系統設定「減少動態效果」時所有動態關閉。
