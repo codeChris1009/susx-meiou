@@ -73,7 +73,7 @@ shadcn `radix-nova`；圓角一律 `--radius: 0.35rem`（直角帶一點圓，�
 等待時整頁 `inert`、動畫迴圈休眠；進度是誠實的（時間只推到 92%，最後 8% 等首次 render 與字體）；bundle 載入失敗時 8 秒後 CSS 自動收起。
 
 **首頁**（[src/features/hero](src/features/hero)）：Hello world 輪播十五種語言（只用 Geist 與 Noto Sans TC 排得出的文字），
-語言、漸層色相、角度與停留時間各自從洗牌袋抽，不連續重複也沒有固定順序；下一行 Alan Su Here 是金屬漸層。進場後才開始，
+語言、漸層色相、角度與停留時間各自從洗牌袋抽，不連續重複也沒有固定順序；下一行 Alan Su 沿用最初標題的金屬光掃（metal-shine）與尺寸。進場後才開始，
 離開畫面就暫停，減少動態效果時停在英文。
 
 **作品與練習**（[src/features/projects](src/features/projects)）：同一份篩選狀態、三種呈現。GRID 是截圖卡片，TABLE 是可依任一欄排序、

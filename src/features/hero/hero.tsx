@@ -113,17 +113,20 @@ export function Hero() {
           <h1
             id="hero-title"
             lang="en"
-            className="heading-display hero-title group/headline origin-left cursor-default select-none"
+            className="heading-display hero-title group/headline origin-left cursor-default transition-[scale] duration-500 ease-(--ease-settle) select-none active:scale-[0.985]"
           >
-            <span className="sr-only">Hello world {site.name} Here</span>
+            <span className="sr-only">Hello world {site.name}</span>
             <span aria-hidden className="animate-rise block">
-              <Hello />
+              {/* The first line leans in under the pointer, as the headline's first line always did */}
+              <span className="inline-block transition-[translate] duration-700 ease-(--ease-out-expo) group-hover/headline:translate-x-1.5">
+                <Hello />
+              </span>
             </span>
             <span
               aria-hidden
               className="animate-rise metal-shine hero-name block [--rise-delay:140ms]"
             >
-              {site.name} Here
+              {site.name}
             </span>
           </h1>
 
