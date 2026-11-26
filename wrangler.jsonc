@@ -1,0 +1,12 @@
+// An assets-only Worker: Cloudflare serves dist/ straight from its edge, no script runs, and static asset requests
+// are free and unmetered on the Workers Free plan. Live at https://susx-meiou.susx.workers.dev
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  // Worker names allow lowercase letters, digits and dashes only, hence susx-meiou rather than susx.meiou
+  "name": "susx-meiou",
+  "compatibility_date": "2026-11-20",
+  "assets": {
+    "directory": "./dist",
+    "not_found_handling": "404-page",
+  },
+}

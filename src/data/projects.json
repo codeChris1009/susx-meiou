@@ -1,0 +1,148 @@
+{
+  "syncedAt": "2026-11-26T08:14:20.498Z",
+  "projects": [
+    {
+      "repo": "demo-3js-Gallery0",
+      "url": "https://codechris1009.github.io/demo-3js-Gallery0/",
+      "host": "github-pages",
+      "sourceUrl": "https://github.com/codeChris1009/demo-3js-Gallery0",
+      "language": "JavaScript",
+      "title": "3D ART GALLERY",
+      "description": "demo three.js 的 gallery https://codechris1009.github.io/demo-3js-Gallery0/",
+      "pushedAt": "2026-03-27T16:04:56Z",
+      "online": true
+    },
+    {
+      "repo": "demoIndieBookstore",
+      "url": "https://codechris1009.github.io/demoIndieBookstore/",
+      "host": "github-pages",
+      "sourceUrl": "https://github.com/codeChris1009/demoIndieBookstore",
+      "language": "CSS",
+      "title": "Indie Bookstore",
+      "description": "demo Indie Bookstore - Your local independent bookshop offering a wide selection of books from indie authors and publishers.",
+      "pushedAt": "2026-03-09T05:03:53Z",
+      "online": true
+    },
+    {
+      "repo": "dethveiler-0.0.0",
+      "url": "https://codechris1009.github.io/dethveiler-0.0.0/",
+      "host": "github-pages",
+      "sourceUrl": "https://github.com/codeChris1009/dethveiler-0.0.0",
+      "language": "TypeScript",
+      "title": "Dethveiler",
+      "description": "dethveiler sideprj 以 React + TypeScript 開發的現代化天氣地圖應用",
+      "pushedAt": "2026-03-19T07:27:46Z",
+      "online": true
+    },
+    {
+      "repo": "fovea",
+      "url": "https://fovea.susx.workers.dev/",
+      "host": "cloudflare",
+      "sourceUrl": null,
+      "language": "TypeScript",
+      "title": "Fovea",
+      "description": "重要公司的長文本與數據，整理成摘要、重點與正反兩面。",
+      "pushedAt": "2026-11-26T07:29:42Z",
+      "online": true
+    },
+    {
+      "repo": "pokemon-anti-org",
+      "url": "https://codechris1009.github.io/pokemon-anti-org/",
+      "host": "github-pages",
+      "sourceUrl": null,
+      "language": "TypeScript",
+      "title": "寶可夢世界的真實反派組織：寶可夢九世代政權解密｜POKÉMON ANTI-ORG",
+      "description": "從第一代赤裸的黑金資本滲透，到中期的生態兩極安全困境與審美優生學，再到近代的技術官僚黑箱與校園創傷自治飛地——揭示遊戲文本背後，深層映射的人類近代政治思潮、國家機器運作與真實歷史投影。",
+      "pushedAt": "2026-09-26T16:26:23Z",
+      "online": true
+    },
+    {
+      "repo": "pokemon-ash",
+      "url": "https://pokemon-ash.susx.workers.dev/",
+      "host": "cloudflare",
+      "sourceUrl": null,
+      "language": "TypeScript",
+      "title": "I CHOOSE YOU｜就決定是你了 — 小智 · 二十六年 · 八個地區",
+      "description": "一個睡過頭的少年，花了二十六年走到世界第一。八頂帽子的皮卡丘、每一代的招牌招式與王牌、伽勒爾的路卡利歐——從真新鎮出發，一路打到世界之巔。",
+      "pushedAt": "2026-11-17T14:44:31Z",
+      "online": true
+    },
+    {
+      "repo": "pokemon-girl-friends",
+      "url": "https://codechris1009.github.io/pokemon-girl-friends/",
+      "host": "github-pages",
+      "sourceUrl": null,
+      "language": "TypeScript",
+      "title": "寶可夢動畫歷代女主角：與小智同行的六個靈魂｜POKÉMON HEROINES",
+      "description": "從一輛被電焦的腳踏車，到剖成兩半的緞帶、並肩擊掌的約定、登頂冠軍的龍之長嘯、剪髮明志的蔚藍誓言，再到直面創傷、破繭救贖的深情告白——我們六個人回答了同一個問題：和一個永遠十歲的少年同行，我們長成了最驕傲的自己。",
+      "pushedAt": "2026-09-26T15:10:19Z",
+      "online": true
+    },
+    {
+      "repo": "pokemon-gym-leaders",
+      "url": "https://pokemon-gym-leaders.susx.workers.dev/",
+      "host": "cloudflare",
+      "sourceUrl": null,
+      "language": "TypeScript",
+      "title": "Gym Leaders of the Pokémon Anime｜寶可夢動畫的歷代道館館主",
+      "description": "收錄九大地區共 64 位館主（七大地區 52 位道館館主＋阿羅拉四位島嶼之王／女王＋伽勒爾一軍八位館主）與 8 位聯盟勁敵之第一人稱回憶錄、戰術體系與十大維度全景剖析",
+      "pushedAt": "2026-10-05T02:34:55Z",
+      "online": true
+    },
+    {
+      "repo": "pokemon-rivals",
+      "url": "https://pokemon-rivals.susx.workers.dev/",
+      "host": "cloudflare",
+      "sourceUrl": null,
+      "language": "TypeScript",
+      "title": "Pokémon Rivals — The Final Wall｜寶可夢傳奇宿敵",
+      "description": "十五位傳奇宿敵與世界錦標賽八大師的第一人稱十大維度檔案，以 Boss 戰的壓迫感重新呈現：WebGPU 風暴世界、AI 生成的競技場與電影感遭遇換場。",
+      "pushedAt": "2026-11-09T10:41:51Z",
+      "online": true
+    },
+    {
+      "repo": "Py-Bookshelf0",
+      "url": "https://codechris1009.github.io/Py-Bookshelf0/",
+      "host": "github-pages",
+      "sourceUrl": "https://github.com/codeChris1009/Py-Bookshelf0",
+      "language": "JavaScript",
+      "title": "Padi‘s BookShelf",
+      "description": "demo neon bookshelf ver 0.0",
+      "pushedAt": "2026-01-19T05:00:16Z",
+      "online": true
+    },
+    {
+      "repo": "Py-FastAPI0",
+      "url": "https://codechris1009.github.io/Py-FastAPI0/",
+      "host": "github-pages",
+      "sourceUrl": "https://github.com/codeChris1009/Py-FastAPI0",
+      "language": "Python",
+      "title": "Py-FastAPI0",
+      "description": "just demo swagger",
+      "pushedAt": "2025-08-27T19:24:43Z",
+      "online": false
+    },
+    {
+      "repo": "React-TodoList0",
+      "url": "https://codechris1009.github.io/React-TodoList0/",
+      "host": "github-pages",
+      "sourceUrl": "https://github.com/codeChris1009/React-TodoList0",
+      "language": "JavaScript",
+      "title": "susx-lecture-react-todolist0",
+      "description": "first react todo list neon",
+      "pushedAt": "2025-08-27T18:04:44Z",
+      "online": true
+    },
+    {
+      "repo": "yi-64",
+      "url": "https://codechris1009.github.io/yi-64/",
+      "host": "github-pages",
+      "sourceUrl": null,
+      "language": "TypeScript",
+      "title": "YI·64 — The Machine Reads the Changes",
+      "description": "A post-human archive of the I Ching. Eight trigrams, sixty-four hexagrams, rebuilt as machine lifeforms by the intelligences that outlived their authors.",
+      "pushedAt": "2026-09-18T04:39:12Z",
+      "online": true
+    }
+  ]
+}

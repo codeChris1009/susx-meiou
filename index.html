@@ -1,10 +1,30 @@
 <!doctype html>
-<html lang="en">
+<!-- zh-Hant-TW, not en: the browser picks glyphs for shared Han code points by `lang`, so this keeps them Traditional -->
+<html lang="zh-Hant-TW">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>vite-app</title>
+    <meta name="color-scheme" content="light dark" />
+    <title>susx.meiou — 作品集</title>
+    <meta
+      name="description"
+      content="susx 的線上作品：每一個都能直接打開來玩，部署在 Cloudflare Workers 與 GitHub Pages"
+    />
+    <!-- Set the theme class before first paint so a dark-mode visitor never sees a white flash.
+         Same storage key and rules as src/components/theme-provider.tsx. -->
+    <script>
+      try {
+        const stored = localStorage.getItem("theme")
+        const dark =
+          stored === "dark" ||
+          (stored !== "light" &&
+            matchMedia("(prefers-color-scheme: dark)").matches)
+        document.documentElement.classList.add(dark ? "dark" : "light")
+      } catch {
+        // Storage can be blocked (private mode); the provider applies the theme after mount
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>

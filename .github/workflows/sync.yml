@@ -1,0 +1,64 @@
+# Weekly: re-scan GitHub for live front ends, screenshot any new one, and when the list changed, commit it and start
+# CI/CD to deploy. A quiet week changes nothing and deploys nothing.
+#
+# Needs the repository secret SYNC_TOKEN: a fine-grained token, read-only, with access to all your repositories
+# (Metadata, Contents, Deployments, Pages). The built-in GITHUB_TOKEN sees only this repository, so the private ones
+# would drop off the site. Also the repository variable SYNC_EXCLUDE (README → Setup).
+name: Sync projects
+
+on:
+  schedule:
+    # Mondays 01:17 UTC (09:17 Taipei); off the hour, when GitHub's scheduler is busiest
+    - cron: "17 1 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: write # commit the refreshed list
+  actions: write # start CI/CD: pushes made with GITHUB_TOKEN do not trigger workflows, a dispatch does
+
+concurrency:
+  group: sync
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    name: Sync
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Require the sync token
+        # Checked in the shell: the token stays in this step's env, not the job's, so no third-party action sees it
+        env:
+          SYNC_TOKEN: ${{ secrets.SYNC_TOKEN }}
+        run: |
+          if [ -z "$SYNC_TOKEN" ]; then
+            echo "::error title=Sync::Set the repository secret SYNC_TOKEN (README → Setup)"
+            exit 1
+          fi
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: ./.github/actions/setup
+
+      - name: Scan GitHub
+        env:
+          GH_TOKEN: ${{ secrets.SYNC_TOKEN }}
+          # Repository variable, not a file: the names of the hidden repositories stay out of this public repository
+          SYNC_EXCLUDE: ${{ vars.SYNC_EXCLUDE }}
+        run: pnpm sync
+      - name: Screenshot new projects
+        # Google Chrome is preinstalled on GitHub's Ubuntu runners; a failed shot falls back to a typographic cover
+        run: pnpm shots
+
+      - name: Commit and deploy if anything changed
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git add src/data src/assets/shots
+          if git diff --cached --quiet; then
+            echo "No change"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "chore(data): sync projects from GitHub"
+          git push
+          gh workflow run ci.yml --ref main

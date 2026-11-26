@@ -1,0 +1,66 @@
+# Every pull request and push to main runs `pnpm check` (format, lint, types, tests, build), the same command a laptop
+# runs. A push to main, or "Run workflow" on main (the weekly sync starts it this way), then deploys to Cloudflare and
+# smoke-tests the live site.
+#
+# Deploy needs the repository secrets CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID (README → Setup).
+name: CI/CD
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  # A new push to a pull request cancels its older run; runs on main always finish
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  check:
+    name: Check
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+      - run: pnpm check
+
+  deploy:
+    name: Deploy
+    needs: check
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    concurrency:
+      # One change to production at a time; a queued deploy waits, never cancels
+      group: production
+      cancel-in-progress: false
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - name: Require the Cloudflare secrets
+        if: env.CLOUDFLARE_API_TOKEN == '' || env.CLOUDFLARE_ACCOUNT_ID == ''
+        run: |
+          echo "::error title=Deploy::Set the repository secrets CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID (README → Setup)"
+          exit 1
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+      - run: pnpm build
+      - name: Deploy the Worker
+        id: worker
+        # `pnpm run`, not `pnpm deploy`: that name is a built-in pnpm command
+        run: pnpm run deploy
+      - name: Smoke test the live site
+        run: pnpm smoke
+      - name: Roll back after a failed smoke test
+        if: failure() && steps.worker.outcome == 'success'
+        run: pnpm exec wrangler rollback --yes --message "smoke test failed for ${GITHUB_SHA::7}"
