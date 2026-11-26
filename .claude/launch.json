@@ -2,16 +2,9 @@
   "version": "0.0.1",
   "configurations": [
     {
-      "name": "susx-meiou-dev",
+      "name": "dev",
       "runtimeExecutable": "pnpm",
-      "runtimeArgs": [
-        "--dir",
-        "/Users/susx/susx",
-        "dev",
-        "--port",
-        "5179",
-        "--strictPort"
-      ],
+      "runtimeArgs": ["dev", "--port", "5179", "--strictPort"],
       "port": 5179
     }
   ]
