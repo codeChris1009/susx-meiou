@@ -15,7 +15,6 @@ export const curation = {
     "pokemon-gym-leaders",
     "pokemon-girl-friends",
     "pokemon-anti-org",
-    "dethveiler-0.0.0",
   ],
   overrides: {
     fovea: { title: "Fovea" },
@@ -25,10 +24,6 @@ export const curation = {
     "pokemon-gym-leaders": { title: "Gym Leaders" },
     "pokemon-girl-friends": { title: "Pokémon Heroines" },
     "pokemon-anti-org": { title: "Pokémon Anti-Org" },
-    "dethveiler-0.0.0": {
-      title: "Dethveiler",
-      description: "以 React + TypeScript 開發的天氣地圖應用",
-    },
     // The practice sites have no meta description and their repo descriptions are notes to self
     "React-TodoList0": {
       title: "React Todo List",

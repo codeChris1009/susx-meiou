@@ -1,5 +1,5 @@
 {
-  "syncedAt": "2026-11-26T12:16:08.283Z",
+  "syncedAt": "2026-11-26T12:28:30.150Z",
   "projects": [
     {
       "repo": "demo-3js-Gallery0",
@@ -21,17 +21,6 @@
       "title": "Indie Bookstore",
       "description": "demo Indie Bookstore - Your local independent bookshop offering a wide selection of books from indie authors and publishers.",
       "pushedAt": "2026-03-09T05:03:53Z",
-      "online": true
-    },
-    {
-      "repo": "dethveiler-0.0.0",
-      "url": "https://codechris1009.github.io/dethveiler-0.0.0/",
-      "host": "github-pages",
-      "sourceUrl": "https://github.com/codeChris1009/dethveiler-0.0.0",
-      "language": "TypeScript",
-      "title": "Dethveiler",
-      "description": "dethveiler sideprj 以 React + TypeScript 開發的現代化天氣地圖應用",
-      "pushedAt": "2026-03-19T07:27:46Z",
       "online": true
     },
     {

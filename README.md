@@ -59,6 +59,9 @@ Repository variable（同一頁的 Variables 分頁）：
 
 ## 設計
 
-shadcn `radix-nova`、`neutral` 單色 oklch、`--radius: 0.35rem`、Geist / Geist Mono，
-中文走各平台的系統字（PingFang TC → Noto Sans TC → 微軟正黑體），不載任何 CJK webfont。
-唯一的彩色是「上線中」的綠點，顏色留給作品截圖。
+shadcn `radix-nova`、`neutral` 單色 oklch、`--radius: 0.35rem`；字體是 Geist、Noto Sans TC（自架、unicode-range 切片，
+只下載頁面用到的字）與 Geist Mono。唯一的材質是三段金屬漸層：深色模式是香檳到暖灰，淺色模式是同一塊金屬的暗面，
+用在標記、編號、細線與捲動進度。
+
+動態：卡片 hover 會上浮、截圖慢速放大並掃過一道光，按下會回沉；捲動時區塊依序浮現、標題細線由左畫出、header 收合，
+主視覺隨捲動淡出並有視差。系統設定「減少動態效果」時全部關閉。
