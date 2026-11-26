@@ -12,6 +12,7 @@
 /* Latin only: the script face sets one word, the loader's wordmark */
 @import "@fontsource/stalemate/latin-400.css";
 @import "./features/intro/intro.css";
+@import "./features/hero/hero.css";
 @import "./features/gallery/gallery.css";
 
 @custom-variant dark (&:is(.dark *));
@@ -458,31 +459,6 @@ html[data-scrolled] .site-header {
   transform-origin: left;
 }
 
-/* ---------- Hero: lifts and fades as it scrolls away; the dot field drifts slower (parallax) ---------- */
-.hero-content {
-  opacity: calc(1 - var(--hero-progress, 0) * 1.3);
-  transform: translateY(calc(var(--hero-progress, 0) * -64px))
-    scale(calc(1 - var(--hero-progress, 0) * 0.035));
-  will-change: opacity, transform;
-}
-.hero-field {
-  transform: translateY(calc(var(--hero-progress, 0) * 120px));
-}
-.hero-glow {
-  /* On paper the shadowed metal would read as a grey smudge: a lighter, warmer breath there, the lit face on ink */
-  background: radial-gradient(
-    closest-side,
-    color-mix(in oklch, var(--metal-dark-mid) 38%, transparent),
-    transparent
-  );
-  animation: drift 18s ease-in-out infinite alternate;
-}
-@keyframes drift {
-  to {
-    transform: translate(8%, 6%) scale(1.08);
-  }
-}
-
 /* ---------- Pressable: the shared hover / press feel for small controls ---------- */
 .pressable {
   transition:
@@ -498,7 +474,7 @@ html[data-scrolled] .site-header {
 
 /*
  * Roll: a label that slides up out of its box on hover and is replaced by its twin rising from below (the twin is the
- * same word, from data-text). Every button and button-like link on the page uses it, the static ENTER included.
+ * same word, aria-hidden). Every button and button-like link on the page uses it, the static ENTER included.
  */
 .roll {
   display: inline-block;
@@ -511,8 +487,7 @@ html[data-scrolled] .site-header {
   display: block;
   transition: translate 650ms var(--ease-out-expo);
 }
-.roll-in::after {
-  content: attr(data-text);
+.roll-twin {
   position: absolute;
   top: 100%;
   left: 0;
@@ -536,14 +511,6 @@ html[data-scrolled] .site-header {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .hero-content,
-  .hero-field {
-    opacity: 1;
-    transform: none;
-  }
-  .hero-glow {
-    animation: none;
-  }
 }
 
 /* Footer wordmark: still metal at rest; on hover a band of light crosses it and the letters breathe apart */
@@ -580,14 +547,6 @@ html[data-scrolled] .site-header {
 .group\/headline:hover .metal-shine {
   animation-duration: 2.4s;
   filter: brightness(1.15);
-}
-
-.dark .hero-glow {
-  background: radial-gradient(
-    closest-side,
-    color-mix(in oklch, var(--metal-hi) 16%, transparent),
-    transparent
-  );
 }
 
 /*
@@ -638,10 +597,23 @@ html[data-header-dark]:not(.dark) .site-header {
   color: var(--foreground);
 }
 
-/* The section on screen keeps its nav link underlined */
-.link-draw[aria-current="true"] {
-  background-size: 100% 1px;
+/* The section on screen keeps its nav link lit, with a short metal rule beneath */
+.nav-link::after {
+  content: "";
+  position: absolute;
+  inset-inline: 0.625rem;
+  bottom: 0.3rem;
+  height: 1px;
+  background: var(--metal-mid);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 600ms var(--ease-out-expo);
+}
+.nav-link[aria-current="true"] {
   color: var(--foreground);
+}
+.nav-link[aria-current="true"]::after {
+  transform: scaleX(1);
 }
 
 /* Screenshots arrive softly instead of popping in */

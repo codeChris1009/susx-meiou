@@ -2,8 +2,11 @@
 export const site = {
   /** The wordmark. meiou = Latin mei + Greek μου, both "of me" */
   brand: "susx.meiou",
-  /** The person behind the work */
+  /** The person behind the work, as the hero introduces them */
+  name: "Alan Su",
+  /** Their handle */
   owner: "susx",
+  role: "Fullstack Engineer",
   githubUser: "codeChris1009",
   github: "https://github.com/codeChris1009",
 } as const

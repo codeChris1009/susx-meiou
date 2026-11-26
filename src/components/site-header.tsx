@@ -1,18 +1,21 @@
 import { Moon, Sun } from "lucide-react"
 
+import { Roll, actionVariants } from "@/components/action"
 import { GithubMark } from "@/components/github-mark"
 import { useTheme } from "@/components/theme-provider"
 import { useActiveSection } from "@/hooks/use-active-section"
 import { site } from "@/site"
 
 const NAV = [
-  { id: "gallery", label: "精選" },
-  { id: "works", label: "作品" },
-  { id: "practice", label: "練習" },
+  { id: "gallery", label: "Gallery" },
+  { id: "works", label: "Works" },
+  { id: "practice", label: "Practice" },
 ] as const
 
-const iconButton =
-  "pressable group/icon grid size-9 place-items-center rounded-lg text-muted-foreground hover:bg-accent hover:text-foreground"
+const iconButton = actionVariants({
+  tone: "quiet",
+  className: "size-9 px-0",
+})
 
 function ThemeToggle() {
   const { setTheme } = useTheme()
@@ -30,7 +33,7 @@ function ThemeToggle() {
       className={iconButton}
     >
       {/* The two icons swap with a quarter turn; hover nudges the visible one */}
-      <span className="relative size-4 transition-transform duration-500 ease-(--ease-spring) group-hover/icon:rotate-12">
+      <span className="relative size-4 transition-transform duration-500 ease-(--ease-spring) group-hover/action:rotate-12">
         <Sun
           aria-hidden
           className="absolute inset-0 size-4 scale-50 -rotate-90 opacity-0 transition-all duration-500 ease-(--ease-out-expo) dark:scale-100 dark:rotate-0 dark:opacity-100"
@@ -71,9 +74,12 @@ export function SiteHeader() {
               key={item.id}
               href={`#${item.id}`}
               aria-current={active === item.id || undefined}
-              className="pressable link-draw hidden px-2 py-1 text-sm text-muted-foreground hover:text-foreground sm:inline-block"
+              className={actionVariants({
+                tone: "quiet",
+                className: "nav-link hidden sm:inline-flex",
+              })}
             >
-              {item.label}
+              <Roll>{item.label}</Roll>
             </a>
           ))}
           <span
@@ -89,7 +95,7 @@ export function SiteHeader() {
           >
             <GithubMark
               aria-hidden
-              className="size-4 transition-transform duration-500 ease-(--ease-spring) group-hover/icon:scale-110"
+              className="size-4 transition-transform duration-500 ease-(--ease-spring) group-hover/action:scale-110"
             />
           </a>
           <ThemeToggle />

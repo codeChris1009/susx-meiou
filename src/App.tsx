@@ -1,171 +1,16 @@
-import { ArrowDown, ArrowUp } from "lucide-react"
-
-import { GithubMark } from "@/components/github-mark"
 import { SectionHeading } from "@/components/section-heading"
+import { SiteFooter } from "@/components/site-footer"
 import { SiteHeader } from "@/components/site-header"
-import {
-  featured,
-  gallery,
-  platforms,
-  practice,
-  syncedOn,
-  year,
-} from "@/content"
+import { featured, gallery, practice } from "@/content"
 import { GallerySection } from "@/features/gallery/gallery-section"
+import { HERO_ID, Hero } from "@/features/hero/hero"
 import { ProjectCard } from "@/features/projects/project-card"
-import { useReveal } from "@/hooks/use-reveal"
 import { useScrollEffects } from "@/hooks/use-scroll-effects"
-import { site } from "@/site"
 
 // Cards in a row arrive one after another; the stagger restarts every row so late cards never wait long
 const stagger = (index: number, perRow: number) => (index % perRow) * 110
 
-const HERO_ID = "top"
-
-function Stat({ value, label }: { value: number; label: string }) {
-  return (
-    <div className="group/stat cursor-default transition-transform duration-300 ease-(--ease-spring) select-none active:scale-95">
-      <dt className="text-[0.7rem] tracking-[0.2em] text-muted-foreground uppercase">
-        {label}
-      </dt>
-      <dd className="mt-1 text-metal text-4xl font-light tabular-nums transition-[translate,filter] duration-500 ease-(--ease-spring) group-hover/stat:-translate-y-1 group-hover/stat:brightness-125">
-        {String(value).padStart(2, "0")}
-      </dd>
-    </div>
-  )
-}
-
-function Hero() {
-  return (
-    <section
-      id={HERO_ID}
-      className="intro-veil relative -mt-16 overflow-hidden pt-16"
-    >
-      <div
-        aria-hidden
-        className="hero-field dot-grid absolute inset-0 [mask-image:radial-gradient(ellipse_75%_70%_at_25%_10%,black,transparent)]"
-      />
-      <div
-        aria-hidden
-        className="hero-glow absolute -top-1/4 left-1/3 size-[42rem] rounded-full blur-2xl"
-      />
-      <div
-        aria-hidden
-        className="pointer-events-none absolute top-[14%] right-[7%] hidden aspect-[1024/1292] h-[64%] lg:block"
-      >
-        <span className="hero-mark-fill absolute inset-0" />
-        <span className="hero-mark absolute inset-0" />
-      </div>
-
-      <div className="hero-content container-wide relative flex min-h-[calc(92svh-4rem)] flex-col justify-center py-24">
-        <p className="animate-rise flex items-center gap-3 text-[0.7rem] tracking-[0.28em] text-muted-foreground uppercase">
-          <span aria-hidden className="hairline-metal w-10" />
-          Selected work · {year}
-        </p>
-
-        <h1 className="group/headline display-cjk mt-7 max-w-4xl origin-left cursor-default text-5xl font-semibold text-balance transition-[scale,letter-spacing] duration-500 ease-(--ease-spring) select-none active:scale-[0.985] active:tracking-wide sm:text-6xl lg:text-7xl">
-          <span className="animate-rise block [--rise-delay:90ms]">
-            <span className="inline-block transition-[translate] duration-700 ease-(--ease-out-expo) group-hover/headline:translate-x-1.5">
-              每一個作品，
-            </span>
-          </span>
-          <span className="animate-rise metal-shine block pb-2 [--rise-delay:180ms]">
-            都能直接打開
-          </span>
-        </h1>
-
-        <p className="animate-rise prose-cjk mt-7 max-w-xl text-pretty text-muted-foreground [--rise-delay:280ms] sm:text-lg">
-          Fullstack 工程師 {site.owner} 的線上作品：資料閱讀、互動敘事與 WebGPU
-          場景，部署在 Cloudflare Workers 與 GitHub Pages，清單每週由 GitHub
-          Actions 自動同步。
-        </p>
-
-        <div className="animate-rise mt-10 flex flex-wrap items-center gap-3 [--rise-delay:380ms]">
-          <a
-            href="#gallery"
-            className="pressable group/cta inline-flex h-11 items-center gap-2 rounded-lg bg-foreground px-6 text-sm font-medium text-background hover:shadow-[0_12px_30px_-12px_color-mix(in_oklch,var(--shade)_50%,transparent)]"
-          >
-            瀏覽作品
-            <ArrowDown className="size-4 transition-transform duration-500 ease-(--ease-spring) group-hover/cta:translate-y-0.5" />
-          </a>
-          <a
-            href={site.github}
-            target="_blank"
-            rel="noopener"
-            className="pressable group/cta inline-flex h-11 items-center gap-2 rounded-lg px-6 text-sm font-medium ring-1 ring-foreground/15 hover:bg-accent hover:ring-metal/50"
-          >
-            <GithubMark
-              aria-hidden
-              className="size-4 transition-transform duration-500 ease-(--ease-spring) group-hover/cta:-rotate-12"
-            />
-            GitHub
-          </a>
-        </div>
-
-        <dl className="animate-rise mt-16 grid max-w-md grid-cols-3 gap-6 [--rise-delay:480ms]">
-          <Stat value={featured.length} label="Works" />
-          <Stat value={practice.length} label="Practice" />
-          <Stat value={platforms} label="Platforms" />
-        </dl>
-      </div>
-
-      <a
-        href="#gallery"
-        aria-label="捲動到精選展間"
-        className="pressable group/cue absolute bottom-8 left-1/2 hidden -translate-x-1/2 flex-col items-center gap-3 text-[0.6rem] tracking-[0.3em] text-muted-foreground uppercase hover:text-foreground sm:flex"
-      >
-        Scroll
-        <span className="scroll-cue-line block h-12 w-px bg-foreground/15 transition-[height] duration-500 ease-(--ease-out-expo) group-hover/cue:h-16" />
-      </a>
-    </section>
-  )
-}
-
-function Footer() {
-  const reveal = useReveal<HTMLDivElement>()
-  return (
-    <footer className="relative mt-12 overflow-hidden border-t">
-      <div ref={reveal} className="reveal container-wide py-16">
-        <div className="flex items-center gap-5 sm:gap-7">
-          <span
-            aria-hidden
-            className="brand-mark inline-block aspect-[1024/1292] h-14 shrink-0 sm:h-20 lg:h-24"
-          />
-          <p
-            aria-hidden
-            className="wordmark inline-block cursor-default px-[0.2em] text-6xl leading-[1.3] select-none sm:text-8xl lg:text-9xl"
-          >
-            {site.brand}
-          </p>
-        </div>
-        <div className="hairline-metal mt-10" />
-        <div className="mt-6 flex flex-col gap-4 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
-          <p>
-            © {year} {site.owner} · 清單更新於 {syncedOn}
-          </p>
-          <div className="flex items-center gap-5">
-            <a
-              href={site.github}
-              target="_blank"
-              rel="noopener"
-              className="pressable link-draw inline-flex items-center gap-1.5 pb-0.5 hover:text-foreground"
-            >
-              <GithubMark aria-hidden className="size-3.5" />
-              {site.githubUser}
-            </a>
-            <a
-              href={`#${HERO_ID}`}
-              className="pressable group/top inline-flex items-center gap-1.5 hover:text-foreground"
-            >
-              回到頂端
-              <ArrowUp className="size-3.5 transition-transform duration-500 ease-(--ease-spring) group-hover/top:-translate-y-0.5" />
-            </a>
-          </div>
-        </div>
-      </div>
-    </footer>
-  )
-}
+const pad = (n: number) => String(n).padStart(2, "0")
 
 export function App() {
   useScrollEffects(HERO_ID)
@@ -183,8 +28,9 @@ export function App() {
           <SectionHeading
             id="works"
             index="02"
-            title="作品"
-            note={`${featured.length} projects`}
+            title="Works"
+            subtitle="作品"
+            note={`${pad(featured.length)} projects`}
           />
           <div className="grid gap-6 sm:grid-cols-2 lg:gap-8">
             {featured.map((project, i) => (
@@ -205,8 +51,9 @@ export function App() {
             <SectionHeading
               id="practice"
               index="03"
-              title="練習"
-              note="Early studies"
+              title="Practice"
+              subtitle="早期練習"
+              note={`${pad(practice.length)} studies`}
             />
             <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
               {practice.map((project, i) => (
@@ -223,7 +70,7 @@ export function App() {
         )}
       </main>
 
-      <Footer />
+      <SiteFooter />
     </div>
   )
 }

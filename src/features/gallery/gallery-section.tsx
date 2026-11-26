@@ -218,8 +218,9 @@ export function GallerySection({ pieces, numeral }: GallerySectionProps) {
         <SectionHeading
           id="gallery"
           index={numeral}
-          title="精選"
-          note={`Gallery · ${count} pieces`}
+          title="Gallery"
+          subtitle="精選展間"
+          note={`${pad(count)} pieces`}
           className="mb-0"
         />
       </div>
