@@ -184,3 +184,27 @@
     animation: none;
   }
 }
+
+/*
+ * The brand mark: public/mark.svg as a CSS mask over a three-stop metal gradient, so one asset serves both themes and
+ * is cached once instead of inlined into the bundle. A class, not a style attribute, keeps the CSP free of
+ * 'unsafe-inline'.
+ */
+.brand-mark {
+  --mark-hi: #8c8578;
+  --mark-mid: #5e584c;
+  --mark-lo: #332e24;
+  background-image: linear-gradient(
+    145deg,
+    var(--mark-hi) 0%,
+    var(--mark-mid) 54%,
+    var(--mark-lo) 100%
+  );
+  mask: url("/mark.svg") center / contain no-repeat;
+}
+
+.dark .brand-mark {
+  --mark-hi: #f5f0de;
+  --mark-mid: #d2ccba;
+  --mark-lo: #7b776f;
+}

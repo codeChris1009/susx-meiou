@@ -36,6 +36,9 @@ jobs:
             exit 1
           fi
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # Not left in .git/config: dependency install scripts run next, and this token can write to the repository
+          persist-credentials: false
       - uses: ./.github/actions/setup
 
       - name: Scan GitHub
@@ -60,5 +63,5 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git commit -m "chore(data): sync projects from GitHub"
-          git push
+          git push "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" HEAD:main
           gh workflow run ci.yml --ref main

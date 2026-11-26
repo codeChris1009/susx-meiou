@@ -7,7 +7,8 @@ import { ThemeProvider } from "@/components/theme-provider.tsx"
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <ThemeProvider>
+    {/* No transition-blocking <style> injection on theme change: the CSP (public/_headers) forbids inline styles */}
+    <ThemeProvider disableTransitionOnChange={false}>
       <App />
     </ThemeProvider>
   </StrictMode>

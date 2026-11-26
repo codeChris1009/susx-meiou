@@ -30,7 +30,15 @@ export function SiteHeader() {
   return (
     <header className="sticky top-0 z-50 h-14 border-b bg-background/80 backdrop-blur-md supports-[backdrop-filter]:bg-background/60">
       <div className="container-wide flex h-full items-center justify-between">
-        <a href="/" className="font-mono text-sm font-semibold tracking-tight">
+        <a
+          href="/"
+          className="inline-flex items-center gap-2 font-mono text-sm font-semibold tracking-tight"
+        >
+          {/* The artwork is portrait (1024 x 1292), so the width is 0.79 of the height */}
+          <span
+            aria-hidden
+            className="brand-mark inline-block h-5 w-[0.99rem] shrink-0"
+          />
           {site.brand}
           <span className="text-muted-foreground"> / works</span>
         </a>

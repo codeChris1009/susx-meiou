@@ -11,20 +11,9 @@
       name="description"
       content="susx 的線上作品：每一個都能直接打開來玩，部署在 Cloudflare Workers 與 GitHub Pages"
     />
-    <!-- Set the theme class before first paint so a dark-mode visitor never sees a white flash.
-         Same storage key and rules as src/components/theme-provider.tsx. -->
-    <script>
-      try {
-        const stored = localStorage.getItem("theme")
-        const dark =
-          stored === "dark" ||
-          (stored !== "light" &&
-            matchMedia("(prefers-color-scheme: dark)").matches)
-        document.documentElement.classList.add(dark ? "dark" : "light")
-      } catch {
-        // Storage can be blocked (private mode); the provider applies the theme after mount
-      }
-    </script>
+    <!-- Sets the theme class before first paint so a dark-mode visitor never sees a white flash. A blocking file, not
+         an inline script, so the Content-Security-Policy (public/_headers) can stay script-src 'self'. -->
+    <script src="/theme-init.js"></script>
   </head>
   <body>
     <div id="root"></div>
