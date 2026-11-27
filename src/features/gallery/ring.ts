@@ -65,3 +65,18 @@ export function fitFov(aspect: number, width: number, distance: number) {
   const fov = 2 * Math.atan(Math.tan(halfH) / aspect) * (180 / Math.PI)
   return Math.min(FOV_RANGE[1], Math.max(FOV_RANGE[0], fov))
 }
+
+/** A piece's frame on screen, px: its centre and size */
+export interface FrameRect {
+  x: number
+  y: number
+  w: number
+  h: number
+}
+
+/** Whether a ring of radius `r` round (px, py) touches the frame: the cursor's outer edge on it counts */
+export function ringTouches(px: number, py: number, r: number, f: FrameRect) {
+  const dx = Math.max(Math.abs(px - f.x) - f.w / 2, 0)
+  const dy = Math.max(Math.abs(py - f.y) - f.h / 2, 0)
+  return dx * dx + dy * dy <= r * r
+}

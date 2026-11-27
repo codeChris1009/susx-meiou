@@ -1,4 +1,4 @@
-import { ArrowLeft, ArrowRight, ArrowUpRight, Expand } from "lucide-react"
+import { ArrowLeft, ArrowRight, Expand } from "lucide-react"
 
 import { Roll, actionVariants } from "@/components/action"
 import { useMagnetic } from "@/hooks/use-magnetic"
@@ -33,7 +33,7 @@ interface GalleryPlaqueProps {
   touched: boolean
   step: (delta: number) => void
   go: (index: number) => void
-  /** Opens a piece with no public site in the viewer */
+  /** Opens a piece in the viewer, where a public one links onward */
   view: (index: number) => void
 }
 
@@ -45,7 +45,7 @@ export function GalleryPlaque({
   go,
   view,
 }: GalleryPlaqueProps) {
-  const open = useMagnetic<HTMLAnchorElement>()
+  const magnetic = useMagnetic<HTMLButtonElement>()
   const piece = pieces[current]
   if (!piece) return null
   const count = pieces.length
@@ -79,32 +79,19 @@ export function GalleryPlaque({
           >
             <ArrowLeft className="size-4 transition-transform duration-500 ease-(--ease-settle) group-hover/action:-translate-x-0.5" />
           </button>
-          {piece.href ? (
-            <a
-              ref={open}
-              href={piece.href}
-              target="_blank"
-              rel="noopener"
-              lang="en"
-              className={actionVariants({ tone: "solid" })}
-            >
-              <Roll>Open project</Roll>
-              <ArrowUpRight className="size-3.5 transition-transform duration-500 ease-(--ease-settle) group-hover/action:translate-x-0.5 group-hover/action:-translate-y-0.5" />
-            </a>
-          ) : (
-            <button
-              type="button"
-              lang="en"
-              onClick={() => view(current)}
-              className={actionVariants({ tone: "solid" })}
-            >
-              <Roll>View piece</Roll>
-              <Expand
-                aria-hidden
-                className="size-3.5 transition-transform duration-500 ease-(--ease-settle) group-hover/action:scale-110"
-              />
-            </button>
-          )}
+          <button
+            ref={magnetic}
+            type="button"
+            lang="en"
+            onClick={() => view(current)}
+            className={actionVariants({ tone: "solid" })}
+          >
+            <Roll>View</Roll>
+            <Expand
+              aria-hidden
+              className="size-3.5 transition-transform duration-500 ease-(--ease-settle) group-hover/action:scale-110"
+            />
+          </button>
           <button
             type="button"
             onClick={() => step(1)}
@@ -137,7 +124,7 @@ export function GalleryPlaque({
           className="gallery-hint mt-3 hidden text-[0.6875rem] tracking-[0.28em] text-muted-foreground uppercase sm:block"
         >
           Drag or use the arrow keys <span className="mx-2 opacity-40">/</span>{" "}
-          Click the front piece to open
+          Click the front piece to view
         </p>
       </div>
     </div>

@@ -1,7 +1,9 @@
 /**
  * Plays a piece's launch film when the mouse rests on it: the painting dims and the cursor waits while a small ring
  * of light draws round beside it as the film loads, then a circle of film opens where the pointer is and widens until
- * it fills the frame. When the mouse leaves, or the film ends, the circle closes back onto the painting.
+ * it fills the frame. While it plays the piece stays watched as long as the cursor's ring touches its frame
+ * (scene.setReach); when it no longer does, or the film ends, the circle closes back onto the painting. The replay
+ * button plays it again.
  *
  * One clock drives everything (the ring's progress, the opening in the scene, the sound), so the parts never drift
  * apart. Timing is kept in pure functions below the class, which the tests read.
@@ -67,6 +69,10 @@ export class FilmPlayer {
   /** Where the opening grows from (the pointer, on the piece), and the radius that covers the piece from there */
   private centre = { x: 0.5, y: 0.5 }
   private full = coverFrom(0.5, 0.5)
+  /** The radius the opening grows from: a pinprick, or what is left of a closing film opened again */
+  private openFrom = IRIS_FROM
+  /** Asked to play again, from here on the piece (replay) */
+  private again: { x: number; y: number } | null = null
 
   constructor(options: FilmPlayerOptions) {
     this.o = options
@@ -81,6 +87,16 @@ export class FilmPlayer {
   /** The mouse is on the film's own controls, which count as still watching */
   hold(on: boolean) {
     this.holding = on
+    this.wake()
+  }
+
+  /**
+   * Plays the film again from its start, at once if it is in hand: the replay button, at `at` on the piece (texture
+   * coordinates). A playing film starts over; a closing one opens again from where it had closed to.
+   */
+  replay(at: { x: number; y: number }) {
+    this.spent = false
+    this.again = at
     this.wake()
   }
 
@@ -119,6 +135,23 @@ export class FilmPlayer {
     }
   }
 
+  /** The film from its start, opening from `at` at radius `from` */
+  private start(now: number, at: { x: number; y: number }, from = IRIS_FROM) {
+    const { video } = this.o
+    video.currentTime = FILM.from
+    video.muted = !this.sound
+    video.volume = 0
+    video.play().catch(() => {
+      video.muted = true
+      return video.play()
+    })
+    this.centre = at
+    this.full = coverFrom(at.x, at.y)
+    this.openFrom = from
+    this.again = null
+    this.set({ phase: "opening" }, now)
+  }
+
   private readonly tick = (now: number) => {
     const dt = Math.min(64, now - this.last)
     this.last = now
@@ -134,7 +167,7 @@ export class FilmPlayer {
     let fade = 0
 
     if (phase === "idle") {
-      if (here && !this.spent) {
+      if ((here && !this.spent) || this.again) {
         if (video.preload !== "auto") video.preload = "auto"
         if (
           video.readyState === 0 &&
@@ -148,7 +181,13 @@ export class FilmPlayer {
       }
     } else if (phase === "painting") {
       dimTo = 1
-      if (gone) this.set({ phase: "idle" }, now)
+      if (gone) {
+        // Leaving cancels a replay still waiting for its film
+        this.again = null
+        this.set({ phase: "idle" }, now)
+      }
+      // Replayed, and the film is in hand: no waiting
+      else if (this.again && readiness(video) >= 1) this.start(now, this.again)
       else if (here) {
         const p = approach(
           this.state.progress,
@@ -156,26 +195,20 @@ export class FilmPlayer {
           dt
         )
         this.set({ progress: p }, now)
-        if (p >= 1) {
-          video.currentTime = FILM.from
-          video.muted = !this.sound
-          video.volume = 0
-          video.play().catch(() => {
-            video.muted = true
-            return video.play()
-          })
-          this.centre = scene.aim()
-          this.full = coverFrom(this.centre.x, this.centre.y)
-          this.set({ phase: "opening" }, now)
-        }
+        if (p >= 1) this.start(now, scene.aim())
       }
     } else if (phase === "opening" || phase === "playing") {
       const k = phase === "opening" ? Math.min(1, t / FILM.open) : 1
       dimTo = 1
-      iris = irisAt(k, this.full)
+      iris = irisAt(k, this.full, this.openFrom)
       fade = Math.min(1, k / 0.22)
       video.volume = k
-      if (video.ended || gone) {
+      if (this.again) {
+        // Starts over where it is: the opening stays as it is
+        this.again = null
+        video.currentTime = FILM.from
+        if (video.paused) void video.play().catch(() => undefined)
+      } else if (video.ended || gone) {
         if (video.ended) this.spent = true
         this.closingFrom = iris
         this.set({ phase: "closing" }, now)
@@ -187,7 +220,8 @@ export class FilmPlayer {
       iris = this.closingFrom * (1 - easeInOut(k))
       fade = 1 - smooth(0.75, 1, k)
       video.volume = Math.max(0, 1 - k)
-      if (k >= 1) {
+      if (this.again) this.start(now, this.centre, iris)
+      else if (k >= 1) {
         video.pause()
         this.set({ phase: "idle", progress: 0 }, now)
       }
@@ -248,9 +282,9 @@ export function approach(progress: number, target: number, dt: number) {
 }
 
 /**
- * The opening's radius, `k` 0 to 1 through it: a pinprick under the pointer that widens past the frame's farthest
- * corner (`full`, see coverFrom) and settles. Slow, fast, slow.
+ * The opening's radius, `k` 0 to 1 through it: a pinprick under the pointer (or `from`, a closing film opened
+ * again) that widens past the frame's farthest corner (`full`, see coverFrom) and settles. Slow, fast, slow.
  */
-export function irisAt(k: number, full: number) {
-  return IRIS_FROM + (full - IRIS_FROM) * easeInOut(Math.min(1, Math.max(0, k)))
+export function irisAt(k: number, full: number, from = IRIS_FROM) {
+  return from + (full - from) * easeInOut(Math.min(1, Math.max(0, k)))
 }

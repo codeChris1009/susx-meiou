@@ -95,3 +95,12 @@ describe("the opening", () => {
     expect(coverFrom(0.5, 0.5)).toBeCloseTo(Math.hypot(0.75, 0.5) + 0.08)
   })
 })
+
+describe("replay", () => {
+  it("opens a closing film again from where it had closed to", () => {
+    const full = coverFrom(0.5, 0.5)
+    expect(irisAt(0, full, 0.4)).toBe(0.4)
+    expect(irisAt(1, full, 0.4)).toBeCloseTo(full)
+    expect(irisAt(0.5, full, 0.4)).toBeGreaterThan(irisAt(0.5, full))
+  })
+})

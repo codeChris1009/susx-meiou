@@ -7,6 +7,8 @@ import {
   useState,
 } from "react"
 
+import { graphemes } from "@/components/decode-text/decode"
+import { DecodeText } from "@/components/decode-text/decode-text"
 import { SectionHeading } from "@/components/section-heading"
 import { burst } from "@/components/spark-ring/sparks"
 import { pad } from "@/lib/format"
@@ -18,6 +20,9 @@ import { GalleryPlaque, GallerySignature } from "./gallery-plaque"
 import { PieceViewer } from "./piece-viewer"
 import type { GalleryPiece } from "./pieces"
 import type { GalleryScene } from "./scene"
+
+/** The cursor's word decodes through capitals as it changes */
+const CAPITALS = graphemes("ABCDEFGHIJKLMNOPQRSTUVWXYZ")
 
 /** Start fetching three.js this far before the section scrolls into view, so it is ready when it arrives */
 const PRELOAD_MARGIN = "800px 0px"
@@ -64,6 +69,13 @@ export function GallerySection({ pieces, numeral }: GallerySectionProps) {
   /** The piece the mouse rests on, in front, with the ring at rest (3D only) */
   const [present, setPresent] = useState<number | null>(null)
   const [filmPhase, setFilmPhase] = useState<FilmPhase>("idle")
+  /** Films that have opened at least once: theirs keep a replay button */
+  const [primed, setPrimed] = useState<ReadonlySet<string>>(() => new Set())
+  const prime = useCallback(
+    (film: string) =>
+      setPrimed((s) => (s.has(film) ? s : new Set(s).add(film))),
+    []
+  )
   /** Films play on their own only for readers who have not asked for less motion */
   const [still] = useState(
     () => matchMedia("(prefers-reduced-motion: reduce)").matches
@@ -76,16 +88,14 @@ export function GallerySection({ pieces, numeral }: GallerySectionProps) {
   const count = pieces.length
   const piece = pieces[current]
 
-  /** The piece open in the viewer (one with no public site), or null */
+  /** The piece open in the viewer, or null */
   const [viewing, setViewing] = useState<GalleryPiece | null>(null)
 
-  // Every piece opens: a public one in its own tab, a private one in the viewer
+  // Every piece opens the same way: View, into the viewer, which links a public one onward (Open)
   const open = useCallback(
     (i: number) => {
       const target = pieces[i]
-      if (!target) return
-      if (target.href) window.open(target.href, "_blank", "noopener")
-      else setViewing(target)
+      if (target) setViewing(target)
     },
     [pieces]
   )
@@ -214,18 +224,9 @@ export function GallerySection({ pieces, numeral }: GallerySectionProps) {
     c.style.setProperty("--x", `${e.nativeEvent.offsetX}px`)
     c.style.setProperty("--y", `${e.nativeEvent.offsetY}px`)
   }
+  // What a click does: Wait while a film loads, then View like any piece (the viewer holds Open)
   const cursorLabel =
-    filmPhase === "painting"
-      ? "Wait"
-      : filmPhase === "opening" || filmPhase === "playing"
-        ? "Open"
-        : hovered === null
-          ? "Drag"
-          : hovered !== current
-            ? "View"
-            : pieces[hovered]?.href
-              ? "Open"
-              : "View"
+    filmPhase === "painting" ? "Wait" : hovered === null ? "Drag" : "View"
 
   const onKey = (e: KeyboardEvent) => {
     setTouched(true)
@@ -330,6 +331,8 @@ export function GallerySection({ pieces, numeral }: GallerySectionProps) {
             film={piece.film}
             watching={present === current}
             cursor={cursorEl}
+            primed={primed.has(piece.film)}
+            onPrimed={prime}
             onPhase={setFilmPhase}
           />
         )}
@@ -343,7 +346,9 @@ export function GallerySection({ pieces, numeral }: GallerySectionProps) {
           data-film={filmPhase}
           className="gallery-cursor pointer-events-none absolute top-0 left-0"
         >
-          <span className="gallery-cursor-label">{cursorLabel}</span>
+          <span className="gallery-cursor-label">
+            <DecodeText text={cursorLabel} pool={CAPITALS} />
+          </span>
         </div>
 
         <GalleryPlaque

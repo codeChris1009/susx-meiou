@@ -1,32 +1,182 @@
 /**
- * The hero's greeting: "Hello world" in the languages the page's own two faces can set (Geist: Latin, Cyrillic and
- * Vietnamese; Noto Sans TC: Chinese and Japanese kana). Scripts neither face carries (Hangul, Arabic, Devanagari,
- * Thai, Greek) are left out rather than handed to whatever the visitor's system has, which would break the type.
+ * The hero's greeting: "Hello world" in one language after another. Latin, Cyrillic and Vietnamese are set in Geist,
+ * Han, kana and bopomofo in Noto Sans TC (the page's own two faces); every other script in a Noto face cut down to
+ * the few letters it needs here (SCRIPTS, scripts/hello-fonts.ts), never left to whatever the visitor's system has.
  */
 export interface Greeting {
   text: string
   /** BCP 47, so screen readers and line breaking treat each one as its own language */
   lang: string
+  dir?: "rtl"
+  /** What it is, for the tip under the pointer */
+  name: { en: string; zh: string }
+  /** Letters of its own script that it decodes through (decode.ts), one per grapheme */
+  pool: string
 }
 
-export const FIRST: Greeting = { text: "Hello world", lang: "en" }
+/** Scripts set from cut-down Noto faces, by Unicode script name; scripts/hello-fonts.ts cuts them */
+export const SCRIPTS = [
+  "Greek",
+  "Georgian",
+  "Hebrew",
+  "Ethiopic",
+  "Tibetan",
+  "Tifinagh",
+  "Hangul",
+] as const
+
+const LATIN = "abcdefghijklmnopqrstuvwxyz"
+
+export const FIRST: Greeting = {
+  text: "Hello world",
+  lang: "en",
+  name: { en: "English", zh: "英文" },
+  pool: LATIN,
+}
 
 export const GREETINGS: readonly Greeting[] = [
   FIRST,
-  { text: "你好世界", lang: "zh-Hant" },
-  { text: "こんにちは世界", lang: "ja" },
-  { text: "Hola mundo", lang: "es" },
-  { text: "Bonjour le monde", lang: "fr" },
-  { text: "Hallo Welt", lang: "de" },
-  { text: "Ciao mondo", lang: "it" },
-  { text: "Olá mundo", lang: "pt" },
-  { text: "Hallo wereld", lang: "nl" },
-  { text: "Hej världen", lang: "sv" },
-  { text: "Witaj świecie", lang: "pl" },
-  { text: "Merhaba dünya", lang: "tr" },
-  { text: "Xin chào thế giới", lang: "vi" },
-  { text: "Halo dunia", lang: "id" },
-  { text: "Привет мир", lang: "ru" },
+  {
+    text: "你好世界",
+    lang: "zh-Hant",
+    name: { en: "Traditional Chinese", zh: "繁體中文" },
+    pool: "ㄅㄆㄇㄈㄉㄊㄋㄌㄍㄎㄏㄐㄑㄒㄓㄔㄕㄖㄗㄘㄙㄚㄛㄜㄞㄟㄠㄡㄢㄣㄤㄥㄦㄧㄨㄩ",
+  },
+  {
+    text: "こんにちは世界",
+    lang: "ja",
+    name: { en: "Japanese", zh: "日文" },
+    pool: "あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわをん",
+  },
+  {
+    text: "Hola mundo",
+    lang: "es",
+    name: { en: "Spanish", zh: "西班牙文" },
+    pool: LATIN + "ñáéíóú",
+  },
+  {
+    text: "Bonjour le monde",
+    lang: "fr",
+    name: { en: "French", zh: "法文" },
+    pool: LATIN + "éèêàçô",
+  },
+  {
+    text: "Hallo Welt",
+    lang: "de",
+    name: { en: "German", zh: "德文" },
+    pool: LATIN + "äöüß",
+  },
+  {
+    text: "Ciao mondo",
+    lang: "it",
+    name: { en: "Italian", zh: "義大利文" },
+    pool: LATIN + "àèìòù",
+  },
+  {
+    text: "Olá mundo",
+    lang: "pt",
+    name: { en: "Portuguese", zh: "葡萄牙文" },
+    pool: LATIN + "ãõáâçé",
+  },
+  {
+    text: "Hallo wereld",
+    lang: "nl",
+    name: { en: "Dutch", zh: "荷蘭文" },
+    pool: LATIN + "ëï",
+  },
+  {
+    text: "Hej världen",
+    lang: "sv",
+    name: { en: "Swedish", zh: "瑞典文" },
+    pool: LATIN + "åäö",
+  },
+  {
+    text: "Witaj świecie",
+    lang: "pl",
+    name: { en: "Polish", zh: "波蘭文" },
+    pool: LATIN + "ąćęłńóśźż",
+  },
+  {
+    text: "Merhaba dünya",
+    lang: "tr",
+    name: { en: "Turkish", zh: "土耳其文" },
+    pool: LATIN + "çğıöşü",
+  },
+  {
+    text: "Xin chào thế giới",
+    lang: "vi",
+    name: { en: "Vietnamese", zh: "越南文" },
+    pool: LATIN + "ăâđêôơưàảáạếềớờ",
+  },
+  {
+    text: "Halo dunia",
+    lang: "id",
+    name: { en: "Indonesian", zh: "印尼文" },
+    pool: LATIN,
+  },
+  {
+    text: "Привет мир",
+    lang: "ru",
+    name: { en: "Russian", zh: "俄文" },
+    pool: "абвгдеёжзийклмнопрстуфхцчшщъыьэюя",
+  },
+  {
+    text: "ⴰⵣⵓⵍ ⴰⵎⴰⴹⴰⵍ",
+    lang: "zgh",
+    name: { en: "Tamazight (Tifinagh)", zh: "提非納文（柏柏語）" },
+    pool: "ⴰⴱⴳⴷⴹⴻⴼⴽⵀⵃⵄⵅⵇⵉⵊⵍⵎⵏⵓⵔⵕⵖⵙⵚⵛⵜⵟⵡⵢⵣⵥ",
+  },
+  {
+    text: "გამარჯობა მსოფლიო",
+    lang: "ka",
+    name: { en: "Georgian", zh: "喬治亞文" },
+    pool: "აბგდევზთიკლმნოპჟრსტუფქღყშჩცძწჭხჯჰ",
+  },
+  {
+    // Syllables part with the tsheg (་), not spaces
+    text: "བཀྲ་ཤིས་བདེ་ལེགས་འཛམ་གླིང",
+    lang: "bo",
+    name: { en: "Tibetan", zh: "藏文" },
+    pool: "ཀཁགངཅཆཇཉཏཐདནཔཕབམཙཚཛཝཞཟའཡརལཤསཧཨ",
+  },
+  {
+    text: "안녕 세상",
+    lang: "ko",
+    name: { en: "Korean (Hangul)", zh: "韓文（諺文）" },
+    // The jamo the syllables are built from
+    pool: "ㄱㄴㄷㄹㅁㅂㅅㅇㅈㅊㅋㅌㅍㅎㅏㅑㅓㅕㅗㅛㅜㅠㅡㅣ",
+  },
+  {
+    text: "שלום עולם",
+    lang: "he",
+    dir: "rtl",
+    name: { en: "Hebrew", zh: "希伯來文" },
+    pool: "אבגדהוזחטיכלמנסעפצקרשת",
+  },
+  {
+    text: "ሰላም ዓለም",
+    lang: "am",
+    name: { en: "Amharic (Ge'ez)", zh: "吉茲字母（衣索比亞文）" },
+    pool: "ሀለሐመሠረሰሸቀበተቸኀነኘአከኸወዐዘዠየደጀገጠጨጰጸፀፈፐ",
+  },
+  {
+    text: "Γεια σου κόσμε",
+    lang: "el",
+    name: { en: "Greek", zh: "希臘文" },
+    pool: "αβγδεζηθικλμνξοπρστυφχψωάέήίόύώ",
+  },
+  {
+    text: "Salve munde",
+    lang: "la",
+    name: { en: "Latin", zh: "拉丁文" },
+    pool: LATIN,
+  },
+  {
+    text: "Halló heimur",
+    lang: "is",
+    name: { en: "Icelandic", zh: "冰島文" },
+    pool: LATIN + "áðéíóúýþæö",
+  },
 ]
 
 /**

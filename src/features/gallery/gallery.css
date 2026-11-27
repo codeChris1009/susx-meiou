@@ -133,7 +133,8 @@ html:not(.dark) .gallery-room::after {
 /*
  * The cursor, after the 3D art gallery's (demo-3js-Gallery0 .cursor-ring): a ring of white light with a cool halo,
  * breathing slowly, that presses in and brightens on a click (with sparks, gallery-section.tsx). It says what a click
- * does: Drag, View (a side piece), Open (the piece in front), Wait (a film loading, its ring of light beside it).
+ * does: Drag, View (any piece, into the viewer), Wait (a film loading, its ring of light beside it). The word decodes
+ * from one to the next (decode-text.tsx).
  * Fine pointers only; touch keeps the plain behaviour.
  */
 .gallery-cursor {
@@ -188,6 +189,9 @@ html:not(.dark) .gallery-room::after {
   .gallery-cursor-label {
     position: relative;
     text-shadow: 0 0 8px rgb(0 0 0 / 0.7);
+  }
+  .gallery-cursor-label [data-decode="scramble"] {
+    opacity: 0.55;
   }
 
   /* The film loading: a small ring of light at the cursor's upper right, drawing round while it waits */
@@ -264,6 +268,11 @@ html:not(.dark) .gallery-room::after {
     inset 0 0 0 1px color-mix(in oklch, var(--metal-mid) 25%, transparent),
     0 60px 120px -40px color-mix(in oklch, var(--shade) 85%, transparent);
 }
+/* The picture narrows on short screens, so title, picture, name and buttons all fit without scrolling */
+.piece-viewer-frame {
+  width: min(100%, calc((92svh - 20.5rem) * 1.5));
+  margin-inline: auto;
+}
 .piece-viewer::backdrop {
   background: color-mix(in oklch, var(--meiou-950) 72%, transparent);
   backdrop-filter: blur(10px);
@@ -315,12 +324,20 @@ html:not(.dark) .gallery-room::after {
   opacity: 0;
 }
 
-/* Sound sits in the film's own letterbox, bottom right of the piece, so it never covers the picture */
-.film-sound {
+/*
+ * The film's controls sit in its own letterbox, bottom right of the piece, so they never cover the picture: Replay at
+ * the corner once the film has played (it stays, over the painting, after the film closes), Sound beside it while
+ * the film plays.
+ */
+.film-controls {
   position: absolute;
   left: calc(var(--piece-x, 50%) + var(--piece-h, 20rem) * 0.75 - 0.9rem);
   top: calc(var(--piece-y, 50%) + var(--piece-h, 20rem) * 0.5 - 0.9rem);
-  translate: -100% calc(-100% + 0.4rem);
+  translate: -100% -100%;
+  display: flex;
+  gap: 0.5rem;
+}
+.film-control {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
@@ -335,23 +352,40 @@ html:not(.dark) .gallery-room::after {
   color: var(--metal-hi);
   cursor: pointer;
   opacity: 0;
+  translate: 0 0.4rem;
   transition:
     opacity 600ms var(--ease-out-expo),
     translate 700ms var(--ease-out-expo),
     border-color 300ms ease,
     background-color 300ms ease;
 }
-.film[data-phase="playing"] .film-sound {
+.film[data-phase="playing"] .film-sound,
+.film[data-primed] .film-replay {
   opacity: 1;
-  translate: -100% -100%;
+  translate: 0 0;
   pointer-events: auto;
 }
-.film-sound:hover,
+.film-control:hover,
 .film-sound[aria-pressed="true"] {
   border-color: color-mix(in oklch, var(--metal-hi) 70%, transparent);
   background: color-mix(in oklch, var(--background) 65%, transparent);
 }
-.film-sound:focus-visible {
+.film-control:focus-visible {
   outline: 1.5px solid var(--metal-hi);
   outline-offset: 2px;
+}
+.film-replay svg {
+  transition: rotate 700ms var(--ease-out-expo);
+}
+.film-replay:hover svg {
+  rotate: -200deg;
+}
+/* Replayed while the film is still on its way: the arrow turns until it opens */
+.film[data-phase="painting"] .film-replay svg {
+  animation: film-replay-wait 1.1s linear infinite;
+}
+@keyframes film-replay-wait {
+  to {
+    rotate: -360deg;
+  }
 }
