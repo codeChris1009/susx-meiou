@@ -23,6 +23,8 @@ export interface GallerySpec {
 export interface GalleryPiece extends GallerySpec {
   image: string
   href: string | null
+  /** Its launch film (src/assets/promo/<id>.mp4, made in promo/), played over the piece while the mouse rests on it */
+  film: string | null
 }
 
 export const HANG: readonly GallerySpec[] = [
@@ -96,7 +98,9 @@ export function buildGallery(
   hang: readonly GallerySpec[],
   projects: readonly SyncedProject[],
   /** Image URLs by id (file name), see byFileStem */
-  images: Readonly<Record<string, string>>
+  images: Readonly<Record<string, string>>,
+  /** Film URLs by id, the same way */
+  films: Readonly<Record<string, string>> = {}
 ): GalleryPiece[] {
   const live = new Map(
     projects
@@ -107,7 +111,12 @@ export function buildGallery(
     const image = images[spec.id]
     if (!image) return []
     return [
-      { ...spec, image, href: (spec.repo && live.get(spec.repo)) || null },
+      {
+        ...spec,
+        image,
+        href: (spec.repo && live.get(spec.repo)) || null,
+        film: films[spec.id] ?? null,
+      },
     ]
   })
 }

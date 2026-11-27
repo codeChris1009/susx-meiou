@@ -1,0 +1,32 @@
+{
+  "name": "susx-meiou-promo",
+  "private": true,
+  "version": "0.0.1",
+  "type": "module",
+  "description": "Launch trailers for the works, rendered frame by frame with Remotion",
+  "scripts": {
+    "studio": "remotion studio",
+    "score": "node scripts/score.ts",
+    "render:3d-art": "node scripts/score.ts 3d-art && remotion render 3d-art out/3d-art.mp4 && remotion still 3d-art out/3d-art.png --frame=840",
+    "web:3d-art": "remotion ffmpeg -hide_banner -y -i out/3d-art.mp4 -vf crop=1920:802:0:139,scale=1600:668:flags=lanczos,format=yuv420p -c:v libx264 -preset slow -crf 23 -tune film -profile:v high -level 4.1 -g 60 -c:a aac -b:a 160k -ac 2 -movflags +faststart ../src/assets/promo/art-gallery.mp4",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@fontsource/cormorant": "5.3.0",
+    "@fontsource/noto-serif-tc": "^5.3.1",
+    "@fontsource/stalemate": "5.3.0",
+    "@remotion/cli": "4.0.547",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "remotion": "4.0.547",
+    "three": "0.187.0"
+  },
+  "devDependencies": {
+    "@remotion/bundler": "4.0.547",
+    "@remotion/renderer": "4.0.547",
+    "@types/node": "^24.19.4",
+    "@types/react": "^19.3.3",
+    "@types/three": "0.187.0",
+    "typescript": "^7.0.2"
+  }
+}

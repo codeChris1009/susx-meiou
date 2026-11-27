@@ -86,6 +86,16 @@ describe("buildGallery", () => {
     expect(buildGallery(HANG, [], some)).toHaveLength(2)
   })
 
+  it("gives a piece its film by id, and the rest none", () => {
+    const gallery = buildGallery(HANG, [], images, {
+      "art-gallery": "/f/art-gallery.mp4",
+    })
+    expect(gallery.find((p) => p.id === "art-gallery")?.film).toBe(
+      "/f/art-gallery.mp4"
+    )
+    expect(gallery.filter((p) => p.film)).toHaveLength(1)
+  })
+
   it("hangs nine pieces, titles in Latin for the script face", () => {
     expect(HANG).toHaveLength(9)
     for (const { title } of HANG) expect(title).toMatch(/^[ -ÿ]+$/)

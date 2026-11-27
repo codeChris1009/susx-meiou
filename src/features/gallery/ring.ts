@@ -33,6 +33,12 @@ export function focusOf(off: number, count: number) {
   return 1 - t * t * (3 - 2 * t)
 }
 
+/** A piece's width over its height (the frames are 1200×800) */
+export const ART_ASPECT = 1.5
+
+/** Radius, in piece heights from its centre, of a circle that covers a whole piece, corners and a ragged edge too */
+export const SCREEN_FULL = Math.hypot(ART_ASPECT / 2, 0.5) + 0.08
+
 /** Front-piece share of the view width, from a phone held upright to a wide screen */
 const TALL = { aspect: 0.7, coverage: 0.88 }
 const WIDE = { aspect: 1.6, coverage: 0.4 }

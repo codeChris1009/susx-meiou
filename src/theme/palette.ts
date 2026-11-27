@@ -38,3 +38,14 @@ export const METAL = {
   light: { hi: "#8c8578", mid: "#5e584c", lo: "#332e24", photon: "#3a3630" },
   dark: { hi: "#f5f0de", mid: "#d2ccba", lo: "#7b776f", photon: "#f2efe6" },
 } as const satisfies Record<"light" | "dark", MetalSteps>
+
+/**
+ * The loader's sparks, after the 3D gallery's intro fireworks (demo-3js-Gallery0, INTRO_FIREWORK_COLORS): warm white to
+ * champagne gold, light on ink. Light sparks vanish on ivory, so paper gets the same gold a few steps deeper, as gilt.
+ */
+export const EMBER = {
+  dark: ["#ffffffe6", "#fffae6", "#fff5c8", "#ecdc9d", "#ffd48a"],
+  light: ["#b08a3e", "#9c7834", "#c29a4c", "#87652a", "#a8843f"],
+  /** The cool halo the gallery gave the sparks thrown off its frame */
+  halo: "#c8dcff",
+} as const

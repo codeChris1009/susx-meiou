@@ -1,6 +1,6 @@
 /**
  * The page's content, assembled once at build time: synced projects + curation + screenshots → the works and practice
- * sections; the hang + gallery frames → the gallery. Components import finished data from here and only lay it out.
+ * sections; the hang + gallery frames + launch films → the gallery. Components import finished data from here and only lay it out.
  */
 import data from "@/data/projects.json"
 import { HANG, buildGallery } from "@/features/gallery/pieces"
@@ -32,7 +32,15 @@ export const { featured, practice } = buildShowcase(
   curation,
   shots
 )
-export const gallery = buildGallery(HANG, sync.projects, frames)
+const films = byFileStem(
+  import.meta.glob<string>("/src/assets/promo/*.mp4", {
+    eager: true,
+    query: "?url",
+    import: "default",
+  })
+)
+
+export const gallery = buildGallery(HANG, sync.projects, frames, films)
 
 /** When the project list last changed, as YYYY-MM-DD */
 export const syncedOn = sync.syncedAt.slice(0, 10)
