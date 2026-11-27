@@ -11,6 +11,8 @@ import { SectionHeading } from "@/components/section-heading"
 import { pad } from "@/lib/format"
 import { SECTION } from "@/sections"
 
+import type { FilmPhase } from "./film-player"
+import { FilmPreview } from "./film-preview"
 import { GalleryPlaque, GallerySignature } from "./gallery-plaque"
 import { PieceViewer } from "./piece-viewer"
 import type { GalleryPiece } from "./pieces"
@@ -50,6 +52,15 @@ export function GallerySection({ pieces, numeral }: GallerySectionProps) {
   const canvas = useRef<HTMLCanvasElement>(null)
   const scene = useRef<GalleryScene | null>(null)
   const [mode, setMode] = useState<Mode>("idle")
+  /** The scene once it is up, for the parts that render against it */
+  const [live, setLive] = useState<GalleryScene | null>(null)
+  /** The piece the mouse rests on, in front, with the ring at rest (3D only) */
+  const [present, setPresent] = useState<number | null>(null)
+  const [filmPhase, setFilmPhase] = useState<FilmPhase>("idle")
+  /** Films play on their own only for readers who have not asked for less motion */
+  const [still] = useState(
+    () => matchMedia("(prefers-reduced-motion: reduce)").matches
+  )
   const [current, setCurrent] = useState(0)
   /** The piece under the pointer (3D only): the cursor says what a click will do */
   const [hovered, setHovered] = useState<number | null>(null)
@@ -111,6 +122,7 @@ export function GallerySection({ pieces, numeral }: GallerySectionProps) {
               callbacks: {
                 onFocus: setCurrent,
                 onHover: setHovered,
+                onPresent: setPresent,
                 onOpen: (i) => latest.current.open(i),
               },
               reducedMotion: reduced,
@@ -121,6 +133,7 @@ export function GallerySection({ pieces, numeral }: GallerySectionProps) {
             if (disposed) return
             made.goTo(latest.current.current)
             scene.current = made
+            setLive(made)
             setMode("3d")
           })
           .catch(() => {
@@ -289,12 +302,26 @@ export function GallerySection({ pieces, numeral }: GallerySectionProps) {
           className="gallery-vignette pointer-events-none absolute inset-0"
         />
 
+        {live && piece.film && !still && (
+          <FilmPreview
+            key={piece.id}
+            scene={live}
+            index={current}
+            film={piece.film}
+            watching={present === current}
+            onPhase={setFilmPhase}
+          />
+        )}
+
         <GallerySignature piece={piece} />
 
         <div
           ref={cursor}
           aria-hidden
           data-ready={mode === "3d" || undefined}
+          data-quiet={
+            filmPhase === "painting" || filmPhase === "opening" || undefined
+          }
           className="gallery-cursor pointer-events-none absolute top-0 left-0"
         >
           <span>{cursorLabel}</span>

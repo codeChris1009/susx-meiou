@@ -40,6 +40,8 @@ import {
   SpotLight,
   Texture,
   Vector2,
+  Vector3,
+  VideoTexture,
   WebGLRenderer,
   type Material,
   type Object3D,
@@ -51,7 +53,14 @@ import type { Reflector } from "three/addons/objects/Reflector.js"
 import { METAL, NEUTRAL } from "@/theme/palette"
 
 import { createFloor, resizeFloor } from "./floor"
-import { fitFov, focusOf, indexAt, nearestAngle, offFront } from "./ring"
+import {
+  ART_ASPECT,
+  fitFov,
+  focusOf,
+  indexAt,
+  nearestAngle,
+  offFront,
+} from "./ring"
 
 export interface GalleryCallbacks {
   /** The piece in front changed (also fires mid-drag, as pieces pass) */
@@ -60,14 +69,31 @@ export interface GalleryCallbacks {
   onOpen: (index: number) => void
   /** The piece under the mouse changed (null: none), so the page can say what a click will do */
   onHover?: (index: number | null) => void
+  /** The mouse is resting on the piece in front and the ring has come to rest there (null: not any more) */
+  onPresent?: (index: number | null) => void
+}
+
+/**
+ * A piece showing its film: the painting dims while the loader paints over it, then the film opens on it in a
+ * widening circle, inside the frame, lit and reflected like the painting it replaces.
+ */
+export interface Screening {
+  index: number
+  video: HTMLVideoElement
+  /** 0 to 1: how far the painting has dimmed */
+  dim: number
+  /** Radius of the opening, in piece heights from the piece's centre: SCREEN_FULL (ring.ts) covers it */
+  iris: number
+  /** Opacity of the film */
+  fade: number
 }
 
 // ---- The room, in metres ----
 const RADIUS = 7
 /** How far the front piece steps out of the ring toward the viewer */
 const PUSH = 1.8
-const ART_W = 3.6
 const ART_H = 2.4
+const ART_W = ART_H * ART_ASPECT
 const FRAME = 0.075
 const FRAME_DEPTH = 0.1
 const CENTER_Y = 1.6
@@ -76,6 +102,10 @@ const SIDE_SCALE = 0.8
 /** Side pieces are dimmed to this brightness: the room is lit for the piece in front */
 const SIDE_LIGHT = 0.34
 const DUST = 260
+/** The dimmest a painting goes while its film loads */
+const DIM = 0.6
+/** Within this many radians of its target the ring counts as at rest */
+const REST = 0.004
 /**
  * Shift lens, as a fraction of the view height: the room rises in the frame (verticals stay vertical, unlike tilting
  * the camera). Small: the piece sits a little above centre, the script title above it and the plaque below
@@ -121,6 +151,8 @@ interface Hung {
   holder: Group
   art: MeshBasicMaterial
   hover: number
+  /** How brightly it is lit where it stands on the ring, before any dimming for a film */
+  lit: number
 }
 
 export class GalleryScene {
@@ -150,6 +182,15 @@ export class GalleryScene {
   private target = 0
   private focused = 0
   private hovered: number | null = null
+  private present: number | null = null
+  /** The mouse is over the canvas: while the ring turns under a still mouse, what it points at changes */
+  private inside = false
+  private screening: Screening | null = null
+  private screen: Mesh<PlaneGeometry, ShaderMaterial> | null = null
+  private anchored: HTMLElement | null = null
+  /** What place() last wrote */
+  private placed = ""
+  private readonly probe = new Vector3()
   private drag: { x: number; target: number; moved: boolean } | null = null
   private active = false
   private running = false
@@ -258,7 +299,7 @@ export class GalleryScene {
       holder.add(frame, lip, artMesh)
       pivot.add(holder)
       this.ring.add(pivot)
-      this.hung.push({ pivot, holder, art, hover: 0 })
+      this.hung.push({ pivot, holder, art, hover: 0, lit: 1 })
       this.artMeshes.push(artMesh)
     })
 
@@ -288,7 +329,22 @@ export class GalleryScene {
   /** Run the loop only while the section is on screen */
   setActive(active: boolean) {
     this.active = active
+    if (!active) this.setPresent(null)
     this.wake()
+  }
+
+  /** Show a film over a piece (see Screening), or take it away */
+  setScreening(screening: Screening | null) {
+    this.screening = screening
+  }
+
+  /**
+   * Keep `el` told where the piece in front is on screen, every frame, as CSS custom properties in px on the canvas:
+   * --piece-x and --piece-y its centre, --piece-h its height. Things laid over the piece follow it as the eye drifts.
+   */
+  anchor(el: HTMLElement | null) {
+    this.anchored = el
+    this.placed = ""
   }
 
   resize(width: number, height: number) {
@@ -323,6 +379,7 @@ export class GalleryScene {
     c.removeEventListener("pointercancel", this.onCancel)
     c.removeEventListener("pointerleave", this.onLeave)
     document.removeEventListener("visibilitychange", this.onVisibility)
+    this.screen?.material.uniforms.uMap!.value?.dispose()
 
     const materials = new Set<Material>()
     this.scene.traverse((o: Object3D) => {
@@ -356,7 +413,9 @@ export class GalleryScene {
     this.last = now
     if (!this.reducedMotion) this.clock += dt
 
-    if (this.hoverDirty) {
+    // Re-aim while the ring turns under a still mouse, not only when the mouse moves
+    const moving = Math.abs(this.target - this.angle) > REST
+    if (this.hoverDirty || (moving && this.inside && !this.drag)) {
       this.hoverDirty = false
       const hovered = this.pick()
       if (hovered !== this.hovered) {
@@ -384,7 +443,137 @@ export class GalleryScene {
       this.focused = front
       this.callbacks.onFocus(front)
     }
+    const resting = !this.drag && Math.abs(this.target - this.angle) < REST
+    this.setPresent(
+      resting && this.hovered === indexAt(this.target, this.count)
+        ? this.hovered
+        : null
+    )
+    this.film()
     this.renderer.render(this.scene, this.camera)
+    if (this.anchored)
+      this.place(this.anchored, indexAt(this.target, this.count))
+  }
+
+  private setPresent(index: number | null) {
+    if (index === this.present) return
+    this.present = index
+    this.callbacks.onPresent?.(index)
+  }
+
+  /** Projects piece `index` to the canvas and writes where it landed on `el` (see anchor) */
+  private place(el: HTMLElement, index: number) {
+    const holder = this.hung[index]?.holder
+    if (!holder) return
+    const { width, height } = this.size
+    const p = this.probe
+    p.set(0, ART_H / 2, FRAME_DEPTH / 2)
+      .applyMatrix4(holder.matrixWorld)
+      .project(this.camera)
+    const top = p.y
+    p.set(0, -ART_H / 2, FRAME_DEPTH / 2)
+      .applyMatrix4(holder.matrixWorld)
+      .project(this.camera)
+    const bottom = p.y
+    p.set(0, 0, FRAME_DEPTH / 2)
+      .applyMatrix4(holder.matrixWorld)
+      .project(this.camera)
+    // Written only when they move, to a tenth of a pixel: a still room restyles nothing
+    const place = [(p.x + 1) / 2, (1 - p.y) / 2, (top - bottom) / 2]
+      .map((v, i) => (v * (i === 0 ? width : height)).toFixed(1))
+      .join(" ")
+    if (place === this.placed) return
+    this.placed = place
+    const [x, y, h] = place.split(" ")
+    el.style.setProperty("--piece-x", `${x}px`)
+    el.style.setProperty("--piece-y", `${y}px`)
+    el.style.setProperty("--piece-h", `${h}px`)
+  }
+
+  /** The film, on a sheet laid just over the painting of the piece that shows it */
+  private film() {
+    const s = this.screening
+    const showing = !!s && (s.iris > 0 || s.fade > 0)
+    if (!showing) {
+      if (this.screen) this.screen.visible = false
+      return
+    }
+    const screen = this.screen ?? this.makeScreen()
+    const uniforms = screen.material.uniforms
+    const map = uniforms.uMap!.value as VideoTexture | null
+    if (map?.image !== s.video) {
+      map?.dispose()
+      const texture = new VideoTexture(s.video)
+      texture.colorSpace = SRGBColorSpace
+      uniforms.uMap!.value = texture
+    }
+    const holder = this.hung[s.index]?.holder
+    if (holder && screen.parent !== holder) holder.add(screen)
+    const { videoWidth, videoHeight } = s.video
+    if (videoWidth && videoHeight)
+      uniforms.uAspect!.value = videoWidth / videoHeight
+    uniforms.uIris!.value = s.iris
+    uniforms.uFade!.value = s.fade
+    uniforms.uLight!.value = this.hung[s.index]?.lit ?? 1
+    uniforms.uTime!.value = this.clock
+    screen.visible = true
+  }
+
+  private makeScreen() {
+    const material = new ShaderMaterial({
+      transparent: true,
+      depthWrite: false,
+      uniforms: {
+        uMap: { value: null },
+        uAspect: { value: 2.39 },
+        uIris: { value: 0 },
+        uFade: { value: 0 },
+        uLight: { value: 1 },
+        uTime: { value: 0 },
+      },
+      vertexShader: /* glsl */ `
+        varying vec2 vUv;
+        void main() {
+          vUv = uv;
+          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        }
+      `,
+      // The film keeps its own letterbox: full width of the piece, black above and below. The opening is a circle
+      // whose edge wavers like the painted ring it grows out of
+      fragmentShader: /* glsl */ `
+        uniform sampler2D uMap;
+        uniform float uAspect;
+        uniform float uIris;
+        uniform float uFade;
+        uniform float uLight;
+        uniform float uTime;
+        varying vec2 vUv;
+        float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+        float noise(vec2 p) {
+          vec2 i = floor(p);
+          vec2 f = fract(p);
+          vec2 u = f * f * (3.0 - 2.0 * f);
+          return mix(mix(hash(i), hash(i + vec2(1.0, 0.0)), u.x), mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0, 1.0)), u.x), u.y);
+        }
+        void main() {
+          const float PIECE = ${ART_ASPECT.toFixed(4)};
+          vec2 p = (vUv - 0.5) * vec2(PIECE, 1.0);
+          float d = length(p);
+          vec2 dir = p / max(d, 1e-4);
+          float ragged = 0.06 * (noise(dir * 2.3 + uTime * 0.08) - 0.5) + 0.03 * (noise(dir * 9.0 + 3.7) - 0.5);
+          float edge = uIris * (1.0 + ragged);
+          float open = 1.0 - smoothstep(edge - 0.03, edge, d);
+          float v = (vUv.y - 0.5) * uAspect / PIECE + 0.5;
+          vec3 colour = (v < 0.0 || v > 1.0) ? vec3(0.0) : texture2D(uMap, vec2(vUv.x, v)).rgb;
+          gl_FragColor = vec4(colour * uLight, open * uFade);
+        }
+      `,
+    })
+    const screen = new Mesh(new PlaneGeometry(ART_W, ART_H), material)
+    screen.position.z = FRAME_DEPTH / 2 + 0.004
+    screen.renderOrder = 1
+    this.screen = screen
+    return screen
   }
 
   /** Place every piece by how much it is "the" piece: forward, larger and lit in front; back, smaller, dim aside */
@@ -401,7 +590,9 @@ export class GalleryScene {
       h.holder.scale.setScalar(
         SIDE_SCALE + (1 - SIDE_SCALE) * f + h.hover * 0.015
       )
-      h.art.color.setScalar(SIDE_LIGHT + (1 - SIDE_LIGHT) * f + h.hover * 0.12)
+      const dim = this.screening?.index === i ? 1 - DIM * this.screening.dim : 1
+      h.lit = SIDE_LIGHT + (1 - SIDE_LIGHT) * f + h.hover * 0.12
+      h.art.color.setScalar(h.lit * dim)
     })
   }
 
@@ -548,6 +739,7 @@ export class GalleryScene {
       if (this.drag.moved) this.target = this.drag.target + dx * DRAG
     } else if (e.pointerType === "mouse") {
       this.hoverDirty = true
+      this.inside = true
     }
     this.wake()
   }
@@ -581,6 +773,7 @@ export class GalleryScene {
   private readonly onLeave = () => {
     if (this.hovered !== null) this.callbacks.onHover?.(null)
     this.hovered = null
+    this.inside = false
     this.pointer.set(0, 0)
   }
 

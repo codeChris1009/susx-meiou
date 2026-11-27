@@ -8,6 +8,7 @@
     "studio": "remotion studio",
     "score": "node scripts/score.ts",
     "render:3d-art": "node scripts/score.ts 3d-art && remotion render 3d-art out/3d-art.mp4 && remotion still 3d-art out/3d-art.png --frame=840",
+    "web:3d-art": "remotion ffmpeg -hide_banner -y -i out/3d-art.mp4 -vf crop=1920:802:0:139,scale=1600:668:flags=lanczos,format=yuv420p -c:v libx264 -preset slow -crf 23 -tune film -profile:v high -level 4.1 -g 60 -c:a aac -b:a 160k -ac 2 -movflags +faststart ../src/assets/promo/art-gallery.mp4",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

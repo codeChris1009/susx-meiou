@@ -14,6 +14,7 @@
 @import "./features/intro/intro.css";
 @import "./features/hero/hero.css";
 @import "./features/projects/projects.css";
+@import "./components/oil-ring/oil-ring.css";
 @import "./features/gallery/gallery.css";
 
 @custom-variant dark (&:is(.dark *));

@@ -53,8 +53,13 @@ promo 是獨立的 pnpm workspace（自己的 `pnpm-workspace.yaml` 與 lockfile
 cd promo && pnpm install
 pnpm studio                         # 在瀏覽器裡逐幀預覽、拖時間軸
 pnpm render:3d-art                  # 配樂 → out/3d-art.mp4 → 海報幀 out/3d-art.png
+pnpm web:3d-art                     # 網站用的版本 → ../src/assets/promo/art-gallery.mp4
 node scripts/stills.ts 3d-art 150 470 850   # 只看幾個關鍵幀
 ```
+
+網站用的版本：裁掉寬銀幕上下黑邊，只留 2.39:1 的畫面（1600×668，H.264 CRF 23，AAC 160k，faststart），約 5.4 MB，原檔 31 MB。
+黑邊交給展間的 shader 補回來，不浪費位元率。檔名跟展品 id 一樣（`art-gallery`），
+[content.ts](../src/content.ts) 會自動把它接到那件展品上。
 
 ## 3D Art Gallery：神秘文藝復興（約 31 秒）
 
