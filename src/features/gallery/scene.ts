@@ -82,7 +82,9 @@ export interface Screening {
   video: HTMLVideoElement
   /** 0 to 1: how far the painting has dimmed */
   dim: number
-  /** Radius of the opening, in piece heights from the piece's centre: SCREEN_FULL (ring.ts) covers it */
+  /** Where on the piece the opening grows from, in its texture coordinates (0 to 1, origin bottom left) */
+  centre: { x: number; y: number }
+  /** Radius of the opening, in piece heights: coverFrom(centre) (ring.ts) covers the piece */
   iris: number
   /** Opacity of the film */
   fade: number
@@ -191,6 +193,7 @@ export class GalleryScene {
   /** What place() last wrote */
   private placed = ""
   private readonly probe = new Vector3()
+  private readonly aimed = new Vector2(0.5, 0.5)
   private drag: { x: number; target: number; moved: boolean } | null = null
   private active = false
   private running = false
@@ -513,6 +516,8 @@ export class GalleryScene {
     if (videoWidth && videoHeight)
       uniforms.uAspect!.value = videoWidth / videoHeight
     uniforms.uIris!.value = s.iris
+    const centre = uniforms.uCentre!.value as Vector2
+    centre.set(s.centre.x, s.centre.y)
     uniforms.uFade!.value = s.fade
     uniforms.uLight!.value = this.hung[s.index]?.lit ?? 1
     uniforms.uTime!.value = this.clock
@@ -527,6 +532,7 @@ export class GalleryScene {
         uMap: { value: null },
         uAspect: { value: 2.39 },
         uIris: { value: 0 },
+        uCentre: { value: new Vector2(0.5, 0.5) },
         uFade: { value: 0 },
         uLight: { value: 1 },
         uTime: { value: 0 },
@@ -544,6 +550,7 @@ export class GalleryScene {
         uniform sampler2D uMap;
         uniform float uAspect;
         uniform float uIris;
+        uniform vec2 uCentre;
         uniform float uFade;
         uniform float uLight;
         uniform float uTime;
@@ -557,7 +564,7 @@ export class GalleryScene {
         }
         void main() {
           const float PIECE = ${ART_ASPECT.toFixed(4)};
-          vec2 p = (vUv - 0.5) * vec2(PIECE, 1.0);
+          vec2 p = (vUv - uCentre) * vec2(PIECE, 1.0);
           float d = length(p);
           vec2 dir = p / max(d, 1e-4);
           float ragged = 0.06 * (noise(dir * 2.3 + uTime * 0.08) - 0.5) + 0.03 * (noise(dir * 9.0 + 3.7) - 0.5);
@@ -716,11 +723,17 @@ export class GalleryScene {
     )
   }
 
-  /** The piece under the pointer, if any */
+  /** The piece under the pointer, if any; remembers where on it the pointer is (see aim) */
   private pick() {
     this.raycaster.setFromCamera(this.pointer, this.camera)
     const hit = this.raycaster.intersectObjects(this.artMeshes, false)[0]
+    if (hit?.uv) this.aimed.copy(hit.uv)
     return hit ? (hit.object.userData.index as number) : null
+  }
+
+  /** Where on the piece under it the pointer last was, in texture coordinates */
+  aim() {
+    return { x: this.aimed.x, y: this.aimed.y }
   }
 
   private readonly onDown = (e: PointerEvent) => {

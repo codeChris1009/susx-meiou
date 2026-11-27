@@ -36,8 +36,15 @@ export function focusOf(off: number, count: number) {
 /** A piece's width over its height (the frames are 1200×800) */
 export const ART_ASPECT = 1.5
 
-/** Radius, in piece heights from its centre, of a circle that covers a whole piece, corners and a ragged edge too */
-export const SCREEN_FULL = Math.hypot(ART_ASPECT / 2, 0.5) + 0.08
+/**
+ * Radius, in piece heights, of a circle centred at (u, v) on a piece (texture coordinates) that covers the whole
+ * piece: out to its farthest corner, with room for a ragged edge
+ */
+export function coverFrom(u: number, v: number) {
+  const across = Math.max(u, 1 - u) * ART_ASPECT
+  const up = Math.max(v, 1 - v)
+  return Math.hypot(across, up) + 0.08
+}
 
 /** Front-piece share of the view width, from a phone held upright to a wide screen */
 const TALL = { aspect: 0.7, coverage: 0.88 }
