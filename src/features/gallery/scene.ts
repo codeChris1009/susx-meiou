@@ -60,6 +60,7 @@ import {
   indexAt,
   nearestAngle,
   offFront,
+  ringTouches,
 } from "./ring"
 
 export interface GalleryCallbacks {
@@ -193,6 +194,10 @@ export class GalleryScene {
   /** What place() last wrote */
   private placed = ""
   private readonly probe = new Vector3()
+  /** The piece in front on screen, px (measure) */
+  private readonly spot = { x: 0, y: 0, h: 0 }
+  /** While a film plays: the cursor ring's radius, px, within which the frame still counts as watched (setReach) */
+  private reach = 0
   private readonly aimed = new Vector2(0.5, 0.5)
   private drag: { x: number; target: number; moved: boolean } | null = null
   private active = false
@@ -336,6 +341,14 @@ export class GalleryScene {
     this.wake()
   }
 
+  /**
+   * While a film plays, the mouse may wander off the picture: the piece stays watched while the cursor's ring of
+   * `px` radius still touches its frame. 0 asks for the pointer on the piece itself, as before a film starts.
+   */
+  setReach(px: number) {
+    this.reach = px
+  }
+
   /** Show a film over a piece (see Screening), or take it away */
   setScreening(screening: Screening | null) {
     this.screening = screening
@@ -447,15 +460,26 @@ export class GalleryScene {
       this.callbacks.onFocus(front)
     }
     const resting = !this.drag && Math.abs(this.target - this.angle) < REST
-    this.setPresent(
-      resting && this.hovered === indexAt(this.target, this.count)
-        ? this.hovered
-        : null
-    )
+    const at = indexAt(this.target, this.count)
+    this.setPresent(resting && this.watched(at) ? at : null)
     this.film()
     this.renderer.render(this.scene, this.camera)
-    if (this.anchored)
-      this.place(this.anchored, indexAt(this.target, this.count))
+    if (this.measure(at) && this.anchored) this.place(this.anchored)
+  }
+
+  /** The pointer is on piece `at`, or (setReach) the cursor's ring touches its frame (as measured last frame) */
+  private watched(at: number) {
+    if (this.hovered === at) return true
+    if (!this.reach || !this.inside) return false
+    const { width, height } = this.size
+    const { x, y, h } = this.spot
+    const rim = (2 * FRAME * h) / ART_H
+    return ringTouches(
+      ((this.pointer.x + 1) / 2) * width,
+      ((1 - this.pointer.y) / 2) * height,
+      this.reach,
+      { x, y, w: h * ART_ASPECT + rim, h: h + rim }
+    )
   }
 
   private setPresent(index: number | null) {
@@ -464,10 +488,10 @@ export class GalleryScene {
     this.callbacks.onPresent?.(index)
   }
 
-  /** Projects piece `index` to the canvas and writes where it landed on `el` (see anchor) */
-  private place(el: HTMLElement, index: number) {
+  /** Projects piece `index` to the canvas, px, into `spot`: the centre of its picture and the picture's height */
+  private measure(index: number) {
     const holder = this.hung[index]?.holder
-    if (!holder) return
+    if (!holder) return false
     const { width, height } = this.size
     const p = this.probe
     p.set(0, ART_H / 2, FRAME_DEPTH / 2)
@@ -481,16 +505,22 @@ export class GalleryScene {
     p.set(0, 0, FRAME_DEPTH / 2)
       .applyMatrix4(holder.matrixWorld)
       .project(this.camera)
+    this.spot.x = ((p.x + 1) / 2) * width
+    this.spot.y = ((1 - p.y) / 2) * height
+    this.spot.h = ((top - bottom) / 2) * height
+    return true
+  }
+
+  /** Writes where the piece in front landed on `el` (see anchor) */
+  private place(el: HTMLElement) {
     // Written only when they move, to a tenth of a pixel: a still room restyles nothing
-    const place = [(p.x + 1) / 2, (1 - p.y) / 2, (top - bottom) / 2]
-      .map((v, i) => (v * (i === 0 ? width : height)).toFixed(1))
-      .join(" ")
+    const { x, y, h } = this.spot
+    const place = [x, y, h].map((v) => v.toFixed(1)).join(" ")
     if (place === this.placed) return
     this.placed = place
-    const [x, y, h] = place.split(" ")
-    el.style.setProperty("--piece-x", `${x}px`)
-    el.style.setProperty("--piece-y", `${y}px`)
-    el.style.setProperty("--piece-h", `${h}px`)
+    el.style.setProperty("--piece-x", `${x.toFixed(1)}px`)
+    el.style.setProperty("--piece-y", `${y.toFixed(1)}px`)
+    el.style.setProperty("--piece-h", `${h.toFixed(1)}px`)
   }
 
   /** The film, on a sheet laid just over the painting of the piece that shows it */

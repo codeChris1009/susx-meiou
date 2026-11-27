@@ -11,6 +11,7 @@ import {
   indexAt,
   nearestAngle,
   offFront,
+  ringTouches,
 } from "./ring"
 
 const project = (repo: string, online = true): SyncedProject => ({
@@ -55,6 +56,17 @@ describe("ring", () => {
     expect(fitFov(0.5, 3.6, 5)).toBeGreaterThan(fitFov(1.8, 3.6, 5))
     expect(fitFov(0.2, 3.6, 5)).toBeLessThanOrEqual(78)
     expect(fitFov(4, 3.6, 5)).toBeGreaterThanOrEqual(30)
+  })
+
+  it("counts the cursor ring as on the frame while its edge touches it", () => {
+    const frame = { x: 500, y: 300, w: 600, h: 400 }
+    expect(ringTouches(500, 300, 0, frame)).toBe(true)
+    // Right edge at x 800: a 38 px ring 30 px out still touches, 50 px out does not
+    expect(ringTouches(830, 300, 38, frame)).toBe(true)
+    expect(ringTouches(850, 300, 38, frame)).toBe(false)
+    // Off the corner (800, 500) by 30 px each way: 42 px away
+    expect(ringTouches(830, 530, 38, frame)).toBe(false)
+    expect(ringTouches(825, 525, 38, frame)).toBe(true)
   })
 })
 

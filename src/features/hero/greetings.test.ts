@@ -1,6 +1,13 @@
 import { describe, expect, it } from "vitest"
 
-import { FIRST, GREETINGS, HUES, between, shuffleBag } from "./greetings"
+import {
+  FIRST,
+  GREETINGS,
+  HUES,
+  SCRIPTS,
+  between,
+  shuffleBag,
+} from "./greetings"
 
 /** Deterministic random for repeatable shuffles */
 function seeded(seed: number) {
@@ -51,15 +58,47 @@ describe("greetings", () => {
     expect(new Set(langs).size).toBe(langs.length)
   })
 
-  it("keeps to scripts Geist and Noto Sans TC can set", () => {
-    // Latin (incl. Vietnamese), Cyrillic, CJK ideographs and kana, spaces
-    const covered =
-      /^[\p{Script=Latin}\p{Script=Cyrillic}\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana} ]+$/u
-    for (const g of GREETINGS) expect(g.text).toMatch(covered)
+  it("keeps to scripts the page's faces or the cut-down Noto faces can set", () => {
+    // Geist: Latin (incl. Vietnamese) and Cyrillic; Noto Sans TC: Han, kana, bopomofo; then SCRIPTS
+    const own = ["Latin", "Cyrillic", "Han", "Hiragana", "Katakana", "Bopomofo"]
+    const scripts = [...own, ...SCRIPTS].map((s) => `\\p{Script=${s}}`)
+    const covered = new RegExp(`^[${scripts.join("")} ]+$`, "u")
+    for (const g of GREETINGS) {
+      expect(g.text).toMatch(covered)
+      expect(g.pool).toMatch(covered)
+    }
   })
 
-  it("has no punctuation in any greeting", () => {
-    for (const g of GREETINGS) expect(g.text).not.toMatch(/\p{P}/u)
+  it("decodes each greeting through letters of its own script", () => {
+    const script = (ch: string) =>
+      [
+        ..."Latin Cyrillic Han Hiragana Katakana Bopomofo".split(" "),
+        ...SCRIPTS,
+      ].find((s) => new RegExp(`\\p{Script=${s}}`, "u").test(ch))
+    for (const g of GREETINGS) {
+      const own = new Set(Array.from(g.text.replace(/ /g, ""), script))
+      // Han greetings decode through their reading: bopomofo, kana
+      for (const ch of g.pool)
+        expect(own.has(script(ch)) || /\p{Script=Han}/u.test(g.text)).toBe(true)
+    }
+  })
+
+  it("names every language in English and Chinese, once each", () => {
+    for (const g of GREETINGS) {
+      expect(g.name.en).toMatch(/^[A-Z]/)
+      expect(g.name.zh).toMatch(/\p{Script=Han}/u)
+    }
+    expect(new Set(GREETINGS.map((g) => g.name.en)).size).toBe(GREETINGS.length)
+  })
+
+  it("sets right-to-left only the right-to-left script", () => {
+    for (const g of GREETINGS)
+      expect(g.dir === "rtl").toBe(/\p{Script=Hebrew}/u.test(g.text))
+  })
+
+  it("has no punctuation in any greeting but the Tibetan syllable mark", () => {
+    for (const g of GREETINGS)
+      expect(g.text.replace(/་/g, "")).not.toMatch(/\p{P}/u)
   })
 
   it("gives every palette three valid hues", () => {

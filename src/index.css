@@ -12,6 +12,7 @@
 /* Latin only: the script face sets one word, the loader's wordmark */
 @import "@fontsource/stalemate/latin-400.css";
 @import "./features/intro/intro.css";
+@import "./features/hero/hello-fonts.css";
 @import "./features/hero/hero.css";
 @import "./features/projects/projects.css";
 @import "./components/spark-ring/spark-ring.css";

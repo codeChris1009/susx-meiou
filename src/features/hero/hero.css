@@ -65,7 +65,7 @@ html:not(.dark) .hero-light {
   letter-spacing: -0.045em;
 }
 
-/* ---- Hello world: a gradient whose hues morph, written on from the left ---- */
+/* ---- Hello world: a gradient whose hues morph, each greeting decoding into the next (hello.tsx) ---- */
 @property --hello-1 {
   syntax: "<color>";
   inherits: true;
@@ -94,8 +94,13 @@ html:not(.dark) .hero-light {
     calc(var(--hello-l) + 0.06) calc(var(--hello-c) * 0.8) var(--hello-h2)
   );
   --hello-3: oklch(var(--hello-l) var(--hello-c) var(--hello-h3));
+  position: relative;
   display: block;
   white-space: nowrap;
+  /* The page's faces, then the greeting's other scripts, cut to the letters they need (hello-fonts.css) */
+  font-family:
+    "Geist Variable", "Hello Scripts", "Noto Sans TC Variable", ui-sans-serif,
+    system-ui, sans-serif;
   transition:
     --hello-1 1600ms var(--ease-out-expo),
     --hello-2 1600ms var(--ease-out-expo),
@@ -107,8 +112,14 @@ html:not(.dark) .hero-light {
 }
 .hello-word {
   display: inline-block;
-  /* Room inside the clip for descenders and the last letter's overhang */
-  padding-block: 0.06em 0.1em;
+  /*
+   * A greeting wider than the line (Georgian) is set smaller to fit (hello.tsx writes --hello-fit). The padding is
+   * room inside the gradient's clip for stacks above and below the line (Tibetan) and the last letter's overhang; the
+   * margins take it back, so the line sits where it always did.
+   */
+  font-size: calc(var(--hello-fit, 1) * 1em);
+  padding-block: 0.3em 0.36em;
+  margin-block: -0.24em -0.26em;
   padding-inline-end: 0.08em;
   background-image: linear-gradient(
     var(--hello-angle),
@@ -119,50 +130,119 @@ html:not(.dark) .hero-light {
   background-size: 200% 100%;
   background-clip: text;
   color: transparent;
-  /* A feathered edge that sweeps left to right: the write-on */
-  mask-image: linear-gradient(90deg, #000 45%, transparent 55%);
-  mask-size: 240% 100%;
-  mask-position: 0 0;
-  animation:
-    hello-in 1400ms var(--ease-out-expo) both,
-    hello-drift 14s ease-in-out infinite alternate;
+  animation: hello-drift 14s ease-in-out infinite alternate;
+  transition: font-size 900ms var(--ease-out-expo);
 }
-.hello-word[data-phase="out"] {
-  animation:
-    hello-out 650ms cubic-bezier(0.7, 0, 0.84, 0) forwards,
-    hello-drift 14s ease-in-out infinite alternate;
+/* Scripts with no tight display cut keep their natural spacing */
+.hello-word:is(
+  :lang(ka),
+  :lang(bo),
+  :lang(he),
+  :lang(am),
+  :lang(zgh),
+  :lang(ko),
+  :lang(el)
+) {
+  letter-spacing: -0.01em;
 }
-@keyframes hello-in {
-  from {
-    mask-position: 100% 0;
-    filter: blur(14px);
-    translate: 0 0.16em;
-    opacity: 0;
-  }
-  35% {
-    opacity: 1;
-  }
+/* A letter still decoding: the gradient seen through a veil of the page, so the resolved letters light up */
+.hello-word [data-decode="scramble"] {
+  color: color-mix(in oklch, var(--background) 52%, transparent);
 }
-@keyframes hello-out {
-  to {
-    filter: blur(12px);
-    translate: 0 -0.14em;
-    opacity: 0;
-  }
+/* Measures the greeting at full size, for the fit */
+.hello-probe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  font-size: 1em;
+  visibility: hidden;
 }
 @keyframes hello-drift {
   to {
     background-position: 100% 0;
   }
 }
-/* The entrance waits behind the curtain with everything else */
-html[data-intro] .hello-word {
-  animation-play-state: paused;
+
+/*
+ * The tip under the pointer: what language this is, in English and in Chinese, beside a sliver of the greeting's own
+ * gradient. Glass over the hero, trailing the pointer a moment behind; it flips to the left near the window's edge.
+ */
+.hello-tip {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.6rem 1rem 0.65rem 0.7rem;
+  border: 1px solid color-mix(in oklch, var(--metal-hi) 28%, transparent);
+  border-radius: calc(var(--radius) + 0.25rem);
+  background: color-mix(in oklch, var(--background) 70%, transparent);
+  backdrop-filter: blur(14px) saturate(1.4);
+  box-shadow:
+    0 1px 0 color-mix(in oklch, var(--metal-hi) 14%, transparent) inset,
+    0 22px 44px -22px color-mix(in oklch, var(--shade) 70%, transparent);
+  font: 500 0.75rem / 1.25 var(--font-sans);
+  letter-spacing: normal;
+  white-space: nowrap;
+  color: var(--foreground);
+  pointer-events: none;
+  translate: calc(var(--tip-x, 0px) + 1.1rem) calc(var(--tip-y, 0px) + 1.3rem);
+  transform-origin: 0 0;
+  opacity: 0;
+  scale: 0.92;
+  filter: blur(3px);
+  transition:
+    opacity 280ms var(--ease-out-expo),
+    scale 420ms var(--ease-out-expo),
+    filter 320ms var(--ease-out-expo),
+    translate 240ms var(--ease-out-expo);
+}
+.hello-tip[data-flip] {
+  translate: calc(var(--tip-x, 0px) - 100% - 1.1rem)
+    calc(var(--tip-y, 0px) + 1.3rem);
+  transform-origin: 100% 0;
+}
+.hello-tip[data-on] {
+  opacity: 1;
+  scale: 1;
+  filter: none;
+}
+.hello-tip-swatch {
+  align-self: stretch;
+  width: 3px;
+  border-radius: 999px;
+  background: linear-gradient(
+    180deg,
+    var(--hello-1),
+    var(--hello-2),
+    var(--hello-3)
+  );
+  box-shadow: 0 0 10px color-mix(in oklch, var(--hello-2) 60%, transparent);
+}
+.hello-tip-text {
+  display: grid;
+  gap: 0.3rem;
+}
+.hello-tip-en {
+  font-size: 0.625rem;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+}
+.hello-tip-zh {
+  font-size: 0.8125rem;
+  letter-spacing: 0.16em;
+}
+.hello-tip [data-decode="scramble"] {
+  opacity: 0.45;
 }
 
 /*
  * Poster scale, sized so the longest greeting (Bonjour le monde, 7.64em in Geist at this tracking, plus the clip
- * padding) still fits the container on every width: (100vw - gutters) / 7.75 ≈ 12vw - 0.5rem
+ * padding) still fits the container on every width: (100vw - gutters) / 7.75 ≈ 12vw - 0.5rem. A longer one (Georgian)
+ * is fitted to the line by hello.tsx
  */
 .hero-title {
   font-size: clamp(2.25rem, calc(12vw - 0.5rem), 9.75rem);
@@ -233,5 +313,9 @@ html:not(.dark) .hero-mark {
   }
   .hello-word {
     animation: none;
+    transition: none;
+  }
+  .hello-tip {
+    transition: opacity 200ms linear;
   }
 }
