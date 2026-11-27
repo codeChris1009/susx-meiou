@@ -35,3 +35,6 @@ promo/out
 
 # Trailer renders, and scores the render script synthesises
 promo/public/**/score.wav
+
+# Captures of the live sites, made by scripts/capture.ts from each film's capture.ts
+promo/public/*/capture/

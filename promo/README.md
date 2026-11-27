@@ -1,65 +1,58 @@
 # promo：作品發佈預告片
 
-每個作品（Works 或 Practice）一支 20 到 40 秒的發佈預告片，節奏與畫質比照電影預告片，秀出產品真正會做的事。
-片中產品以外的素材（火花、塵埃、光束、線稿、顆粒、字卡、配樂）全部用程式依產品自己的風格即時繪製或合成，
-沒有外部素材，也就沒有授權問題。第一支是 [3D Art Gallery](https://codechris1009.github.io/demo-3js-Gallery0/)。
+每個精選作品一支發佈預告片，重點放在功能的實際操作與畫面流程：從線上網站錄下真實互動，加上程式繪製的線條、幾何、說明文字、轉場與合成配樂，風格跟著產品走
+片中產品以外的素材全部由程式即時繪製或合成，沒有外部素材，也就沒有授權問題
+
+流程（Brief → 盤點功能並逐支和使用者確認 → 萃取風格 → 分鏡 → 擷取 → 畫面與配樂 → 驗收 → 出片）寫在使用者層級的 skill `launch-trailer`（`~/.claude/skills/launch-trailer/`），這份 README 只記這個專案自己的東西
 
 ## 工具
 
-推薦 **Remotion 4**：用 React + TypeScript 寫影片，逐幀渲染、同一幀永遠畫出同一張圖，自帶 ffmpeg，可以直接在畫面裡跑 three.js。
-跟網站同一套語言與元件思維，作品的 three.js 程式碼可以原樣搬進來當「遊戲引擎內運鏡（in-engine cinematics）」。
+**Remotion 4**：用 React + TypeScript 寫影片，逐幀渲染、同一幀永遠畫出同一張圖，自帶 ffmpeg；授權：個人與 3 人以下的公司免費（以 `node_modules/remotion/LICENSE.md` 原文為準）
+擷取用 **playwright-core** 開本機的 Chrome（channel `chrome`），不下載瀏覽器，WebGL／WebGPU 和訪客看到的一樣
 
-| 方案                         | 取捨                                                          |
-| ---------------------------- | ------------------------------------------------------------- |
-| Remotion 4（採用）           | React/TS、逐幀 deterministic、內建編碼；授權見下              |
-| Motion Canvas                | MIT，但不是 React，3D 要自己接                                |
-| Playwright 逐幀截圖 + ffmpeg | 能錄真實網站，但要自己接管時鐘（rAF、計時器、CSS 動畫）與編碼 |
-
-授權：Remotion 對個人與 3 人以下的公司免費，超過要買公司授權（以 `node_modules/remotion/LICENSE.md` 原文為準）。
-
-## 每支影片的流程
-
-1. **Brief**：產品一句話、要秀的 3 到 4 個功能、風格關鍵字、片長。
-2. **萃取風格**：從產品原始碼取色票、字體、動效參數，寫成這支片的 `style.ts`，不憑印象配色。
-3. **分鏡 Beat sheet**（`timeline.ts`）：預告片的三幕：冷開場（謎）→ 揭示產品 → 功能蒙太奇（越剪越快）→ 黑場重擊 → 片名卡。
-   每一拍寫死起訖幀與音效點，畫面與配樂讀同一份時間表，所以永遠對拍。
-4. **畫面**：產品本體用 in-engine 方式重建（產品的 three.js 場景在 composition 裡跑，鏡頭自由運鏡）；
-   額外素材用 canvas 2D 繪製，全部是「幀數 → 畫面」的純函式加固定亂數種子（seed），平行渲染、任意跳幀都畫得一樣。
-5. **配樂**（`score.ts`）：Node 腳本以加法合成與雜訊合成 drone、braam、riser、impact、心跳，輸出 WAV；同一個 seed、同一份時間表。
-6. **渲染**：`pnpm render:<作品>` 輸出 `out/<作品>.mp4`（H.264、1920×1080、30fps）與海報幀 `out/<作品>.png`。
-7. **驗收**：抽關鍵幀拼成 contact sheet 檢查構圖與字；確認時長、音軌、無黑幀。
+promo 是獨立的 pnpm workspace（自己的 `pnpm-workspace.yaml` 與 lockfile），Remotion、ffmpeg、Playwright 不會進到網站的 lockfile 與 CI
 
 ## 目錄與指令
 
 ```
 promo/
-  src/Root.tsx              註冊每支片的 composition
-  src/kit/                  共用：seeded random、火花場、字卡、金線構圖、寬銀幕黑邊、顆粒、暗角、字體
-  src/3d-art/
-    style.ts                從 3d art 原始碼取的色票、字體、場景常數
-    timeline.ts             分鏡與音效 cue（畫面與配樂共用）
-    stage.ts                three.js 展間：照原作重建，加上光束、塵埃、燭光
-    shots.ts                每一幀的鏡頭與燈光（純函式）
-    Trailer.tsx             組裝：3D、字卡、火花、片名
-  scripts/score.ts          合成配樂 → public/<作品>/score.wav（不進版控，渲染前自動產生）
-  scripts/stills.ts         抽關鍵幀 → out/stills/
-  public/3d-art/            六幅畫作（Rijksmuseum 公有領域，2048px JPEG）
+  src/kit/            共用：capture-plan（擷取計畫格式）、screen（Screen 運鏡／Marks 標註／Cursor 游標）、shot（一行一個鏡頭）、
+                      words（六種文字動態）、note（旁註）、beat（段落與轉場：iris、blur、wipe、flash、glitch、ink、boss…）、
+                      lines（Graticule 地球、Rings、Rules、Dust、Count）、synth（合成器）、ready（等字體）、film、random
+  src/<作品>/         capture.ts（拍什麼）、timeline.ts（分鏡、文字、音效點）、style.ts（色票與字體）、score.ts（配樂）、Trailer.tsx（畫面）
+  src/films.ts        登記每支片；id 與精選展品 id 相同
+  scripts/capture.ts  依 capture.ts 從線上網站拍靜態、長頁與 live 片段（附游標軌跡）；scan 模式出整站縮圖表
+  scripts/peek.ts     每段片段的開頭、中段、結尾拼成一張表，確認操作真的發生
+  scripts/compose.ts  合成配樂 → public/<作品>/score.wav
+  scripts/stills.ts   抽幀；--every=2 拼成整支片的縮圖表
+  scripts/release.ts  配樂 → 母帶 out/<作品>.mp4 → 網站版 ../src/assets/promo/<作品>.mp4
 ```
 
-promo 是獨立的 pnpm workspace（自己的 `pnpm-workspace.yaml` 與 lockfile），Remotion 與它自帶的 ffmpeg、Chrome Headless Shell
-不會進到網站的 lockfile 與 CI。
+擷取素材（`public/*/capture/`）與配樂（`public/**/score.wav`）不進版控，用上面的指令重新產生；不公開的網站（Anthology）網址放在 gitignored 的 `promo/.env.local`（`ANTHOLOGY_URL=…`），`pnpm capture` 會讀它
 
 ```bash
 cd promo && pnpm install
-pnpm studio                         # 在瀏覽器裡逐幀預覽、拖時間軸
-pnpm render:3d-art                  # 配樂 → out/3d-art.mp4 → 海報幀 out/3d-art.png
-pnpm web:3d-art                     # 網站用的版本 → ../src/assets/promo/art-gallery.mp4
-node scripts/stills.ts 3d-art 150 470 850   # 只看幾個關鍵幀
+pnpm capture anthology            # 拍；pnpm capture scan <url> [--dark] 先看整站
+pnpm peek anthology               # 檢查擷取
+pnpm stills anthology --every=2   # 整支片縮圖表 out/stills/anthology-sheet.jpg
+pnpm studio                       # 瀏覽器裡逐幀預覽
+pnpm release anthology            # 出片並放進網站
 ```
 
-網站用的版本：裁掉寬銀幕上下黑邊，只留 2.39:1 的畫面（1600×668，H.264 CRF 23，AAC 160k，faststart），約 5.4 MB，原檔 31 MB。
-黑邊交給展間的 shader 補回來，不浪費位元率。檔名跟展品 id 一樣（`art-gallery`），
-[content.ts](../src/content.ts) 會自動把它接到那件展品上。
+網站版：1600×668（2.39:1），H.264 CRF 24、AAC 160k、faststart；檔名跟展品 id 一樣，[content.ts](../src/content.ts) 會自動接到那件展品上，黑邊由展間的 shader 補
+
+## 精選宣傳片
+
+| 片           | 長度 | 調性               | 展示的功能（使用者確認）                                                                                       | 運鏡與轉場                 |
+| ------------ | ---- | ------------------ | -------------------------------------------------------------------------------------------------------------- | -------------------------- |
+| anthology    | 60 s | 深色、星光、經緯線 | 首頁 SIGNAL 運鏡、Artisanal Zen 模式轉動縮放、切回後點台灣的情報小瓶並展開、其他四空間快剪                     | 全幅跟拍＋光圈開場         |
+| gym-leaders  | 35 s | 熔金、運動感       | 首頁熔金與九大地區、卡洛斯地區頁、館主列表、可爾妮角色卡與超級路卡利歐、露璃娜與超極巨暴噬龜、徽章館、戰術光譜 | 卡點硬切＋閃白             |
+| fovea        | 36 s | 紙張、編輯感       | 以 Anthropic 為主：書架三種陳列、拿起翻面翻開、公司頁、招股書目錄跳讀；深色模式與首頁列表                      | 中央窩對焦＋溶接           |
+| ash          | 40 s | 星空、金色中軸     | 以皮卡丘為主：首頁換帽子、王牌、帽子時間軸、伽勒爾世代頁、夥伴遊行、圖鑑、TCG 卡牌                             | 金色中軸線＋閃白           |
+| heroines     | 36 s | 粉彩、光柱         | 章節切換、莎莉娜與莉莉艾的卡牌、雷達、十維度、Expand context                                                   | 柔和溶接＋專屬色暈染       |
+| yi-64        | 36 s | 墨、機器讀易       | 八卦與分頁、進入、星盤、27 頤卦六個分頁、測卦、觀文；首頁只帶過                                                | 墨染轉場                   |
+| rivals       | 40 s | 魔王戰、金與火     | 首頁風暴與十五層塔、宿敵列表與雷達、長按挑戰：丹帝＞竹蘭＞艾嵐、Versus 竹蘭對丹帝                              | 魔王戰式：急推、震動、閃紅 |
+| villain-orgs | 38 s | 機密檔案           | 章節切換、火箭隊、等離子團、以太與骷髏：首領卡牌、雷達、兩面切換、十維度                                       | 打字、塗黑條、故障、戳章   |
 
 ## 3D Art Gallery：神秘文藝復興（約 31 秒）
 
