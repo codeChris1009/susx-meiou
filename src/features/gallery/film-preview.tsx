@@ -1,7 +1,9 @@
 import { Volume2, VolumeX } from "lucide-react"
 import { useEffect, useRef, useState } from "react"
+import { createPortal } from "react-dom"
 
-import { OilRing } from "@/components/oil-ring/oil-ring"
+import { SparkRing } from "@/components/spark-ring/spark-ring"
+import { burst } from "@/components/spark-ring/sparks"
 
 import { type FilmPhase, FilmPlayer, type FilmState } from "./film-player"
 import type { GalleryScene } from "./scene"
@@ -13,19 +15,22 @@ interface FilmPreviewProps {
   film: string
   /** The mouse is resting on that piece and the ring is at rest */
   watching: boolean
+  /** The room's cursor: the loading ring rides beside it */
+  cursor: HTMLElement | null
   onPhase: (phase: FilmPhase) => void
 }
 
 /**
- * The film's layer over the room: the oil ring painted over the piece while the film loads, the film itself (drawn
- * by the scene, onto the piece), and its one control, sound. Laid out by the piece's place on screen, which the scene
- * writes onto this layer every frame (scene.anchor).
+ * The film's parts outside the scene: the small ring of light beside the cursor while the film loads, the video the
+ * scene paints onto the piece, and the film's one control, sound. The scene writes the piece's place on screen onto
+ * this layer every frame (scene.anchor), which places the sound button.
  */
 export function FilmPreview({
   scene,
   index,
   film,
   watching,
+  cursor,
   onPhase,
 }: FilmPreviewProps) {
   const root = useRef<HTMLDivElement>(null)
@@ -43,13 +48,7 @@ export function FilmPreview({
     const v = video.current
     if (!el || !v) return
     scene.anchor(el)
-    const p = new FilmPlayer({
-      scene,
-      index,
-      video: v,
-      root: el,
-      onChange: setState,
-    })
+    const p = new FilmPlayer({ scene, index, video: v, onChange: setState })
     player.current = p
     return () => {
       p.dispose()
@@ -61,6 +60,16 @@ export function FilmPreview({
   useEffect(() => player.current?.watch(watching), [watching])
   useEffect(() => onPhase(state.phase), [state.phase, onPhase])
   useEffect(() => () => onPhase("idle"), [onPhase])
+
+  // Loaded: the cursor ring throws the gallery's click sparks as the film opens under it
+  useEffect(() => {
+    const stage = cursor?.parentElement
+    if (state.phase !== "opening" || !cursor || !stage) return
+    const x = parseFloat(cursor.style.getPropertyValue("--x"))
+    const y = parseFloat(cursor.style.getPropertyValue("--y"))
+    if (Number.isFinite(x) && Number.isFinite(y))
+      burst(stage, x, y, cursor.offsetWidth / 2, 16)
+  }, [state.phase, cursor])
 
   const toggle = () => {
     const on = !sound
@@ -87,16 +96,16 @@ export function FilmPreview({
         aria-hidden
         className="film-source"
       />
-      <OilRing
-        progress={state.progress}
-        seed={state.seed}
-        label="宣傳影片載入中"
-        className="film-ring"
-      >
-        <span className="film-ring-word gallery-title metal-shine">
-          Trailer
-        </span>
-      </OilRing>
+      {cursor &&
+        createPortal(
+          <SparkRing
+            key={state.seed}
+            progress={state.phase === "painting" ? state.progress : 1}
+            label="宣傳影片載入中"
+            className="gallery-cursor-loader"
+          />,
+          cursor
+        )}
       <button
         type="button"
         aria-pressed={sound}

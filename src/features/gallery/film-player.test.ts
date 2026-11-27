@@ -1,16 +1,15 @@
 import { describe, expect, it } from "vitest"
 
-import { pace } from "@/components/oil-ring/brush"
-
 import {
   FILM,
-  RING_RADIUS,
+  IRIS_FROM,
+  pace,
   approach,
   irisAt,
   paintable,
   readiness,
 } from "./film-player"
-import { SCREEN_FULL } from "./ring"
+import { coverFrom } from "./ring"
 
 const media = (readyState: number, buffered: number, duration = 31) => ({
   readyState,
@@ -69,12 +68,30 @@ describe("painting the ring while the film loads", () => {
   })
 })
 
+describe("pace", () => {
+  it("runs 0 to 1, slow to start, fastest past halfway, slow to close", () => {
+    expect(pace(0)).toBe(0)
+    expect(pace(1)).toBeCloseTo(1, 10)
+    expect(pace(0.1)).toBeLessThan(0.05)
+    expect(pace(0.7) - pace(0.6)).toBeGreaterThan(pace(0.2) - pace(0.1))
+    for (let t = 0; t < 1; t += 0.01)
+      expect(pace(t + 0.01)).toBeGreaterThanOrEqual(pace(t))
+  })
+})
+
 describe("the opening", () => {
-  it("starts just inside the painted ring and ends covering the piece", () => {
-    expect(irisAt(0)).toBeLessThan(RING_RADIUS)
-    expect(irisAt(0)).toBeGreaterThan(RING_RADIUS - 0.08)
-    expect(irisAt(1)).toBeCloseTo(SCREEN_FULL)
+  it("grows from a pinprick under the pointer to cover the piece from there", () => {
+    const full = coverFrom(0.2, 0.7)
+    expect(irisAt(0, full)).toBe(IRIS_FROM)
+    expect(irisAt(1, full)).toBeCloseTo(full)
     for (let k = 0; k < 1; k += 0.05)
-      expect(irisAt(k + 0.05)).toBeGreaterThan(irisAt(k))
+      expect(irisAt(k + 0.05, full)).toBeGreaterThan(irisAt(k, full))
+  })
+
+  it("reaches further from a corner than from the centre", () => {
+    expect(coverFrom(0, 0)).toBeGreaterThan(coverFrom(0.5, 0.5))
+    expect(coverFrom(0, 0)).toBeCloseTo(coverFrom(1, 1))
+    // From the centre: half the width (1.5 heights wide) and half the height, plus the margin
+    expect(coverFrom(0.5, 0.5)).toBeCloseTo(Math.hypot(0.75, 0.5) + 0.08)
   })
 })

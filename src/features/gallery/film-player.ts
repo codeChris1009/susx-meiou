@@ -1,22 +1,20 @@
 /**
- * Plays a piece's launch film when the mouse rests on it: the loader paints its ring over the dimming painting while
- * the film loads, then the ring breathes open into a circle of film that widens until it fills the frame. The film
- * plays where the painting was; when the mouse leaves, or the film ends, the circle closes back onto the painting.
+ * Plays a piece's launch film when the mouse rests on it: the painting dims and the cursor waits while a small ring
+ * of light draws round beside it as the film loads, then a circle of film opens where the pointer is and widens until
+ * it fills the frame. When the mouse leaves, or the film ends, the circle closes back onto the painting.
  *
- * One clock drives everything (the ring's progress, the opening in the scene, the ring riding its edge, the sound),
- * so the parts can never drift apart. Timing is kept in pure functions below the class, which the tests read.
+ * One clock drives everything (the ring's progress, the opening in the scene, the sound), so the parts never drift
+ * apart. Timing is kept in pure functions below the class, which the tests read.
  */
-import { pace } from "@/components/oil-ring/brush"
-
-import { SCREEN_FULL } from "./ring"
+import { coverFrom } from "./ring"
 import type { GalleryScene } from "./scene"
 
 export type FilmPhase = "idle" | "painting" | "opening" | "playing" | "closing"
 
 export const FILM = {
-  /** The brush's unhurried stroke round the ring, ms: also how long the mouse must rest before anything plays */
-  paint: 1900,
-  /** Fastest the ring may catch up once the film arrives, progress per ms: it is painted, never snapped shut */
+  /** One unhurried turn of the ring, ms: also how long the mouse must rest before anything plays */
+  paint: 2300,
+  /** Fastest the ring may catch up once the film arrives, progress per ms: it draws round, never snaps shut */
   catchUp: 1 / 420,
   /** Seconds of film in hand before it opens */
   buffer: 6,
@@ -33,15 +31,14 @@ export const FILM = {
   dimTau: 220,
 } as const
 
-/** The painted ring's centre line, in piece heights from the centre: the opening starts just inside it */
-export const RING_RADIUS = 0.31
-const IRIS_FROM = RING_RADIUS - 0.035
+/** Radius the opening starts at, in piece heights: a pinprick under the pointer */
+export const IRIS_FROM = 0.02
 
 export interface FilmState {
   phase: FilmPhase
   /** 0 to 1, the ring's painted share */
   progress: number
-  /** A new ring every time it starts painting */
+  /** Counts the times it has started, so a new wait starts a new ring */
   seed: number
 }
 
@@ -49,8 +46,6 @@ interface FilmPlayerOptions {
   scene: GalleryScene
   index: number
   video: HTMLVideoElement
-  /** Gets the ring's ride on the opening as --ring-scale, --ring-fade and --ring-blur */
-  root: HTMLElement
   onChange: (state: FilmState) => void
 }
 
@@ -68,7 +63,10 @@ export class FilmPlayer {
   private sound = false
   private frame = 0
   /** How open the film was when it began to close: a film that closes halfway open closes from there */
-  private closingFrom = SCREEN_FULL
+  private closingFrom = 0
+  /** Where the opening grows from (the pointer, on the piece), and the radius that covers the piece from there */
+  private centre = { x: 0.5, y: 0.5 }
+  private full = coverFrom(0.5, 0.5)
 
   constructor(options: FilmPlayerOptions) {
     this.o = options
@@ -124,7 +122,7 @@ export class FilmPlayer {
   private readonly tick = (now: number) => {
     const dt = Math.min(64, now - this.last)
     this.last = now
-    const { video, scene, index, root } = this.o
+    const { video, scene, index } = this.o
     const here = this.watching || this.holding
     if (here) this.lastSeen = now
     const gone = !here && now - this.lastSeen > FILM.grace
@@ -166,25 +164,17 @@ export class FilmPlayer {
             video.muted = true
             return video.play()
           })
+          this.centre = scene.aim()
+          this.full = coverFrom(this.centre.x, this.centre.y)
           this.set({ phase: "opening" }, now)
         }
       }
     } else if (phase === "opening" || phase === "playing") {
       const k = phase === "opening" ? Math.min(1, t / FILM.open) : 1
       dimTo = 1
-      iris = irisAt(k)
+      iris = irisAt(k, this.full)
       fade = Math.min(1, k / 0.22)
       video.volume = k
-      const ride = iris / RING_RADIUS
-      root.style.setProperty("--ring-scale", ride.toFixed(4))
-      root.style.setProperty(
-        "--ring-fade",
-        (1 - smooth(0.2, 0.7, k)).toFixed(3)
-      )
-      root.style.setProperty(
-        "--ring-blur",
-        `${(smooth(0.15, 0.7, k) * 8).toFixed(2)}px`
-      )
       if (video.ended || gone) {
         if (video.ended) this.spent = true
         this.closingFrom = iris
@@ -206,7 +196,9 @@ export class FilmPlayer {
     this.dim += (dimTo - this.dim) * (1 - Math.exp(-dt / FILM.dimTau))
     const live = this.state.phase !== "idle" || this.dim > 0.002
     scene.setScreening(
-      live ? { index, video, dim: this.dim, iris, fade } : null
+      live
+        ? { index, video, centre: this.centre, dim: this.dim, iris, fade }
+        : null
     )
 
     this.frame = live || here ? requestAnimationFrame(this.tick) : 0
@@ -234,7 +226,16 @@ export function readiness(
   return Math.min(1, end / need)
 }
 
-/** How far the ring may be painted `elapsed` ms in: at the brush's pace, held back by how much film has arrived */
+/**
+ * The ring's pace through a turn, time share → distance share: it sets off slowly, gathers speed, runs fastest two
+ * thirds of the way round and slows to close. The same slow-fast-slow as the site's loader.
+ */
+export function pace(t: number) {
+  const x = Math.min(1, Math.max(0, t))
+  return 0.15 * x + 0.85 * (4 * x ** 3 - 3 * x ** 4)
+}
+
+/** How far round the ring may be `elapsed` ms in: at its pace, held back by how much film has arrived */
 export function paintable(elapsed: number, ready: number) {
   const brush = pace(elapsed / FILM.paint)
   return ready >= 1 ? brush : Math.min(brush, 0.12 + 0.8 * ready)
@@ -247,12 +248,9 @@ export function approach(progress: number, target: number, dt: number) {
 }
 
 /**
- * The opening's radius, `k` 0 to 1 through it: it draws breath just inside the ring, then widens past the frame's
- * corners and settles. Slow, fast, slow.
+ * The opening's radius, `k` 0 to 1 through it: a pinprick under the pointer that widens past the frame's farthest
+ * corner (`full`, see coverFrom) and settles. Slow, fast, slow.
  */
-export function irisAt(k: number) {
-  return (
-    IRIS_FROM +
-    (SCREEN_FULL - IRIS_FROM) * easeInOut(Math.min(1, Math.max(0, k)))
-  )
+export function irisAt(k: number, full: number) {
+  return IRIS_FROM + (full - IRIS_FROM) * easeInOut(Math.min(1, Math.max(0, k)))
 }

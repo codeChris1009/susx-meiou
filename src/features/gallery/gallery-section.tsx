@@ -8,6 +8,7 @@ import {
 } from "react"
 
 import { SectionHeading } from "@/components/section-heading"
+import { burst } from "@/components/spark-ring/sparks"
 import { pad } from "@/lib/format"
 import { SECTION } from "@/sections"
 
@@ -49,6 +50,12 @@ export function GallerySection({ pieces, numeral }: GallerySectionProps) {
   const section = useRef<HTMLElement>(null)
   const stage = useRef<HTMLDivElement>(null)
   const cursor = useRef<HTMLDivElement>(null)
+  /** The same cursor, as state, for the film's loading ring to render into */
+  const [cursorEl, setCursorEl] = useState<HTMLDivElement | null>(null)
+  const cursorRef = useCallback((el: HTMLDivElement | null) => {
+    cursor.current = el
+    setCursorEl(el)
+  }, [])
   const canvas = useRef<HTMLCanvasElement>(null)
   const scene = useRef<GalleryScene | null>(null)
   const [mode, setMode] = useState<Mode>("idle")
@@ -208,13 +215,17 @@ export function GallerySection({ pieces, numeral }: GallerySectionProps) {
     c.style.setProperty("--y", `${e.nativeEvent.offsetY}px`)
   }
   const cursorLabel =
-    hovered === null
-      ? "Drag"
-      : hovered !== current
-        ? "View"
-        : pieces[hovered]?.href
-          ? "Open"
-          : "View"
+    filmPhase === "painting"
+      ? "Wait"
+      : filmPhase === "opening" || filmPhase === "playing"
+        ? "Open"
+        : hovered === null
+          ? "Drag"
+          : hovered !== current
+            ? "View"
+            : pieces[hovered]?.href
+              ? "Open"
+              : "View"
 
   const onKey = (e: KeyboardEvent) => {
     setTouched(true)
@@ -262,6 +273,15 @@ export function GallerySection({ pieces, numeral }: GallerySectionProps) {
             setTouched(true)
             cursor.current?.setAttribute("data-pressed", "")
             follow(e)
+            // The gallery's click: sparks off the cursor ring as it presses in
+            const c = cursor.current
+            if (stage.current && c && e.pointerType === "mouse")
+              burst(
+                stage.current,
+                e.nativeEvent.offsetX,
+                e.nativeEvent.offsetY,
+                c.offsetWidth * 0.35
+              )
           }}
           onPointerUp={() => cursor.current?.removeAttribute("data-pressed")}
           onPointerMove={follow}
@@ -309,6 +329,7 @@ export function GallerySection({ pieces, numeral }: GallerySectionProps) {
             index={current}
             film={piece.film}
             watching={present === current}
+            cursor={cursorEl}
             onPhase={setFilmPhase}
           />
         )}
@@ -316,15 +337,13 @@ export function GallerySection({ pieces, numeral }: GallerySectionProps) {
         <GallerySignature piece={piece} />
 
         <div
-          ref={cursor}
+          ref={cursorRef}
           aria-hidden
           data-ready={mode === "3d" || undefined}
-          data-quiet={
-            filmPhase === "painting" || filmPhase === "opening" || undefined
-          }
+          data-film={filmPhase}
           className="gallery-cursor pointer-events-none absolute top-0 left-0"
         >
-          <span>{cursorLabel}</span>
+          <span className="gallery-cursor-label">{cursorLabel}</span>
         </div>
 
         <GalleryPlaque
